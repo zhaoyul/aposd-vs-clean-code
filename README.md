@@ -90,35 +90,19 @@ Because of this I disagree with your conclusion about *Clean Code*.
 **JOHN:**
 
 Yes, each extracted small function adds complexity, in the form of its
-interface. In order to use the function, I have to learn its interface.
-If there were no function, there would be no interface to learn.
-
-**UB:**
-
-But I don't want _you_ to use the new function.  It's already being used. It's name explains what it does.  Before I extracted that function it was a snippet of code in a larger function.  That snippet had an interface both at it's entry point and it exit point -- but that interface was not explicit.  By extracting the function that snippet turns into a black box with a name and a define interface.
-
-**JOHN:** 
+interface. As I'm reading the code, I see a function call rather than
+code. I now have to learn how this
+function works in general (its interface) and think about whether that
+interface actually works in the current context. Without the function
+call I just read the code directly and decide whether it works; I don't
+go through the intermediate step of visualizing an "interface" for
+that code (e.g., I don't have to match actual parameters to formal
+parameters or think about how it would work in a more general case).
 
 I disagree with your comment about exposing complexity: exposing
-complexity is bad! 
-
-**UB:**
-
-Perhaps I should have said that it makes the already existing complexity more explicit, gives it a name, and gives it a defined interface.
-
-**JOHN:**
-
-One of the most important goals of software design
+complexity is bad! One of the most important goals of software design
 is to *hide* complexity, so that most people don't have to be aware of
-it most of the time. 
-
-**UB:**
-
-I would say, rather, that our job is to *organize* complexity such that it can be ignored when the compexity is not needed.  If I can tell what a function does by looking at it's name and arguments, then I do not need to know the complexity that it contains.
-
-I call this: *Being Polite*.
-
-**JOHN:**
+it most of the time.
 
 That said, one of the best ways to hide complexity
 is to encapsulate it in a method with a simple interface (callers only
@@ -127,12 +111,6 @@ right, splitting up functions will hide complexity, but this only
 works if the new interface I have to learn is simpler (ideally,
 a *lot* simpler) than the function's code, which I no longer have to
 learn.
-
-**UB:**
-
-I don't think we disagree in principle.  We both agree that splitting up functions is a good way to hide complexity.  It seems to me that all we are quibbling about is the degree.  I believe in the principle of many small named functions.  Perhaps you believe in the principle of a few moderately sized functions.  To each his own.
-
-**JOHN:**
 
 If you split too far, you end up with functions whose interfaces
 are just as complex as their implementations, so there is no
@@ -143,7 +121,46 @@ went up, not down.
 
 **UB:**
 
+But I don't want _you_ to use the new function.  It's already being used. It's name explains what it does.  Before I extracted that function it was a snippet of code in a larger function.  That snippet had an interface both at it's entry point and it exit point -- but that interface was not explicit.  By extracting the function that snippet turns into a black box with a name and a define interface.
+
+**JO:**
+
+I think this digression misses the overall point; I have reworded my
+argument to eliminate the word "use", so hopefully that makes your
+comment unnecesssary. If not, please revise it.
+
+**UB:**
+
+Perhaps I should have said that it makes the already existing complexity more explicit, gives it a name, and gives it a defined interface.
+
+**JO:**
+
+How about revising your original comment along these lines? Then I will
+revise my response to match (maybe I can remove some of it).
+
+**UB:**
+
+I would say, rather, that our job is to *organize* complexity such that it can be ignored when the compexity is not needed.  If I can tell what a function does by looking at it's name and arguments, then I do not need to know the complexity that it contains.
+
+I call this: *Being Polite*.
+
+**UB:**
+
+I don't think we disagree in principle.  We both agree that splitting up functions is a good way to hide complexity.  It seems to me that all we are quibbling about is the degree.  I believe in the principle of many small named functions.  Perhaps you believe in the principle of a few moderately sized functions.  To each his own.
+
+**UB:**
+
 I agree with that too.  It would clearly be going to far to extract every line of a function into a new function.
+
+**JO:**
+
+Given this, maybe we can revise the arguments above to focus on our
+agreement and avoid uninteresting nitpicking? For example, maybe you
+could say that you also agree that it's possible to take decomposition
+too far, and explain how you decide when things have gone too far?
+On the other hand, if you believe that introducing new functions
+comes with no cost (in terms of the additional interfaces), that's an
+important disagreement that needs to be highlighted.
 
 **JOHN:**
 
