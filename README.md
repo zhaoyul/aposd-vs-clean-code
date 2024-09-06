@@ -1,18 +1,22 @@
-**JOHN:** 
+## Introductions
 
-Hi Bob! You and I have each written books on software design.
+**JOHN:**
+
+Hi (Uncle) Bob! You and I have each written books on software design.
 We agree on some things, but there are some pretty big differences of
 opinion between my recent book *A Philosophy of Software Design*
 (herafter "APOSD") and your classic book *Clean Code*. Thanks for
 agreeing to discuss those differences here.
 
-**UB:** 
+**UB:**
 
 My pleasure John.  Before we begin let me say that I've read through your book and I found it very enjoyable, and full of valuable insights.  
 
-**JOHN:** 
+**JOHN:**
 
-Let's start by comparing overall philosophies. When you hear about a
+I'd like to discuss three topics with you: method length, comments,
+and test-driven development. But before getting into these,
+let's start by comparing overall philosophies. When you hear about a
 new idea related to software design, how do you decide whether or not
 to endorse that idea?
 
@@ -43,6 +47,11 @@ which ideas to endorse?
 **UB:** 
 
 I agree with your approach. A discipline or technique should make the job of programmers easier. I would add that the programmer we want to help most is not the author.  The programmer whose job we want to make easier is the programmer who must read and understand the code written by others (or by themself a week later).  Programmers spend far more hours reading code than writing code, so the activity we want to ease is that of reading.
+
+**JOHN:**
+I agree: ease of reading is much more important for code than ease of writing.
+
+## Method Length
 
 **JOHN:** 
 
@@ -309,6 +318,8 @@ just invoking `smallestOdd...` directly from `isNot...`?
 **UB:** 
 
 Functions like this are trying to describe a logical equivalence that might help the reader understand things.  In this case it is saying that the smallest odd nth multiple not less than the candidate _is_ a multiple of the nth prime factor.  That's an interesting equivalence.  Or, at least, I found it to be interesting at the time I wrote it.
+
+## Comments
 
 **JOHN:** 
 
