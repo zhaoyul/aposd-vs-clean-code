@@ -73,79 +73,48 @@ too much, it actually makes the code harder to understand:
   without simultaneously understanding other methods.
 * Each new method introduces a new interface, and each interface adds
   complexity. Interfaces are good, but more interfaces are not better!
+  
+The advice in *Clean Code* is too extreme, encouraging developers to
+create teeny-tiny methods that suffer from both of these problems.
 	
 **UB:** 
 
-Let me stop you there with a challenge.  Is it true that each extracted small function adds complexity?  Or, rather, does ach extracted small function *expose* complexity that was previously hidden, and gives it a name.
+Let me stop you there with a challenge.  Is it true that each extracted small function adds complexity?  Or, rather, does each extracted small function *expose* complexity that was previously hidden, and gives it a name.
 
 Generally, when I extract small functions from larger functions, those smaller functions are private.  They do not add to the overall interface of the containing class.  That class remains narrow and deep.  No outside user sees those small private functions.
 
 By the same token, those small private functions partition and organize the internal structure with names to guide the reader.  That internal structure is particularly helpful if it describes the top-down functional decomposition of the problem. 
 
-Because of this I disagree with your following statement.
+Because of this I disagree with your conclusion about *Clean Code*.
 
 **JOHN:**
 
-The advice in *Clean Code* is too extreme, encouraging developers to
-create teeny-tiny methods that suffer from both of these problems.
+Yes, each extracted small function adds complexity, in the form of its
+interface. In order to use the function, I have to learn its interface.
+If there were no function, there would be no interface to learn.
 
-To illustrate my concern, let's consider a piece of code that follows
-the *Clean Code* advice about making methods super-short.
+I disagree with your comment about exposing complexity: exposing
+complexity is bad! One of the most important goals of software design
+is to *hide* complexity, so that most people don't have to be aware of
+it most of the time. That said, one of the best ways to hide complexity
+is to encapsulate it in a method with a simple interface (callers only
+need to understand the interface, not the messy details). If done
+right, splitting up functions will hide complexity, but this only
+works if the new interface I have to learn is simpler (ideally,
+a *lot* simpler) than the function's code, which I no longer have to
+learn.
 
-It's the PrimeGenerator class on pages 145-146 of *Clean Code*, written
-in Java, which generates the first N prime numbers:
+If you split too far, you end up with functions whose interfaces
+are just as complex as their implementations, so there is no
+benefit. In the worst case, in order to use the function I end up
+having to read all its code; in this case there is no complexity hidden,
+plus I have to learn a new interface: my cognitive load
+went up, not down.
 
-**UB:**
-
-Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Literate Programming*](https://www.cs.tufts.edu/~nr/cs257/archive/literate-programming/01-knuth-lp.pdf) written by Donald Knuth.  The program was originally written in Pascal, by Knuth's WEB system.  I translated it to Java.  
-
-The original code was a larger program that not only generated prime numbers but also printed them in columns and pages with page numbers.  It was one big monolithic function that I was using as an example of how to take large functions apart into several smaller classes.  The three new classes I created were `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.  
-
-Once the classes were extracted, the `PrimeGenerator` looked like this: (which I did not publish in the book.)
-
-	public class PrimeGenerator {
-	  protected static int[] generate(int n) {
-	    int[] p = new int[n];
-	    ArrayList<Integer> mult = new ArrayList<Integer>();
-	    p[0] = 2;
-	    mult.add(2);
-	    int k = 1;
-	    for (int j = 3; k < p.length; j += 2) {
-	      boolean jprime = false;
-	      int ord = mult.size();
-	      int square = p[ord] * p[ord];
-	      if (j == square) {
-	        mult.add(j);
-	      } else {
-	        jprime=true;
-	        for (int mi = 1; mi < ord; mi++) {
-	          int m = mult.get(mi);
-	          while (m < j)
-	            m += 2 * p[mi];
-	          mult.set(mi, m);
-	          if (j == m) {
-	            jprime = false;
-	            break;
-	          }
-	        }
-	      }
-	      if (jprime)
-	        p[k++] = j;
-	    }
-	    return p;
-	  }
-	} 
-
-18 years ago I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large functions, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named functions.  
-
-I think it's somewhat better than where it started.
-
-It was NOT my intent, in this chapter, to teach my readers how to write the most optimal prime number generator.  That was the last thing on my mind, and the last thing I wanted on theirs.
-
-**JOHN:**
-
-	// This code is a copy of Listing 10-8 on pp. 145-146 of "Clean Code",
-	// by Robert C. Martin
+I think it will be easier to clarify our differences if we consider
+a specific code example. Let's look at the PrimeGenerator class from
+*Clean Code*, which is Listing 10-8 on pages 145-146. This Java class
+generates the first N prime numbers:
 
 	package literatePrimes;
 
@@ -218,11 +187,64 @@ It was NOT my intent, in this chapter, to teach my readers how to write the most
 	  }
 	}
 
-**JOHN:**
+Before we dive into this code, I'd encourage everyone reading
+this article to take time to read over the code and draw your own conclusions
+about it. Did you find the code easy to understand? If so, why? If not, what
+makes it complex?
 
-I'd encourage everyone to read over this code and draw your own conclusions
-about it before continuing with the discussion. Did you find the code
-easy to understand? If so, why? If not, what makes it complex?
+Also, Bob, can you confirm that you stand by this code (i.e. the code
+properly exemplifies the design philosophy of *Clean Code* and this
+is the way you believe the code should appear if it were used in
+production)?
+
+**UB:**
+
+Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Literate Programming*](https://www.cs.tufts.edu/~nr/cs257/archive/literate-programming/01-knuth-lp.pdf) written by Donald Knuth.  The program was originally written in Pascal, by Knuth's WEB system.  I translated it to Java.  
+
+The original code was a larger program that not only generated prime numbers but also printed them in columns and pages with page numbers.  It was one big monolithic function that I was using as an example of how to take large functions apart into several smaller classes.  The three new classes I created were `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.  
+
+Once the classes were extracted, the `PrimeGenerator` looked like this: (which I did not publish in the book.)
+
+	public class PrimeGenerator {
+	  protected static int[] generate(int n) {
+	    int[] p = new int[n];
+	    ArrayList<Integer> mult = new ArrayList<Integer>();
+	    p[0] = 2;
+	    mult.add(2);
+	    int k = 1;
+	    for (int j = 3; k < p.length; j += 2) {
+	      boolean jprime = false;
+	      int ord = mult.size();
+	      int square = p[ord] * p[ord];
+	      if (j == square) {
+	        mult.add(j);
+	      } else {
+	        jprime=true;
+	        for (int mi = 1; mi < ord; mi++) {
+	          int m = mult.get(mi);
+	          while (m < j)
+	            m += 2 * p[mi];
+	          mult.set(mi, m);
+	          if (j == m) {
+	            jprime = false;
+	            break;
+	          }
+	        }
+	      }
+	      if (jprime)
+	        p[k++] = j;
+	    }
+	    return p;
+	  }
+	} 
+
+18 years ago I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large functions, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named functions.  
+
+I think it's somewhat better than where it started.
+
+It was NOT my intent, in this chapter, to teach my readers how to write the most optimal prime number generator.  That was the last thing on my mind, and the last thing I wanted on theirs.
+
+**JOHN:**
 
 I use this code for an in-class exercise in a software design course
 that I teach at Stanford. I give students about 30 minutes to read
