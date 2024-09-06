@@ -509,3 +509,169 @@ class? How is code better when it has no comments?
 **UB:** 
 
 As I explained earlier, those kinds of comments in this code would have detracted from the lesson of the chapter, which was how and why to break large functions into smaller classes containing smaller functions, and not to understand some ancient prime generator algorithm. 
+
+## John's Rewrite of PrimeGenerator
+
+**JOHN:**
+
+I mentioned that I ask the students in my software design class to rewrite
+PrimeGenerator to fix all of its design problems. Here is my rewrite:
+```
+package literatePrimes;
+
+import java.util.ArrayList;
+
+public class PrimeGenerator2 {
+
+    /**
+     * Computes the first prime numbers; the return value contains the
+     * computed primes, in increasing order of size.
+     * @param n
+     *      How many prime numbers to compute.
+     */
+    public static int[] generate(int n) {
+        int[] primes = new int[n];
+
+        // Used to test efficiently (without division) whether a candidate
+        // is a multiple of a previously-encountered prime number. Each entry
+        // here contains an odd multiple of the corresponding entry in
+        // primes. Entries increase monotonically.
+        int[] multiples = new int[n];
+
+        // Index of the last value in multiples that we need to consider
+        // when testing candidates (all elements after this are greater
+        // than our current candidate, so they don't need to be considered).
+        int lastMultiple = 0;
+
+        // Number of valid entries in primes.
+        int primesFound = 1;
+
+        primes[0] = 2;
+        multiples[0] = 4;
+
+        // Each iteration through this loop considers one candidate; skip
+        // the even numbers, since they can't be prime.
+        candidates: for (int candidate = 3; primesFound < n; candidate += 2) {
+            if (candidate >= multiples[lastMultiple]) {
+                lastMultiple++;
+            }
+
+            // Each iteration of this loop tests the candidate against one
+            // potential prime factor. Skip the first factor (2) since we
+            // only consider odd candidates.
+            for (int i = 1; i <= lastMultiple; i++) {
+                while (multiples[i] < candidate) {
+                    multiples[i] += 2*primes[i];
+                }
+                if (multiples[i] == candidate) {
+                    continue candidates;
+                }
+            }
+            primes[primesFound] = candidate;
+
+            // Start with the prime's square here, rather than 3x the prime.
+            // This saves time and is safe because all of the intervening
+            // multiples will be detected by smaller prime numbers. As an
+            // example, consider the prime 7: the value in multiples will
+            // start at 49; 21 will be ruled out as a multiple of 3, and
+            // 35 will be ruled out as a multiple of 5, so 49 is the first
+            // multiple that won't be ruled out by a smaller prime.
+            multiples[primesFound] = candidate*candidate;
+            primesFound++;
+        }
+        return primes;
+    }
+}
+```
+
+Everyone can read this and decide for themselves whether they think
+it is easier to understand than the original. I'd like to mention a
+couple of overall things:
+* There is only one method. I didn't subdivide it because I felt the
+  method already divides naturally into pieces that are distinct
+  and understandable. It didn't seem to me that pulling out
+  methods would improve readability significantly. When students
+  rewrite the code, they typically have 2 or 3 methods, and those are
+  usually OK too.
+* There are a *lot* of comments. It's extremely rare for me to
+  write code with this density of comments. Most methods
+  I write have no comments in the body, just a header comment
+  describing the interface. But this code is subtle and tricky,
+  so it needs a lot of comments to make the subtleties clear to
+  readers. Even with all this additional explanatory material
+  my version is a bit shorter than the original (65 lines vs. 70).
+
+**UB:**
+
+*Your comments here*
+
+## Bob's Rewrite of PrimeGenerator2
+
+**UB:**
+
+*Your comments either before or after the code below*
+
+```
+package literatePrimes;
+
+public class PrimeGenerator3 {
+    private static int[] primes;
+    private static int[] primeMultiples;
+    private static int lastRelevantMultiple;
+    private static int primesFound;
+    private static int candidate;
+
+    // Lovely little algorithm that finds primes by predicting
+    // the next composite number and skipping over it. That prediction
+    // consists of a set of prime multiples that are continuously
+    // increased to keep pace with the candidate.
+
+    public static int[] generateFirstNPrimes(int n) {
+        initializeTheGenerator(n);
+
+        for (candidate = 5; primesFound < n; candidate += 2) {
+            increaseEachPrimeMultipleToOrBeyondCandidate();
+            if (candidateIsNotOneOfThePrimeMultiples()) {
+                registerTheCandiateAsPrime();
+            }
+        }
+        return primes;
+    }
+
+    private static void initializeTheGenerator(int n) {
+        primes = new int[n];
+        primeMultiples = new int[n];
+        lastRelevantMultiple = 1;
+
+        // prime the pump. (Sorry, couldn't resist.)
+        primesFound = 2;
+        primes[0] = 2;
+        primes[1] = 3;
+
+        primeMultiples[0] = -1;// irrelevant
+        primeMultiples[1] = 9;
+    }
+
+    private static void increaseEachPrimeMultipleToOrBeyondCandidate() {
+        if (candidate >= primeMultiples[lastRelevantMultiple])
+            lastRelevantMultiple++;
+
+        for (int i = 1; i <= lastRelevantMultiple; i++)
+            while (primeMultiples[i] < candidate)
+                primeMultiples[i] += 2 * primes[i];
+    }
+
+    private static boolean candidateIsNotOneOfThePrimeMultiples() {
+        for (int i = 1; i <= lastRelevantMultiple; i++)
+            if (primeMultiples[i] == candidate)
+                return false;
+        return true;
+    }
+
+    private static void registerTheCandiateAsPrime() {
+        primes[primesFound] = candidate;
+        primeMultiples[primesFound] = candidate * candidate;
+        primesFound++;
+    }
+}
+```
