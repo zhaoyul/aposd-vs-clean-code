@@ -26,8 +26,7 @@ to make it easy to understand and modify the system. I use the term
 modify a system. The most important contributors
 to complexity relate to information:
 
-* How much information must a developer have in their head in order to
-  carry out a task?
+* How much information must a developer have in their head in order to carry out a task?
 * How accessible and obvious is the information that the developer needs?
 
 The more information a developer needs to have, the harder it will be
@@ -125,11 +124,17 @@ went up, not down.
 
 **UB:**
 
-Before a function is extracted it exists as a snippet of code in a larger function.  That snippet has an interface both at it's entry point and it exit point -- but that interface is not explicit. It exists within the current scope, has access to all the variables of that scope, and is "called" by the flow of control.  By extracting the function that snippet turns into a black box with a restricted access, and an explicit call to a namee and defined interface.
+Before a function is extracted it exists as a snippet of code in a larger function.  That snippet has an interface both at it's entry point and it exit point -- but that interface is not explicit. It exists within the current scope, has access to all the variables of that scope, and is "called" by the flow of control.  By extracting the function that snippet turns into a black box with a restricted access, and an explicit call to a named and defined interface.
 
 I don't think we disagree in principle.  We both agree that splitting up functions is a good way to manage complexity.  It seems to me that all we are quibbling about is the degree.  I believe in the principle of many small named functions.  Perhaps you believe in the principle of a few moderately sized functions.  To each his own.
 
-**JO:** ===I've done some revising.  
+The strategy that I use for deciding how far to take extraction is the old rule that a function should do "*One Thing*".  If I can *meaninfully* extract one function from another, then the original function did more than one thing.  "Meaningfully" means that the extracted functionality can be named; and that it does less than the original function.
+
+An example of a meaningless extraction is one in which you extract the entire body of a function, reducing that function to a single call to the extracted function.  That new function does not do less than the original, and it cannot be given a name that differs in meaning from the original.
+
+There are also times when a stretch of code is just so obvious that an extraction, albeit meaningful, would obscure more than it reveals.  That's a judgement call.  And it is in that judgement that the two of us likely differ.
+
+**JO:** ===I've done some revising.  ##### So have I.
 
 Given this, maybe we can revise the arguments above to focus on our
 agreement and avoid uninteresting nitpicking? For example, maybe you
