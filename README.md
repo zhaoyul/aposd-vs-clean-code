@@ -10,7 +10,7 @@ agreeing to discuss those differences here.
 
 **UB:**
 
-My pleasure John.  Before we begin let me say that I've read through your book and I found it very enjoyable, and full of valuable insights.  
+My pleasure John.  Before we begin let me say that I've read through your book and I found it very enjoyable, and full of valuable insights.  There are some things I disagree with you on, such as TDD, and Abstraction-First incrementalism, but overall I enjoyed it a lot.
 
 **JOHN:**
 
@@ -79,13 +79,15 @@ create teeny-tiny methods that suffer from both of these problems.
 	
 **UB:** 
 
-Let me stop you there with a challenge.  Is it true that each extracted small function adds complexity?  Or, rather, does each extracted small function *expose* complexity that was previously hidden, and gives it a name.
+Let me stop you there with a challenge.  Is it true that extracting small function adds complexity?  Or, rather, do the extracted small functions make the already existing complexity explict and give it names and a defined interfaces?  Doesn't such extraction give the reader the opportunity to understand the the code in small pieces, and to ignore those pieces that the interfaces make obvious.
 
 Generally, when I extract small functions from larger functions, those smaller functions are private.  They do not add to the overall interface of the containing class.  That class remains narrow and deep.  No outside user sees those small private functions.
 
 By the same token, those small private functions partition and organize the internal structure with names to guide the reader.  That internal structure is particularly helpful if it describes the top-down functional decomposition of the problem. 
 
-Because of this I disagree with your conclusion about *Clean Code*.
+Extracting small functions allows me to separate higher level code from lower level code so that readers of the code can read the high level without being forced to see the details they don't want or need.  The names given to the small extracted functions tell the reader what they need to know.
+
+I call this: *being polite*.  
 
 **JOHN:**
 
@@ -98,6 +100,8 @@ call I just read the code directly and decide whether it works; I don't
 go through the intermediate step of visualizing an "interface" for
 that code (e.g., I don't have to match actual parameters to formal
 parameters or think about how it would work in a more general case).
+
+>=====you may want to reword the following paragraph.
 
 I disagree with your comment about exposing complexity: exposing
 complexity is bad! One of the most important goals of software design
@@ -121,38 +125,11 @@ went up, not down.
 
 **UB:**
 
-But I don't want _you_ to use the new function.  It's already being used. It's name explains what it does.  Before I extracted that function it was a snippet of code in a larger function.  That snippet had an interface both at it's entry point and it exit point -- but that interface was not explicit.  By extracting the function that snippet turns into a black box with a name and a define interface.
+Before a function is extracted it exists as a snippet of code in a larger function.  That snippet has an interface both at it's entry point and it exit point -- but that interface is not explicit. It exists within the current scope, has access to all the variables of that scope, and is "called" by the flow of control.  By extracting the function that snippet turns into a black box with a restricted access, and an explicit call to a namee and defined interface.
 
-**JO:**
+I don't think we disagree in principle.  We both agree that splitting up functions is a good way to manage complexity.  It seems to me that all we are quibbling about is the degree.  I believe in the principle of many small named functions.  Perhaps you believe in the principle of a few moderately sized functions.  To each his own.
 
-I think this digression misses the overall point; I have reworded my
-argument to eliminate the word "use", so hopefully that makes your
-comment unnecesssary. If not, please revise it.
-
-**UB:**
-
-Perhaps I should have said that it makes the already existing complexity more explicit, gives it a name, and gives it a defined interface.
-
-**JO:**
-
-How about revising your original comment along these lines? Then I will
-revise my response to match (maybe I can remove some of it).
-
-**UB:**
-
-I would say, rather, that our job is to *organize* complexity such that it can be ignored when the compexity is not needed.  If I can tell what a function does by looking at it's name and arguments, then I do not need to know the complexity that it contains.
-
-I call this: *Being Polite*.
-
-**UB:**
-
-I don't think we disagree in principle.  We both agree that splitting up functions is a good way to hide complexity.  It seems to me that all we are quibbling about is the degree.  I believe in the principle of many small named functions.  Perhaps you believe in the principle of a few moderately sized functions.  To each his own.
-
-**UB:**
-
-I agree with that too.  It would clearly be going to far to extract every line of a function into a new function.
-
-**JO:**
+**JO:** ===I've done some revising.  
 
 Given this, maybe we can revise the arguments above to focus on our
 agreement and avoid uninteresting nitpicking? For example, maybe you
