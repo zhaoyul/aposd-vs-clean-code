@@ -43,7 +43,7 @@ more obvious.
 Now over to you: are there general principles that you use when deciding
 which ideas to endorse?
 
-**UB:** 
+**UB:**
 
 I agree with your approach. A discipline or technique should make the job of programmers easier. I would add that the programmer we want to help most is not the author.  The programmer whose job we want to make easier is the programmer who must read and understand the code written by others (or by themself a week later).  Programmers spend far more hours reading code than writing code, so the activity we want to ease is that of reading.
 
@@ -52,7 +52,7 @@ I agree: ease of reading is much more important for code than ease of writing.
 
 ## Method Length
 
-**JOHN:** 
+**JOHN:**
 
 Our first area of disagreement is method length.
 On page 34 of *Clean Code* you say "The first rule of functions is that
@@ -65,62 +65,77 @@ and so on should be one line long. Probably that line should be a function
 call." I couldn't find anything in *Clean Code* to suggest that a function
 could ever be too short.
 
-I agree that making methods smaller can often reduce complexity, but it's
-important to recognize that there are limits. If methods are chopped up
-too much, it actually makes the code harder to understand:
-* The methods become *entangled*: you can't understand one method
-  without simultaneously understanding other methods.
-* Each new method introduces a new interface, and each interface adds
-  complexity. Interfaces are good, but more interfaces are not better!
-  
-The advice in *Clean Code* is too extreme, encouraging developers to
-create teeny-tiny methods that suffer from both of these problems.
-	
-**UB:** 
+I agree that dividing up code into relatively small units ("modular design")
+is one of the most important ways to reduce the amount of information a
+programmer has to keep in their mind at once. The idea, of course, is to take a
+complex chunk of functionality and encapsulate it in a separate function
+with a simple interface. Developers can then harness the functionality
+of the function (or read code that invokes the function) without learning
+the details of how the function is implemented; they only need to learn its
+interface. The best functions are those that provide a lot of functionality
+but have a very simple interface: they replace a large cognitive load
+(reading the detailed implementation) with a much smaller
+cognitive load (learning the interface). I call these functions "deep".
+
+However, like most ideas in software design, decomposition can be taken too far.
+As functions get smaller and smaller there is less and less
+benefit to further subdivision.
+The amount of functionality hidden behind each interface
+drops, while the interfaces often become more complex.
+I call these interfaces "shallow": they don't help much in terms of
+reducing what the programmer needs to know. Eventually, the point is
+reached where someone using the function needs
+to understand every aspect of its implementation. Such functions
+are usually pointless.
+
+Another problem with decomposing too far is that it tends to
+result in *entanglement*. Two functions
+are entangled (or "conjoined" in APOSD terminology) if, in order to
+understand how one of them works internally, you also need to read the
+code of the other. If you've ever found yourself flipping back and forth
+between the implementations of two functions as you read code, that's a
+red flag that the functions might be entangled. Entangled functions
+are hard to read because the information you need to have in your head
+at once isn't all in the same place. Entangled functions can usually
+be improved by combining them so that all the code is in one place.
+
+The advice in *Clean Code* on method length is so extreme that it encourages
+programmers to create teeny-tiny functions that suffer from both shallow
+interfaces and entanglement.  Setting arbitrary numerical limits such
+as 2-4 lines in a function and a single line in the body of an
+`if` or `while` statement exacerbates this problem.
+
+I think these problems will be easiest to understand if we look at
+specific code examples. But before we do that, let me ask you, Bob:
+do you believe that it's possible for code to be over-decomposed, or
+is smaller always better? And, if you believe that over-decomposition
+is possible, how do you recognize when it has occurred?
+
+(Note: I decided to start over on this discussion; sorry about that.
+The previous discussion
+felt like it led us off into the weeds, arguing about stuff that isn't
+really very important. Hopefully this new text will allow us to focus
+on the most important issues, such as "is smaller always better?", "what are
+the consequences of over-decomposition?", and "how can I tell if I've
+decomposed too much?" I have removed all my old text below, and I'm
+guessing you'll need to revise yours. BTW, please don't interrupt my
+thoughts above; place your comments below here.)
+
+(Also, I'd prefer to call the entities "methods" rather than "functions",
+particularly since the example we're going to discuss is in Java, which
+uses methods. Do you feel strongly that we should use the term "function"?)
+
+**UB:**
 
 Let me stop you there with a challenge.  Is it true that extracting small function adds complexity?  Or, rather, do the extracted small functions make the already existing complexity explict and give it names and a defined interfaces?  Doesn't such extraction give the reader the opportunity to understand the the code in small pieces, and to ignore those pieces that the interfaces make obvious.
 
 Generally, when I extract small functions from larger functions, those smaller functions are private.  They do not add to the overall interface of the containing class.  That class remains narrow and deep.  No outside user sees those small private functions.
 
-By the same token, those small private functions partition and organize the internal structure with names to guide the reader.  That internal structure is particularly helpful if it describes the top-down functional decomposition of the problem. 
+By the same token, those small private functions partition and organize the internal structure with names to guide the reader.  That internal structure is particularly helpful if it describes the top-down functional decomposition of the problem.
 
 Extracting small functions allows me to separate higher level code from lower level code so that readers of the code can read the high level without being forced to see the details they don't want or need.  The names given to the small extracted functions tell the reader what they need to know.
 
-I call this: *being polite*.  
-
-**JOHN:**
-
-Yes, each extracted small function adds complexity, in the form of its
-interface. As I'm reading the code, I see a function call rather than
-code. I now have to learn how this
-function works in general (its interface) and think about whether that
-interface actually works in the current context. Without the function
-call I just read the code directly and decide whether it works; I don't
-go through the intermediate step of visualizing an "interface" for
-that code (e.g., I don't have to match actual parameters to formal
-parameters or think about how it would work in a more general case).
-
->=====you may want to reword the following paragraph.
-
-I disagree with your comment about exposing complexity: exposing
-complexity is bad! One of the most important goals of software design
-is to *hide* complexity, so that most people don't have to be aware of
-it most of the time.
-
-That said, one of the best ways to hide complexity
-is to encapsulate it in a method with a simple interface (callers only
-need to understand the interface, not the messy details). If done
-right, splitting up functions will hide complexity, but this only
-works if the new interface I have to learn is simpler (ideally,
-a *lot* simpler) than the function's code, which I no longer have to
-learn.
-
-If you split too far, you end up with functions whose interfaces
-are just as complex as their implementations, so there is no
-benefit. In the worst case, in order to use the function I end up
-having to read all its code; in this case there is no complexity hidden,
-plus I have to learn a new interface: my cognitive load
-went up, not down.
+I call this: *being polite*.
 
 **UB:**
 
@@ -133,16 +148,6 @@ The strategy that I use for deciding how far to take extraction is the old rule 
 An example of a meaningless extraction is one in which you extract the entire body of a function, reducing that function to a single call to the extracted function.  That new function does not do less than the original, and it cannot be given a name that differs in meaning from the original.
 
 There are also times when a stretch of code is just so obvious that an extraction, albeit meaningful, would obscure more than it reveals.  That's a judgement call.  And it is in that judgement that the two of us likely differ.
-
-**JO:** ===I've done some revising.  ##### So have I.
-
-Given this, maybe we can revise the arguments above to focus on our
-agreement and avoid uninteresting nitpicking? For example, maybe you
-could say that you also agree that it's possible to take decomposition
-too far, and explain how you decide when things have gone too far?
-On the other hand, if you believe that introducing new functions
-comes with no cost (in terms of the additional interfaces), that's an
-important disagreement that needs to be highlighted.
 
 **JOHN:**
 
@@ -234,11 +239,11 @@ production)?
 
 **UB:**
 
-Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Literate Programming*](https://www.cs.tufts.edu/~nr/cs257/archive/literate-programming/01-knuth-lp.pdf) written by Donald Knuth.  The program was originally written in Pascal, and was automatically generated by Knuth's WEB system.  I translated it to Java.  
+Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Literate Programming*](https://www.cs.tufts.edu/~nr/cs257/archive/literate-programming/01-knuth-lp.pdf) written by Donald Knuth.  The program was originally written in Pascal, and was automatically generated by Knuth's WEB system.  I translated it to Java.
 
 The example appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and functions.
 
-The original code was a large-ish program that not only generated prime numbers but also printed them in columns and pages with page numbers.  It was one big monolithic function.  The three new classes I extracted from it were `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.  
+The original code was a large-ish program that not only generated prime numbers but also printed them in columns and pages with page numbers.  It was one big monolithic function.  The three new classes I extracted from it were `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.
 
 Once the classes were extracted, the `PrimeGenerator` looked like this: (which I did not publish in the book.)  The variable names were Knuth's.
 
@@ -273,9 +278,9 @@ Once the classes were extracted, the `PrimeGenerator` looked like this: (which I
 	    }
 	    return p;
 	  }
-	} 
+	}
 
-I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large functions, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named functions.  
+I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large functions, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named functions.
 
 I think it's somewhat better than where it started.
 
@@ -294,7 +299,22 @@ rewrite it to simplify it.
 
 **UB:**
 
-Thirty minutes?  Wow.  Maybe I'm just dense but it took me a lot longer than that to understand it.  I even had Knuth's original description and I still had to puzzle it out for a really long time. I even had the code that I expect you will show next, and since it has been eighteen years, it *still* took me a lot longer than 30 minutes to work it all out.  
+Thirty minutes?  Wow.  Maybe I'm just dense but it took me a lot longer than that to understand it.  I even had Knuth's original description and I still had to puzzle it out for a really long time. I even had the code that I expect you will show next, and since it has been eighteen years, it *still* took me a lot longer than 30 minutes to work it all out.
+
+**JOHN:**
+
+I'm not sure what you're getting at here, but to me, if 70 lines of
+of self-contained code with no external dependencies
+can't be understand in 30 minutes by two people working together, then
+that code has serious problems. I'm unwilling to accept that such high
+of complexity is inevitable without first trying to fix it.
+And in this particular case
+I'm confident that the complexity can be reduced significantly.
+
+(Note: I think both your comment and my comment are distractions; I'd be
+happy to remove mine if you're willing to remove yours. You can either
+delete both those comments and this parenthetical, or leave both comments
+and just delete this parenthetical)
 
 **JOHN:**
 
@@ -317,7 +337,7 @@ I agree.  Though I would not have agreed eighteen years ago when I was in the th
 
 So, a good critique of those names is that they depend, to some extent, upon gaining some understanding of the algorithm.
 
-But again, teaching this algorithm was not the intent of that chapter.  
+But again, teaching this algorithm was not the intent of that chapter.
 
 **JOHN:**
 
@@ -360,13 +380,13 @@ Bob, can you help me understand why you divided the code into such
 tiny methods?
 Is there some benefit to having so many methods that I have missed?
 
-**UB:** 
+**UB:**
 
-In general I believe in the principle of small well-named functions. Generally speaking if you can break a large function into several well-named smaller function, and by doing so expose the high level functional decomposition, then that's a good thing. 
+In general I believe in the principle of small well-named functions. Generally speaking if you can break a large function into several well-named smaller function, and by doing so expose the high level functional decomposition, then that's a good thing.
 
 In this case I think I improved the structure and naming of the original quite a bit.  I think you can make the argumennt that I did not improve it enough.  However, the goal of this chapter, and the goal of this example, were not to show the best possible prime number generator.  Rather it was to present the strategy for breaking up large functions into smaller classes and functions.  In that regard I think the example was a success.
 
-**JOHN:** 
+**JOHN:**
 
 Let's consider another example: `isMultipleOfNthPrimeFactor`.
 This method contains a single statement that calls `smallestOdd...`; the only
@@ -374,13 +394,13 @@ functionality this method contributes is a `==` comparison.
 Why does it make sense for this to be a separate method rather than
 just invoking `smallestOdd...` directly from `isNot...`?
 
-**UB:** 
+**UB:**
 
 Functions like this are trying to describe a logical equivalence that might help the reader understand things.  In this case it is saying that the smallest odd nth multiple not less than the candidate _is_ a multiple of the nth prime factor.  That's an interesting equivalence.  Or, at least, I found it to be interesting at the time I wrote it.
 
 ## Comments
 
-**JOHN:** 
+**JOHN:**
 
 Let's move on to the second area of disagreement: comments.
 Here is what *Clean Code* says about comments (page 54):
@@ -393,7 +413,7 @@ Here is what *Clean Code* says about comments (page 54):
   grimace and feel the failure of your ability of expression.
 
 I have to be honest: I was horrified when I first read this text, and it
-still makes me cringe. This stigmatizes writing comments. 
+still makes me cringe. This stigmatizes writing comments.
 
 **UB:**
 
@@ -402,17 +422,17 @@ That chapter begins with these words:
 
 It goes on to say that comments are a *necessary* evil.
 
-**JOHN:** 
+**JOHN:**
 
 Junior developers
 will think "if I write comments, people may think I've failed, so the
-safest thing is to write no comments." 
+safest thing is to write no comments."
 
-**UB:** 
+**UB:**
 
-Well, perhaps, but only if they didn't read the chapter.  The chapter walks through a series of comments, some bad, some good.  
+Well, perhaps, but only if they didn't read the chapter.  The chapter walks through a series of comments, some bad, some good.
 
-**JOHN:** 
+**JOHN:**
 
 Comments are not the problem;
 they are the solution. The problem is that there is a lot of important
@@ -427,7 +447,7 @@ It's very true that there is important information that is not, or cannot, be ex
 
 And we fail at that very frequently, and so comments are a necessary evil.  If we had the perfect programming language TM we would never write another comment.
 
-**JOHN:** 
+**JOHN:**
 
 Nowhere near enough comments are being written today, and *Clean Code*
 is one of the major reasons why.  The result is unnecessarily cryptic code all over the world, which drives
@@ -437,7 +457,7 @@ up development costs.
 
 *Oh, baloney!*  Again, if you read the chapter you are not going to be led to write uncommented code.  Hopefully you will be led to strive to write fewer comments by using the code to express your intent.
 
-**JOHN:** 
+**JOHN:**
 
 Let's consider the `PrimeGenerator` class. There is not a single comment
 in this code other than the one I added at the top; presumably you
@@ -448,7 +468,7 @@ are needed.
 
 If I was putting that code into a library then some comments would be appropriate. But his code is not getting put into a library.  It was created to make the point that large functions can be broken down into smaller classes containing smaller functions. Adding lots of explanatory comments would have detracted from that point.
 
-**JOHN:** 
+**JOHN:**
 
 First, there is important infomation that cannot be represented in the code.
 For example:
@@ -457,14 +477,14 @@ For example:
   avoiding divisions, which are relatively expensive. Readers will wonder
   "why didn't you just use `mod` instead of all this complexity with
   prime multiples?"
-	
+
 **UB:**
 
 Why is that important to understanding the lesson of that chapter?
 
-Consider my audience.  I was writing for software developers in 2008, and I was explaining how large functions can be split into several classes.  Why would I clutter up that explanatory code with a comment that they would have utterly no interest in?	
-	
-**JOHN:** 
+Consider my audience.  I was writing for software developers in 2008, and I was explaining how large functions can be split into several classes.  Why would I clutter up that explanatory code with a comment that they would have utterly no interest in?
+
+**JOHN:**
 
 * The first multiple for each new prime number is computed by squaring
   the prime, rather than multiplying it by 3. This is mysterious:
@@ -472,11 +492,11 @@ Consider my audience.  I was writing for software developers in 2008, and I was 
 
 **UB:**
 
-Why indeed?  This is not at all easy to understand.  I needed to go on an hour long bike ride to finally work it out.  Again, maybe I'm dense, but this is not an easy thing to understand.  
+Why indeed?  This is not at all easy to understand.  I needed to go on an hour long bike ride to finally work it out.  Again, maybe I'm dense, but this is not an easy thing to understand.
 
 And again I was not teaching software developers the most optimal way to calculate prime numbers.  I was teaching them how and when to break large functions up into smaller classes and smaller functions.
 
-**JOHN:** 
+**JOHN:**
 
 There is no way to explain either of these things in the code; without
 comments, readers are left to figure them out on their own. The students
@@ -490,28 +510,28 @@ but it isn't made available.
 
 That bike ride I took was *after* I had read the comment you put in your version of this function.  So -- again, maybe I'm dense, but that comment didn't help me at all -- it was just a jumble of numbers that I could not map to the problem.  Now that I understand the algorithm (again), I understand your comment.  But the reverse was not true.
 
-**JOHN:** 
+**JOHN:**
 
 The second reason for comments is abstraction. Simply put, without
-comments there is no way to have abstraction or modularity. 
+comments there is no way to have abstraction or modularity.
 
 **UB:**
 
 Um...
 
-**JOHN:** 
+**JOHN:**
 
 Abstraction
 is one of the most important components of good software design.
 I define an abstraction as "a simplified way of thinking about something
-that omits unimportant details." 
+that omits unimportant details."
 
 **UB:**
 
 Long ago, in a 1995 book, I defined it as:
 >*The amplification of the essential and the elimination of the irrelevant.*
 
-**JOHN:** 
+**JOHN:**
 
 The most obvious example of an abstraction
 is a method: it should be possible to use a method without reading its code.
@@ -535,8 +555,8 @@ their heads.
 
 This seems like a very nice abstraction to me, and I cannot imagine how a comment might improve it.
 
-**JOHN:** 
-	
+**JOHN:**
+
 Consider the `isNot...` method in `PrimeGenerator`. This method has no header
 comment, so readers are forced to read the method's code to figure out how
 to use it. This means that readers have to load more information into their
@@ -552,9 +572,9 @@ the header comment for `isNot...`:
 Bob, can you explain why you chose not to include any comments in the `PrimeGenerator`
 class? How is code better when it has no comments?
 
-**UB:** 
+**UB:**
 
-As I explained earlier, those kinds of comments in this code would have detracted from the lesson of the chapter, which was how and why to break large functions into smaller classes containing smaller functions, and not to understand Knuth's ancient prime generator algorithm. 
+As I explained earlier, those kinds of comments in this code would have detracted from the lesson of the chapter, which was how and why to break large functions into smaller classes containing smaller functions, and not to understand Knuth's ancient prime generator algorithm.
 
 ## John's Rewrite of PrimeGenerator
 
@@ -651,11 +671,11 @@ couple of overall things:
 
 I presume this is a complete rewrite.  My guess is that you worked to understand the algorithm from Clean Code and then wrote this from scratch.  If that's so, then fair enough.
 
-That's not what I did.  I *refactored* Knuth's algorithm in order to give it a little structure.  
+That's not what I did.  I *refactored* Knuth's algorithm in order to give it a little structure.
 
 Having said that, your version is much better than either Knuth's or mine.  I could not have used it in the chapter I was writing *because* it is still in a single function, and I needed to show the partioning.
 
-I wrote that chapter 18 years ago, so it's been a long time since I saw and understood this algorithm.  When I first saw your challenge I thought: "Oh, I can figure out my own code!"  But, no.  I could see all the moving parts, but I could not figure out why those moving parts generated a list of prime numbers.  
+I wrote that chapter 18 years ago, so it's been a long time since I saw and understood this algorithm.  When I first saw your challenge I thought: "Oh, I can figure out my own code!"  But, no.  I could see all the moving parts, but I could not figure out why those moving parts generated a list of prime numbers.
 
 So then I looked at your code.  I had the same problem.  I could see all the moving parts, all with comments, but I still could not figure out why those moving parts generated a list of prime numbers.
 
@@ -670,17 +690,17 @@ Among the problems I had were the comments you wrote.  Let's take them one at a 
 	     *      How many prime numbers to compute.
 	     */
 	    public static int[] generate(int n) {
-				
+
 It seems to me that this would be better as:
 
 	public static int[] generateNPrimeNumbers(int n) {
-		
+
 or if you must:
 
 	//Return the first n prime numbers
 	public static int[] generate(int n) {
 
-I'm not opposed to Javadocs as a rule; but I write them only when absolutely necessary. I also have an aversion for descriptions and `@param` statements that are perfectly obvious from the function signature.  
+I'm not opposed to Javadocs as a rule; but I write them only when absolutely necessary. I also have an aversion for descriptions and `@param` statements that are perfectly obvious from the function signature.
 
 The next comment cost me a good 20 minutes of puzzling things out.
 
@@ -693,11 +713,11 @@ First of all I'm not sure why the "division" statement is necessary.  I'm old sc
 
 Also, the *Sieve of Eratosthenes* does not do division, and is a lot easier to understand *and explain* than this algorithm.  So why this particular algorithm?  I think Knuth was trying to save memory -- and in 1982 saving memory was important.  This algorithm uses a lot less memory than the sieve.
 
-Then came the phrase: `Each entry here contains an odd multiple...`.  I looked at that, and then at the code, and I saw: `multiples[0] = 4;`.  
+Then came the phrase: `Each entry here contains an odd multiple...`.  I looked at that, and then at the code, and I saw: `multiples[0] = 4;`.
 
 "That's not odd" I said to myself.  "So maybe he meant even."
 
-So then I looked down and saw: `multiples[i] += 2*primes[i];`  
+So then I looked down and saw: `multiples[i] += 2*primes[i];`
 
 "That's adding an even number!" I said to myself.  "I'm pretty sure he meant to say 'even' instead of 'odd'."
 
@@ -705,12 +725,12 @@ I hadn't yet worked out what the `multiples` array was.  So I thought it was per
 
 It was only when I got to `multiples[primesFound] = candidate*candidate;` that I started to question things.  If the `candidate` is prime, shouldn't `prime*prime` be odd in every case beyond 2?  I had to do the math in my head to prove that.  (2n+1)(2n+1) = 4n^2+4n+1 ... Yeah, that's odd.
 
-OK, so the `multiples` array is full of odd multiples, except for the first element, since it will be muliples of 2. 
+OK, so the `multiples` array is full of odd multiples, except for the first element, since it will be muliples of 2.
 
 So perhaps that comment should be:
 
-	 // multiples of corresponding prime.  
-	 
+	 // multiples of corresponding prime.
+
 Or perhaps we should change the name of the array to something like `primeMultiples` and drop the comment altogether.
 
 Moving on to the next comment:
@@ -718,7 +738,7 @@ Moving on to the next comment:
 	            // Each iteration of this loop tests the candidate against one
 	            // potential prime factor. Skip the first factor (2) since we
 	            // only consider odd candidates.
-							
+
 That doesn't  make a lot of sense.  The code it's talking about is:
 
 	            for (int i = 1; i <= lastMultiple; i++) {
@@ -737,7 +757,7 @@ The last comment is:
 	            // start at 49; 21 will be ruled out as a multiple of 3, and
 	            // 35 will be ruled out as a multiple of 5, so 49 is the first
 	            // multiple that won't be ruled out by a smaller prime.
-							
+
 The first few times I read this it made no sense to me at all.  It was just a jumble of numbers.  So I ignored it.
 
 As I started at the ceiling, and closed my eyes to visualize, I finally realized that the `multiples` array was the equivalent of the array of booleans we use in the *Sieve of Eratosthenes* -- but with a really interesting twist.  If you were to do the sieve on a whiteboard, you _could_ erase every number less than the candidate, and only cross out the numbers that were the next multiples of all the previous primes.
@@ -752,26 +772,26 @@ Why the square?  That makes no sense.  So I changed it to:
 
 	multiples[primesFound] = candidate;
 
-And it worked just fine.  So this must just be an optimization.  That whole long comment is about an optimization.  OK, so why?  Why can you start the multiple for a prime at prime^2?  
+And it worked just fine.  So this must just be an optimization.  That whole long comment is about an optimization.  OK, so why?  Why can you start the multiple for a prime at prime^2?
 
 That's not an easy question to answer.  Eventually, after a long bike ride, I realized that the prime multiples of 2 will at one point contain 2*3 and then 2*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  !!!  And then it all made sense.
 
 Then I could read your comment and see what you were saying.
 
 ###A Tale of Two Programmers
-The bottom line here is that you and I both fell into the same trap.  I refactored that old algorithm 18 years ago, and I thought all those function and variable names would make my intent clear -- *because I understood that algorithm*.  
+The bottom line here is that you and I both fell into the same trap.  I refactored that old algorithm 18 years ago, and I thought all those function and variable names would make my intent clear -- *because I understood that algorithm*.
 
-You wrote that code awhile back and decorated it with comments that you thought would explain your intent -- *because you understood that algorithm*.  
+You wrote that code awhile back and decorated it with comments that you thought would explain your intent -- *because you understood that algorithm*.
 
-But my names didn't help me 18 years later.  They didn't help you, or your students either.  And your comments didn't help me.  
+But my names didn't help me 18 years later.  They didn't help you, or your students either.  And your comments didn't help me.
 
-We were inside the box trying to communicate to those who stood outside and could not see what we saw.  
+We were inside the box trying to communicate to those who stood outside and could not see what we saw.
 
 ## Bob's Rewrite of PrimeGenerator2
 
 **UB:**
 
-When I saw your solution, and after I gained a good understanding of it.  I refactored it just a bit.  I loaded it into my IDE, wrote some simple tests, and extracted a few simple methods.  
+When I saw your solution, and after I gained a good understanding of it.  I refactored it just a bit.  I loaded it into my IDE, wrote some simple tests, and extracted a few simple methods.
 
 I also got rid of that *awful* labeled `continue` statement.  And I added 3 to the primes list so that I could mark the first element as *irrelevant* and give it a value of -1.  (I think I was still reeling from the even/odd confusion.)
 
