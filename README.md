@@ -150,6 +150,25 @@ An example of a meaningless extraction is one in which you extract the entire bo
 There are also times when a stretch of code is just so obvious that an extraction, albeit meaningful, would obscure more than it reveals.  That's a judgement call.  And it is in that judgement that the two of us likely differ.
 
 **JOHN:**
+Unfortunately the One Thing approach will lead to over-decompositon:
+* The term "one thing" is vague and easy to abuse. For example, if a method
+  has two lines of code, isn't it doing two things?
+* The guardrails you described aren't likely to prevent over-decomposition.
+  The "can it be named" qualification doesn't help: anything can be named.
+  The "extracting the entire body" guardrail only deals with one extreme case.
+  The "obscure more than it reveals" test doesn't provide meaningful
+  guidance (I don't know what you mean by "obscure" and "reveal").
+* The One Thing approach is simply wrong in many cases. If two things
+  are closely related, it might well make sense to implement them in a
+  single method. For example, any thread-safe method will first have
+  to acquire a lock, then carry out its function. These are two "things",
+  but they belong in the same method.
+
+I couldn't find any mention of the One Thing principle in
+*Clean Code*, or any other guardrails to prevent over-decomposition.
+Is there something I missed?
+
+**JOHN:**
 
 I think it will be easier to clarify our differences if we consider
 a specific code example. Let's look at the PrimeGenerator class from
