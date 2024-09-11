@@ -882,3 +882,26 @@ public class PrimeGenerator3 {
     }
 }
 ```
+
+## Test-Driven Development
+
+**JOHN:**
+
+Let's move on to our third area of disagreement, which is Test-Driven
+Development. I am a huge fan of unit testing. I believe that unit tests are
+an indispensable part of the software development process and pay for
+themselves over and over. I think we agree on this.
+
+However, I am not fan of Test-Driven Development (TDD), which dictates
+that tests must be written before code and that code must be written
+and tested in tiny increments. This approach has serious problems
+without any compensating advantages that I have been able to identify.
+
+*Clean Code* advocates for TDD, but I was not able to find any
+explanation in *Clean Code* of *why* TDD is a good idea. Bob,
+perhaps you can start the discussion off by explaining what benefits
+accrue from writing tests before code?
+
+**BOB:**
+
+*Your answer here*
