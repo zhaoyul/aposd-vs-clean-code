@@ -421,7 +421,11 @@ Functions like this are trying to describe a logical equivalence that might help
 
 **JOHN:**
 
-Let's move on to the second area of disagreement: comments.
+Let's move on to the second area of disagreement: comments. In my opinion,
+the *Clean Code* approach to commenting results in code with
+inadequate documentation, which increases the cost of software development.
+I'm sure you disagree, so let's discuss.
+
 Here is what *Clean Code* says about comments (page 54):
 
 > The proper use of comments is to compensate for our failure to express
@@ -432,7 +436,9 @@ Here is what *Clean Code* says about comments (page 54):
   grimace and feel the failure of your ability of expression.
 
 I have to be honest: I was horrified when I first read this text, and it
-still makes me cringe. This stigmatizes writing comments.
+still makes me cringe. This stigmatizes writing comments. Junior developers
+will think "if I write comments, people may think I've failed, so the
+safest thing is to write no comments."
 
 **UB:**
 
@@ -443,9 +449,8 @@ It goes on to say that comments are a *necessary* evil.
 
 **JOHN:**
 
-Junior developers
-will think "if I write comments, people may think I've failed, so the
-safest thing is to write no comments."
+I moved your comment above down so it didn't break up my paragraph. You
+may want to reword it and/or the comment below. You can delete this comment.
 
 **UB:**
 
@@ -453,7 +458,16 @@ Well, perhaps, but only if they didn't read the chapter.  The chapter walks thro
 
 **JOHN:**
 
-Comments are not the problem;
+*Clean Code* focuses a lot more on the "evil" aspects of comments than the
+"necessary" aspects. The sentence you quoted above is followed by two
+sentences criticizing comments. Chapter 4 spends 4 pages talking about good
+comments, followed by 15 pages talking about bad comments. There are snubs
+like "the only truly good comment is the comment you found a way
+not to write". And "Comments are always failures" is so catchy
+that it's the one thing readers are most likely to remember from the
+chapter.
+
+I don't agree that comments are evil. Comments are not the problem,
 they are the solution. The problem is that there is a lot of important
 information that simply cannot be expressed in code. When a programmer
 writes comments, they have not failed to express themselves; they have
@@ -468,13 +482,23 @@ And we fail at that very frequently, and so comments are a necessary evil.  If w
 
 **JOHN:**
 
-Nowhere near enough comments are being written today, and *Clean Code*
-is one of the major reasons why.  The result is unnecessarily cryptic code all over the world, which drives
-up development costs.
+I don't agree that a perfect programming language would
+eliminate the need for comments. Comments and code serve very different
+purposes, so it's not obvious to me that we should use the same
+language for both. In my experience, English works quite well
+as a language for comments.
+Why are you so adamant that all information about a program must
+be expressed in code, rather than using a combination of code
+and English?
 
 **UB:**
 
 *Oh, baloney!*  Again, if you read the chapter you are not going to be led to write uncommented code.  Hopefully you will be led to strive to write fewer comments by using the code to express your intent.
+
+**JOHN:**
+
+I dropped my comment that precedes your comment above, so I'm guessing your
+comment is no longer necessary? You can delete this one as well.
 
 **JOHN:**
 
@@ -486,6 +510,15 @@ are needed.
 **UB:**
 
 If I was putting that code into a library then some comments would be appropriate. But his code is not getting put into a library.  It was created to make the point that large functions can be broken down into smaller classes containing smaller functions. Adding lots of explanatory comments would have detracted from that point.
+
+**JOHN:**
+
+I disagree that adding comments would have distracted from your point,
+but let's not argue that. Instead, let's discuss what comments this code
+*should* have if it were used in production. For starters, would you like to
+modify the code to add what you think are appropriate comments?
+Or, I can talk about what I think is needed and you can agree or
+disagree.
 
 **JOHN:**
 
@@ -534,33 +567,10 @@ That bike ride I took was *after* I had read the comment you put in your version
 The second reason for comments is abstraction. Simply put, without
 comments there is no way to have abstraction or modularity.
 
-**UB:**
-
-Um...
-
-**JOHN:**
-
-Abstraction
-is one of the most important components of good software design.
+Abstraction is one of the most important components of good software design.
 I define an abstraction as "a simplified way of thinking about something
-that omits unimportant details."
-
-**UB:**
-
-Long ago, in a 1995 book, I defined it as:
->*The amplification of the essential and the elimination of the irrelevant.*
-
-**JOHN:**
-
-The most obvious example of an abstraction
-is a method: it should be possible to use a method without reading its code.
-
-**UB:**
-
-I agree.
-
-**JOHN:**
-
+that omits unimportant details." The most obvious example of an abstraction
+is a method. It should be possible to use a method without reading its code.
 The way we achieve this is by writing a header comment that describes
 the method's *interface* (all the information someone needs in order
 to invoke the method). If the method is well designed, the interface will be
@@ -570,9 +580,47 @@ their heads.
 
 **UB:**
 
+Um...
+
+**UB:**
+
+Long ago, in a 1995 book, I defined it as:
+>*The amplification of the essential and the elimination of the irrelevant.*
+
+**UB:**
+
+I agree.
+
+**JOHN:**
+
+I moved the preceeding 3 comments down so that they don't interrupt my thoughts
+on abstraction; you may want to revise them and/or combine with the comment
+below. You can delete this comment.
+
+**UB:**
+
 	addSongToLibrary(String title, String[] authors, int durationInSeconds);
 
 This seems like a very nice abstraction to me, and I cannot imagine how a comment might improve it.
+
+**JOHN:**
+
+Sometimes the signature of a method (names and types of the method, its
+arguments, and its return value) contains all the information
+needed to use it, but this is pretty rare. Just skim through the documentation
+for your favorite library package: in how many cases could you understand how
+to use a method with only its signature? Even in the `addSongToLibrary` example
+above more information is needed:
+* Is there any expected format for an author string, such as
+  "LastName, FirstName"?
+* Are the authors expected to be in alphabetical order? If not, is
+  the order significant in some other way?
+* What happens if there is already a song in the library with the
+  given title? Is it replaced with the new one, or will the library keep
+  multiple songs with the same title?
+* How is the library stored (e.g. is it entirely in memory? saved on disk?)?
+  This information may have been documented somewhere else, such as
+  the overall class documentation, in which case it wouldn't be needed here.
 
 **JOHN:**
 
