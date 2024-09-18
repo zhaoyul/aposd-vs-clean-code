@@ -68,48 +68,48 @@ could ever be too short.
 I agree that dividing up code into relatively small units ("modular design")
 is one of the most important ways to reduce the amount of information a
 programmer has to keep in their mind at once. The idea, of course, is to take a
-complex chunk of functionality and encapsulate it in a separate function
-with a simple interface. Developers can then harness the functionality
-of the function (or read code that invokes the function) without learning
-the details of how the function is implemented; they only need to learn its
-interface. The best functions are those that provide a lot of functionality
+complex chunk of functionality and encapsulate it in a separate method
+with a simple interface. Developers can then harness the methodality
+of the method (or read code that invokes the method) without learning
+the details of how the method is implemented; they only need to learn its
+interface. The best methods are those that provide a lot of functionality
 but have a very simple interface: they replace a large cognitive load
 (reading the detailed implementation) with a much smaller
-cognitive load (learning the interface). I call these functions "deep".
+cognitive load (learning the interface). I call these methods "deep".
 
 However, like most ideas in software design, decomposition can be taken too far.
-As functions get smaller and smaller there is less and less
+As methods get smaller and smaller there is less and less
 benefit to further subdivision.
 The amount of functionality hidden behind each interface
 drops, while the interfaces often become more complex.
 I call these interfaces "shallow": they don't help much in terms of
 reducing what the programmer needs to know. Eventually, the point is
-reached where someone using the function needs
-to understand every aspect of its implementation. Such functions
+reached where someone using the method needs
+to understand every aspect of its implementation. Such methods
 are usually pointless.
 
 Another problem with decomposing too far is that it tends to
-result in *entanglement*. Two functions
+result in *entanglement*. Two methods
 are entangled (or "conjoined" in APOSD terminology) if, in order to
 understand how one of them works internally, you also need to read the
 code of the other. If you've ever found yourself flipping back and forth
-between the implementations of two functions as you read code, that's a
-red flag that the functions might be entangled. Entangled functions
+between the implementations of two methods as you read code, that's a
+red flag that the methods might be entangled. Entangled methods
 are hard to read because the information you need to have in your head
-at once isn't all in the same place. Entangled functions can usually
+at once isn't all in the same place. Entangled methods can usually
 be improved by combining them so that all the code is in one place.
 
 The advice in *Clean Code* on method length is so extreme that it encourages
-programmers to create teeny-tiny functions that suffer from both shallow
+programmers to create teeny-tiny methods that suffer from both shallow
 interfaces and entanglement.  Setting arbitrary numerical limits such
-as 2-4 lines in a function and a single line in the body of an
+as 2-4 lines in a method and a single line in the body of an
 `if` or `while` statement exacerbates this problem.
 
 **UB**
 
 To be clear, the book sets no such arbitrary limits. On page 13 I make clear that the recommendations in the book have worked well for me, but might not work for others.  I claim no final authority, nor even any absolute "rightness". They are offered for consideration.
 
-As for the 2-4 line limit, on page 34 I was describing a program that Kent Beck and I wrote together in 1999; and _that_ program consisted of functions that were 2-4 lines.  I thought that was remarkable because it was Swing program, and Swing programs tend to have very long functions.  At the end of that paragraph I strongly recommended that size by saying "that's how short your functions should be!"  
+As for the 2-4 line limit, on page 34 I was describing a program that Kent Beck and I wrote together in 1999; and _that_ program consisted of methods that were 2-4 lines.  I thought that was remarkable because it was Swing program, and Swing programs tend to have very long methods.  At the end of that paragraph I strongly recommended that size by saying "that's how short your methods should be!"
 
 **JOHN:**
 
@@ -124,46 +124,58 @@ is possible, how do you recognize when it has occurred?
 It is certainly possible to over-decompose code.  Here's an example:
 
 	void doSomething() {doTheThing()} // over-decomposed.
-	
-In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods drives a module towards the wide/shallow end.  This is because when I extract methods they are private.  The method I extract them from is public, and remains as the interface of the module.  The narrow/deep nature of the  module is preserved.
 
-However, the extraction of the small methods creates an internal structure that separates the high level policy of the original method, from the lower level details of that method.  It gives those lower level details names, and allows their implementations to be hidden behind those names.  
+In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods drives a class towards the wide/shallow end.  This is because when I extract methods they are private.  The method I extract them from is public, and remains as the interface of the class.  The narrow/deep nature of the  class is preserved.
 
-This helps the reader to understand the flow of the original function without having to understand the details.  
+**JOHN:**
+
+It sounds like you are saying that only a class's external interfaces need
+to be deep, and it's OK for internal interfaces to be shallow and complex.
+I disagree. I think that *all* interfaces should be deep, including
+lower-level interfaces for methods within a class and higher-level interfaces
+for subsystems, micro-services, etc. Clean interfaces provide benefits
+everywhere.  (I'm happy to drop this comment if you are willing to drop the
+suggestion that shallow interfaces are OK within a class.)
+
+**UB:**
+
+However, the extraction of the small methods creates an internal structure that separates the high level policy of the original method, from the lower level details of that method.  It gives those lower level details names, and allows their implementations to be hidden behind those names.
+
+This helps the reader to understand the flow of the original method without having to understand the details.
 
 I call this kind of structure: Polite.
 
-The strategy that I use for deciding how far to take extraction is the old rule that a function should do "*One Thing*".  If I can *meaninfully* extract one function from another, then the original function did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original function.
+The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
 **JOHN:**
 
 Unfortunately the One Thing approach will lead to over-decompositon:
 
  1. The term "one thing" is vague and easy to abuse. For example, if a method has two lines of code, isn't it doing two things?
-	
- 2. The guardrails you described aren't likely to prevent over-decomposition. The "can it be named" qualification doesn't help: anything can be named. The "extracting the entire body" guardrail only deals with one extreme case. The "obscure more than it reveals" test doesn't provide meaningful guidance (I don't know what you mean by "obscure" and "reveal").
- 
+
+ 2. You haven't provided any useful guardrails to prevent over-decomposition. The example you gave is too extreme to be useful, and the "can it be named" qualification doesn't help: anything can be named.
+
  3. The One Thing approach is simply wrong in many cases. If two things are closely related, it might well make sense to implement them in a single method. For example, any thread-safe method will first have to acquire a lock, then carry out its function. These are two "things", but they belong in the same method.
- 
+
 **UB:**
 
 Let me address each of those three points.  True. True. True.
 
-But the argument is a bit reductive, isn't it.  I mean, you and I are never going to reduce programming to a deterministic algorithm.  There will always be this thing called _judgement_.  
+But the argument is a bit reductive, isn't it.  I mean, you and I are never going to reduce programming to a deterministic algorithm.  There will always be this thing called _judgement_.
 
-So when faced with this snippet of code in a larger function:
+So when faced with this snippet of code in a larger method:
 
 	...
 	amountOwed=0;
 	totalPoints=0;
 	...
-	
+
 It would be poor judgement to extract them into:
 
 	void clearAmountOwed() {
 	  amountOwed=0;
 	}
-	
+
 	void clearTotalPoints() {
 	  totalPoints=0;
 	}
@@ -179,15 +191,30 @@ The latter has a nice descriptive name that is abstract enough to be meaningful 
 
 **JOHN:**
 
-I couldn't find any mention of the One Thing principle in
-*Clean Code*, or any other guardrails to prevent over-decomposition.
-Is there something I missed?
+Without seeing more context, I'm skeptical that the `clearTotals`
+method makes sense. If the meaning of those two lines isn't already clear
+from context, why not just add a short comment before them, rather
+than creating a separate method (which, by the way, is shallow)?
+This example seems pretty trivial to me: is it really worth a lot
+of thought over whether to pull 2 lines of code into a separate method?
+(I'm not sure this example will be particularly illuminating for
+readers; I'd be happy to drop it).
 
-**UB:**
+I agree that it isn't possible to provide precise recipes for software
+design, and judgment will inevitably be involved. But judgment depends
+on principles and guidance. The
+*Clean Code* arguments about decomposition, including the One Thing
+principle, are one-sided. They give strong, concrete, quantitative
+advice about when to chop things up, with virtually no guidance for
+how to tell you've gone too far. All I could find is a 2-sentence
+example on page 36 about Listing 3-3 (which is pretty trivial),
+buried in the middle of exhortations
+to "chop, chop, chop". Is there something more comprehensive that
+I missed?
 
-Page 35.
-
-**JOHN:**
+One of the reasons I use the deep/shallow characterization is that it
+captures both sides of the tradeoff; it will tell you when a decomposition
+is good and also when decomposition makes things worse.
 
 I think it will be easier to clarify our differences if we consider
 a specific code example. Let's look at the PrimeGenerator class from
@@ -279,9 +306,32 @@ production)?
 
 Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Literate Programming*](https://www.cs.tufts.edu/~nr/cs257/archive/literate-programming/01-knuth-lp.pdf) written by Donald Knuth.  The program was originally written in Pascal, and was automatically generated by Knuth's WEB system.  I translated it to Java.
 
-Of course this code was never meant for production.  It's clearly a pedagogical exercise.  It appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and functions.
+Of course this code was never meant for production.  It's clearly a pedagogical exercise.  It appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and methods.
 
-Knuth's original code was also never meant for production.  It too was a pedagogical example.  It was one big monolithic functionm that not only generated prime numbers but also printed them in columns and pages with page numbers.
+**JOHN:**
+
+It sounds like we may disagree not just on software design, but also
+on teaching pedagogy. In my experience, when students see example code they
+assume it is "good" in every way, and they will emulate it (in every way).
+If we want to
+teach people how to write production code, then our examples should appear
+as close as possible to the way we think production code should appear.
+In any case, can you clarify (a) in what ways you would like readers to
+emulate this example in production and (b) in what ways they should *not*
+emulate the example (if there are any)? (Note: if you can answer questions
+(a) and (b) more precisely in your preceding comment, I think I can live
+without the digression into teaching pedagogy).
+
+**UB:**
+
+Knuth's original code was also never meant for production.  It too was a pedagogical example.  It was one big monolithic function that not only generated prime numbers but also printed them in columns and pages with page numbers.
+
+**JOHN:**
+
+I disagree: I think that Knuth intended for his approach to
+be used for production code. (We are really off in the weeds here...)
+
+**UB:**
 
 In the chapter I extracted three classes from that function: `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.
 
@@ -320,7 +370,23 @@ Once the classes were extracted, the `PrimeGenerator` looked like this: (which I
 	  }
 	}
 
-I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large functions, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named functions.
+**JOHN**:
+
+I don't think you have represented Knuth's work fairly. If I understand
+the Literate Programming paper, the idea was to intermix extensive documentation
+with the program code in order to make the code easier to understand.
+I don't necessarily agree with Knuth's approach, but
+you seem to have extracted the code while dropping all
+of the documentation that Knuth intended to accompany it. It's no surprise
+that the extracted code is hard to read. (Are you sure you
+want to go into this example? I don't see how it will enhance the rest of
+the discussion. The
+PrimeGenerator code should be able to stand on its own; whether it is better
+or worse than Knuth's code is irrelevant for our discussion.)
+
+**UB**:
+
+I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large methods, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named methods.
 
 I think it's somewhat better than where it started.
 
@@ -328,13 +394,17 @@ It was _not_ my intent, in this chapter, to teach my readers how to write the mo
 
 **JOHN:**
 
-I think there are many design problems with this code, but for now I'll
+Agreed; for this discussion I assume we will take the algorithm as a given,
+and focus on the cleanest possible way to implement that algorithm.
+
+I think there are many design problems with `PrimeGenerator`, but for now I'll
 focus on method length (I'll come back to this code later when we
-discuss comments). This code is chopped up so much (8 teeny-tiny methods)
+discuss comments). The code is chopped up so much (8 teeny-tiny methods)
 that it's difficult to read. For starters, consider the
 `isNotMultipleOfAnyPreviousPrimeFactor` method. This method invokes
 `isMultipleOfNthPrimeFactor`, which invokes
-`smallestOddNthMultipleNotLessThanCandidate`. These methods are entangled:
+`smallestOddNthMultipleNotLessThanCandidate`. These methods are shallow
+and entangled:
 in order to understand
 `isNot...` you have to read the other two
 methods and load all of that code into your mind at once. For example,
@@ -344,6 +414,13 @@ you can't see that unless you read all three methods.
 **UB:**
 
 I agree.  Though I would not have agreed eighteen years ago when I was in the throes of refactoring this.  At the time the names and structure made perfect sense to me.  They make sense to me now, too -- but that's because I once again understand the algorithm.  When I returned to the algorithm a few days ago, I also struggled with the names and structure.  Once you understand the algorithm the names make perfect sense, and that understanding breaks the entaglement.
+
+**JOHN:**
+
+I think those names are highly problematic; we'll talk about that a bit later,
+when discussing comments.
+
+**UB**:
 
 So, a good critique of those names is that they depend, to some extent, upon gaining some understanding of the algorithm.
 
@@ -357,8 +434,8 @@ you have to have. It just splits it up and spreads it out, so it isn't as
 obvious that you need to read all three methods together. And, it's harder
 to see the overall structure of the code because it's split up: readers have
 to flip back and forth between the methods, effectively reconstructing a
-monolithic version in their minds. Thus, this code will be easiest to
-understand if it's all together in one place.
+monolithic version in their minds. Because the pieces are all related,
+this code will be easiest to understand if it's all together in one place.
 
 **UB:**
 
@@ -373,21 +450,41 @@ I disagree.  Here is `isNotMultipleOfAnyPreviousPrimeFactor`.
 	    return true;
 	  }
 
-If you trust the 'isMultipleOfNthPrimeFactor' method, then this method stands alone quite nicely.  I mean we loop through all n previous primes and see if the candidate is a multiple.  That's pretty straight forward.  
+If you trust the 'isMultipleOfNthPrimeFactor' method, then this method stands alone quite nicely.  I mean we loop through all n previous primes and see if the candidate is a multiple.  That's pretty straight forward.
 
-Now it would be fair to ask the question how we determine whether the candidate is a multiple, and in that case you'd want to inspect the `isMultiple...` function.
+Now it would be fair to ask the question how we determine whether the candidate is a multiple, and in that case you'd want to inspect the `isMultiple...` method.
 
-In general, if you trust the names of the functions being called then understanding the caller does not require understanding the callee.  For example:
+**JOHN:**
+
+I agree that it would be easy for someone reading `isNot...` to think they
+understood it completely without needing to read `isMultiple...` or
+`smallestOdd...`. Unfortunately they would be mistaken. For example, they
+would not realize that `isNot...` has side effects and that its
+`candidate` argument must be monotonically non-decreasing from invocation
+to invocation. To understand these important behaviors, you have to
+read both `isMultiple...` and `smallestOdd...`. The current decomposition
+hides this important information from the reader by pulling it out of
+`isNot...`.
+
+If there is one thing more likely to result in bugs than not understanding code,
+it's thinking you understand it when you don't.
+
+**UB:**
+
+In general, if you trust the names of the methods being called then understanding the caller does not require understanding the callee.  For example:
 
 	for (Employee e : employees)
 	  if (e.shouldPayToday())
 		  e.pay();
 
-This would not be made more understandable if we replaced those two function calls with the their implementations.  Such a replacement would simply obscure the intent.
+This would not be made more understandable if we replaced those two method calls with the their implementations.  Such a replacement would simply obscure the intent.
 
 **JOHN:**
 
-Not only is `isNot...` entangled with the methods it calls, it's also
+This example works because the called methods are relatively independent of
+the parent. Unfortunately that is not the case for `isNot...`.
+
+In fact, `isNot...` is not only entangled with the methods it calls, it's also
 entangled with its callers. `isNot...` only works if it is invoked in
 a loop where `candidate` increases monotonically. To convince yourself
 that it works, you have to find the code that invokes `isNot...` and
@@ -397,9 +494,18 @@ for readers to convince themselves that it works.
 
 **UB:**
 
-Which is why the methods are ordered the way they are.  I expect that by the time you get to `isNot...` you've already read `checkOddNumbersForSubsequentPrimes` and know that `candidate` increases monotonically.  
+Which is why the methods are ordered the way they are.  I expect that by the time you get to `isNot...` you've already read `checkOddNumbersForSubsequentPrimes` and know that `candidate` increases monotonically.
 
 **JOHN:**
+
+Unfortunately, this technique doesn't solve the problem.
+Two other methods intervene between the loop in `checkOdd...`
+and `isNot...`, so readers will have forgotten
+the loop context before they get to `isNot...`. Furthermore, the actual
+code that creates a dependency on the loop isn't in `isNot...`: it's in
+`smallestOdd...`, which is even farther away from `checkOdd...`.
+If two pieces of code are tightly related, they should appear together.
+Separating the pieces makes the code harder to understand, not easier.
 
 To me, all of the methods in the class are entangled: in order to
 understand the class I had to load all of them into my mind
@@ -413,21 +519,31 @@ Is there some benefit to having so many methods that I have missed?
 
 **UB:**
 
-In general I believe in the principle of small well-named functions. Generally speaking if you can break a large function into several well-named smaller function, and by doing so expose the high level functional decomposition, then that's a good thing.
-
-In this case I think I improved the structure and naming of the original quite a bit.  I think you can make the argumennt that I did not improve it enough.  However, the goal of this chapter, and the goal of this example, were not to show the best possible prime number generator.  Rather it was to present the strategy for breaking up large functions into smaller classes and functions.  In that regard I think the example was a success.
+In general I believe in the principle of small well-named methods. Generally speaking if you can break a large method into several well-named smaller method, and by doing so expose the high level functional decomposition, then that's a good thing.
 
 **JOHN:**
 
-Let's consider another example: `isMultipleOfNthPrimeFactor`.
-This method contains a single statement that calls `smallestOdd...`; the only
-functionality this method contributes is a `==` comparison.
-Why does it make sense for this to be a separate method rather than
-just invoking `smallestOdd...` directly from `isNot...`?
+I agree that names are important, but I worry that you focus too narrowly
+on names without considering other factors that are even more important.
+Breaking a large method up only makes
+sense if the smaller methods have clean interfaces and are relatively
+independent. A method's name almost never captures the full complexity of its
+interface (we will discuss this later) and it doesn't say anything about
+independence vs. entanglement. `PrimeGenerator` illustrates both of these
+problems.
 
 **UB:**
 
-Functions like this are trying to describe a logical equivalence that might help the reader understand things.  In this case it is saying that the smallest odd nth multiple not less than the candidate _is_ a multiple of the nth prime factor.  That's an interesting equivalence.  Or, at least, I found it to be interesting at the time I wrote it.
+In this case I think I improved the structure and naming of the original quite a bit.  I think you can make the argumennt that I did not improve it enough.  However, the goal of this chapter, and the goal of this example, were not to show the best possible prime number generator.  Rather it was to present the strategy for breaking up large methods into smaller classes and methods.  In that regard I think the example was a success.
+
+**JOHN:**
+
+I'm comfortable with your goal (but I'm not sure why you keep bringing up "best
+possible prime number generator": none of my concerns have anything to
+do with that). However, `PrimeGenerator` is a really bad
+decomposition, and I hope readers will not emulate it. Furthermore, I don't
+think it's bad because of an accident; it ended up way over-decomposed
+and hard to read because you followed the advice of *Clean Code*.
 
 ## Comments
 
@@ -476,14 +592,14 @@ chapter.
 
 You and I likely both survived through a time when comments were absolutely necessary.  In the '70s and '80s I was an assembly language programmer.  I also wrote a bit of FORTRAN. Programs in those languages that had no comments were impenetrable.  (As was Knuth's original prime generator.)
 
-As a result it became conventional wisdom to write comments by default.  And, indeed, computer science students were taught to write comments uncritically.  Comments became _pure good_.  
+As a result it became conventional wisdom to write comments by default.  And, indeed, computer science students were taught to write comments uncritically.  Comments became _pure good_.
 
-In the book I decided to fight that mindset.  Comments can be _really bad_ as well as good.  
+In the book I decided to fight that mindset.  Comments can be _really bad_ as well as good.
 
 
 **JOHN:**
 
-I don't agree that comments are evil. 
+I don't agree that comments are evil.
 
 **UB:**
 
@@ -491,7 +607,7 @@ I didn't say they were evil.  I said they were a _necessary_ evil because we fai
 
 **JOHN:**
 
-Comments are not the problem, they are the solution. 
+Comments are not the problem, they are the solution.
 
 **UB:**
 
@@ -535,7 +651,7 @@ are needed.
 
 **UB:**
 
-If I was putting that code into a library then some comments would be appropriate. But his code is not getting put into a library.  It was created to make the point that large functions can be broken down into smaller classes containing smaller functions. Adding lots of explanatory comments would have detracted from that point.
+If I was putting that code into a library then some comments would be appropriate. But his code is not getting put into a library.  It was created to make the point that large methods can be broken down into smaller classes containing smaller methods. Adding lots of explanatory comments would have detracted from that point.
 
 **JOHN:**
 
@@ -569,7 +685,7 @@ Consider my audience.  I was writing for software developers in 2008, and I was 
 
 Why indeed?  This is not at all easy to understand.  I needed to go on an hour long bike ride to finally work it out.  Again, maybe I'm dense, but this is not an easy thing to understand.
 
-And again I was not teaching software developers the most optimal way to calculate prime numbers.  I was teaching them how and when to break large functions up into smaller classes and smaller functions.
+And again I was not teaching software developers the most optimal way to calculate prime numbers.  I was teaching them how and when to break large methods up into smaller classes and smaller methods.
 
 **JOHN:**
 
@@ -583,7 +699,7 @@ but it isn't made available.
 
 **UB:**
 
-That bike ride I took was *after* I had read the comment you put in your version of this function.  So -- again, maybe I'm dense, but that comment didn't help me at all -- it was just a jumble of numbers that I could not map to the problem.  Now that I understand the algorithm (again), I understand your comment.  But the reverse was not true.
+That bike ride I took was *after* I had read the comment you put in your version of this method.  So -- again, maybe I'm dense, but that comment didn't help me at all -- it was just a jumble of numbers that I could not map to the problem.  Now that I understand the algorithm (again), I understand your comment.  But the reverse was not true.
 
 **JOHN:**
 
@@ -627,7 +743,7 @@ above more information is needed:
 * Are the authors expected to be in alphabetical order? If not, is the order significant in some other way?
 * What happens if there is already a song in the library with the given title? Is it replaced with the new one, or will the library keep multiple songs with the same title?
 * How is the library stored (e.g. is it entirely in memory? saved on disk?)? This information may have been documented somewhere else, such as the overall class documentation, in which case it wouldn't be needed here.
-	
+
 **UB:**
 
 John, all four of those questions are diametrically opposed to the abstraction itself. I don't want to force the reader to know those kinds of details when looking at this method.  Those details should be pushed down to a lower level IMHO.
@@ -636,7 +752,7 @@ John, all four of those questions are diametrically opposed to the abstraction i
 
 Consider the `isNot...` method in `PrimeGenerator`. This method has no header
 comment, so readers are forced to read the method's code to figure out how
-to use it. 
+to use it.
 
 **UB:**
 
@@ -657,7 +773,7 @@ class? How is code better when it has no comments?
 
 **UB:**
 
-As I explained earlier, those kinds of comments in this code would have detracted from the lesson of the chapter, which was how and why to break large functions into smaller classes containing smaller functions, and not to understand Knuth's ancient prime generator algorithm.
+As I explained earlier, those kinds of comments in this code would have detracted from the lesson of the chapter, which was how and why to break large methods into smaller classes containing smaller methods, and not to understand Knuth's ancient prime generator algorithm.
 
 ## John's Rewrite of PrimeGenerator
 
@@ -746,7 +862,7 @@ I presume this is a complete rewrite.  My guess is that you worked to understand
 
 That's not what I did.  I *refactored* Knuth's algorithm in order to give it a little structure.
 
-Having said that, your version is much better than either Knuth's or mine.  I could not have used it in the chapter I was writing *because* it is still in a single function, and I needed to show the partioning.
+Having said that, your version is much better than either Knuth's or mine.  I could not have used it in the chapter I was writing *because* it is still in a single method, and I needed to show the partioning.
 
 I wrote that chapter 18 years ago, so it's been a long time since I saw and understood this algorithm.  When I first saw your challenge I thought: "Oh, I can figure out my own code!"  But, no.  I could see all the moving parts, but I could not figure out why those moving parts generated a list of prime numbers.
 
@@ -773,7 +889,7 @@ or if you must:
 	//Return the first n prime numbers
 	public static int[] generate(int n) {
 
-I'm not opposed to Javadocs as a rule; but I write them only when absolutely necessary. I also have an aversion for descriptions and `@param` statements that are perfectly obvious from the function signature.
+I'm not opposed to Javadocs as a rule; but I write them only when absolutely necessary. I also have an aversion for descriptions and `@param` statements that are perfectly obvious from the method signature.
 
 The next comment cost me a good 20 minutes of puzzling things out.
 
@@ -852,7 +968,7 @@ That's not an easy question to answer.  Eventually, after a long bike ride, I re
 Then I could read your comment and see what you were saying.
 
 ###A Tale of Two Programmers
-The bottom line here is that you and I both fell into the same trap.  I refactored that old algorithm 18 years ago, and I thought all those function and variable names would make my intent clear -- *because I understood that algorithm*.
+The bottom line here is that you and I both fell into the same trap.  I refactored that old algorithm 18 years ago, and I thought all those method and variable names would make my intent clear -- *because I understood that algorithm*.
 
 You wrote that code awhile back and decorated it with comments that you thought would explain your intent -- *because you understood that algorithm*.
 
@@ -868,7 +984,7 @@ When I saw your solution, and after I gained a good understanding of it.  I refa
 
 I also got rid of that *awful* labeled `continue` statement.  And I added 3 to the primes list so that I could mark the first element as *irrelevant* and give it a value of -1.  (I think I was still reeling from the even/odd confusion.)
 
-I like this because the implementation of the `generateFirstNPrimes` function describes the moving parts in a way that hints at what is going on.  It's easy to read that implementation and get a glimpse of the mechanism.  I'm not at all sure that the comment helps.
+I like this because the implementation of the `generateFirstNPrimes` method describes the moving parts in a way that hints at what is going on.  It's easy to read that implementation and get a glimpse of the mechanism.  I'm not at all sure that the comment helps.
 
 I think it is just the reality of this algorithm that the effort required to properly explain it, and the effort required for anyone else to read and understand that explanation is roughly equivalent to the effort needed to read the code and go on a bike ride.
 
@@ -967,25 +1083,25 @@ You briefly mention TDD on page 157 and ... well, to be kind, you get it pretty 
 This is just wrong.  TDD is quite considerably different from what you describe.  I describe it using three laws.
 
  1. You are not allowed to write any production code until you have first written a unit test that fails because that code does not exist.
- 
+
  2. You are not allowed to write more of a unit test than is sufficient to fail, and failing to compile is failing.
- 
+
  3. You are not allowed to write more production code than is sufficient to make the currently failing test pass.
- 
-Following these three laws traps you into a loop that is, perhaps, 10 to 30 seconds long.  It's almost a line by line thing.  
+
+Following these three laws traps you into a loop that is, perhaps, 10 to 30 seconds long.  It's almost a line by line thing.
 
  * You write a line or two of a unit test, but it won't compile because the code it calls doesn't exist.
- 
+
  * You write a line or two of production code that makes the test compile.
- 
+
  * You write another line or two of the test, but it fails to compile because you haven't finished the production code.
- 
+
  * You write another line or two of production code that makes the test compile.
- 
+
  * You write another line or two of the test, and it compiles, but fails because the production code isn't working.
- 
- * You write another line or two of the production code that makes the test pass.  
- 
+
+ * You write another line or two of the production code that makes the test pass.
+
 This very quick cycle means that you are never more than a few seconds or minutes away from seeing _all_ your currently written tests pass.   And _that_ means you almost never need to debug anything.  After all, if you saw everything work a minute ago, and now it doesn't, it must be something you did within the last minute.
 
 This very intense cycle is part of a larger cycle that we call RED-GREEN-REFACTOR.  First we make it fail, then we make it pass, then we clean it up and consider the design.
@@ -994,17 +1110,17 @@ This follows the old maxim:
 
  * First make it work.
  * Then make it right.
- 
-In your book you claim (falsely) that TDD is a kind of hacking because it is tactical, and there is no obvious time to do design.  On the contrary, TDD is both tactical and strategic.  It is tactical because it is focussed upon the current task at hand.  But it is strategic for at least two reasons.  First, there is the frequent refactoring step during which the programmer(s) consider design options.  Secondly, the production code must be designed to be testable. This is a natural outcome of writing the test first.  You cannot create a module that's hard to test if you write the tests first.  And a module that is easy to test _is_ easy to test because it is decoupled.
+
+In your book you claim (falsely) that TDD is a kind of hacking because it is tactical, and there is no obvious time to do design.  On the contrary, TDD is both tactical and strategic.  It is tactical because it is focussed upon the current task at hand.  But it is strategic for at least two reasons.  First, there is the frequent refactoring step during which the programmer(s) consider design options.  Secondly, the production code must be designed to be testable. This is a natural outcome of writing the test first.  You cannot create a class that's hard to test if you write the tests first.  And a class that is easy to test _is_ easy to test because it is decoupled.
 
 Now I'm not going to tell you that TDD is sufficient.  I'm not going to tell you that we who pratice TDD don't also lay back in the hammock and consider design.  We do.  All the old wive's tales about TDD being the only design tool you need are baloney.  Of course we consider design and architecture.  We don't spend months, weeks, or even days on it; but we do think the problems through.
 
 And then, of course, there comes the day when you realize you've chosen the wrong design.  This happens to everyone, even those of us who plan their designs for months.  This is a natural result of customers wanting to make changes that the developers could not predict.
 
-The great thing about TDD is that the discipline produces a suite of tests that you can trust with your life.  And therefore you can easily refactor the design of the system in small increments without breaking anything.  
+The great thing about TDD is that the discipline produces a suite of tests that you can trust with your life.  And therefore you can easily refactor the design of the system in small increments without breaking anything.
 
 I could go on.  I have gone on.  I've written several books on the topic.  The most complete one is _Clean Craftsmanship_.  You might want to give it a look.  ;-)
 
 
 
- 
+
