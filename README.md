@@ -599,7 +599,8 @@ In the book I decided to fight that mindset.  Comments can be _really bad_ as we
 
 **JOHN:**
 
-I don't agree that comments are evil.
+I don't agree that comments are evil, and I don't agree that comments are
+any less necessary today than they were 40 years ago.
 
 **UB:**
 
@@ -607,7 +608,16 @@ I didn't say they were evil.  I said they were a _necessary_ evil because we fai
 
 **JOHN:**
 
+Yes, you did say they are evil: a "necessary evil" is still evil, just
+like a "red car" is still a car.
+(Both your comment and this one are distractions; can we delete them?)
+
 Comments are not the problem, they are the solution.
+The problem is that there is a lot of important
+information that simply cannot be expressed in code. When a programmer
+writes comments, they have not failed to express themselves; they have
+succeeded in providing important information that makes code easier to
+understand.
 
 **UB:**
 
@@ -615,11 +625,15 @@ I didn't say they were "the problem".  I certainly said that some comments were 
 
 **JOHN:**
 
-The problem is that there is a lot of important
-information that simply cannot be expressed in code. When a programmer
-writes comments, they have not failed to express themselves; they have
-succeeded in providing important information that makes code easier to
-understand.
+I moved the above comment down so that it doesn't interrupt my thought.
+To me, this comment seems nitpicky in an uninteresting way. I didn't say
+that you used the word "problem"; I chose that word because it makes
+a natural contrast with "solution" and it's also a natural lead-in to
+the next sentence, which needs to use the word "problem". If that particular
+word really bothers you then I suppose I could switch to "failures", but
+that will be more awkward for the sentence (is there really that big of
+a difference between "problem" and "failure"?). You can delete this
+comment once you have read it.
 
 **UB:**
 
@@ -634,77 +648,100 @@ eliminate the need for comments. Comments and code serve very different
 purposes, so it's not obvious to me that we should use the same
 language for both. In my experience, English works quite well
 as a language for comments.
-Why are you so adamant that all information about a program must
-be expressed in code, rather than using a combination of code
+Why do you feel that information about a program should
+be expressed entirely in code, rather than using a combination of code
 and English?
 
 **UB:**
 
-I am _not_ adamant that all information about a program must be expressed in code.  I bemoan the fact that we must sometimes use a human language instead of a programming language.  Human languages are imprecise and full of ambiguities. Using a human language to describe something precisely is very hard, and fraught will many opportunities for error and inadvertent misinformmation.
+I am _not_ adamant that all information about a program must be expressed in code.  I bemoan the fact that we must sometimes use a human language instead of a programming language.  Human languages are imprecise and full of ambiguities. Using a human language to describe something precisely is very hard, and fraught with many opportunities for error and inadvertent misinformation.
 
 **JOHN:**
+
+(I removed the word "adamant" and changed "must" to "should" to avoid
+an argument over terminology. You can delete this parenthetical once you
+have read it.)
+
+I agree that English isn't as precise as code, but it can be used in
+in fairly precise ways and comments typically don't need the same
+degree of precision as code.
+Comments often contain qualitative information such
+as *why* something is being done, or the overall idea of something.
+English works better for these than code; overall, it is a more
+expressive language.
+
+Are you concerned that comments will be incorrect or
+misleading and that this will slow down software development?
+I often hear people complain about stale comments, but
+I have not found them be a significant problem
+over my career. Incorrect comments do happen, but I don't encounter them
+very often and when I do, they rarely cost me much time. In contrast, I waste
+*enormous* amounts of time because of inadequate documentation; it's not
+unusual for me to spend 50-80% of my development time wading through
+code to figure out things that would be obvious if the code was properly
+commented.
+
+I invite everyone reading this article to ask yourself the following questions:
+* How much does your software development speed suffer because of
+  incorrect comments?
+* How much does your software development speed suffer because of
+  missing comments?
+
+For me the cost of missing comments is easily 10-100x the cost of incorrect
+comments. That is why I cringe when I see things in *Clean Code* that
+discourage people from writing comments.
 
 Let's consider the `PrimeGenerator` class. There is not a single comment
-in this code other than the one I added at the top; presumably you
-think this is appropriate? There are two major reasons why comments
-are needed.
+in this code other than the one I added at the top; do you
+think this is appropriate?
 
 **UB:**
 
-If I was putting that code into a library then some comments would be appropriate. But his code is not getting put into a library.  It was created to make the point that large methods can be broken down into smaller classes containing smaller methods. Adding lots of explanatory comments would have detracted from that point.
+If I was putting that code into a library then some comments would be appropriate. But this code is not getting put into a library.  It was created to make the point that large methods can be broken down into smaller classes containing smaller methods. Adding lots of explanatory comments would have detracted from that point.
 
 **JOHN:**
 
->I disagree that adding comments would have distracted from your point,
+I disagree that adding comments would have distracted from your point,
 but let's not argue that. Instead, let's discuss what comments this code
-*should* have if it were used in production. For starters, would you like to
-modify the code to add what you think are appropriate comments?
-Or, I can talk about what I think is needed and you can agree or
-disagree.
+*should* have if it were used in production. I will make some suggestions
+and you can agree or disagree.
 
->>>UB:  You go ahead.
+For starters, let's discuss your use of megasyllabic names like
+`isLeastRelevantMultipleOfLargerPrimeFactor`.  My understanding is that
+you advocate using names like this instead of using shorter names
+augmented with descriptive comments: you're effectively moving the
+comments into code. To me, this approach is problematic:
+* Long names are awkward. Developers effectively have to retype
+  the documentation for a method every time they invoke it, and the long
+  names waste horizontal space and trigger line wraps in the code. The names are
+  also awkward to read: my mind wants to parse every syllable every time
+  I read it, which slows me down. Notice that both you and I resorted to
+  abbreviating names in this discussion: that's an indication that
+  the long names are awkward and unhepful.
+* The names are hard to parse and don't convey information as effectively
+  as a comment.
+  When students read `PrimeGenerator` one of the first things they
+  complain about is the long names (students can't make sense of them).
+  For example, the name above is
+  vague and cryptic: what does "least relevant" mean, and what is a
+  "larger prime factor"? Even with a complete understanding of the code in
+  the method, it's hard for me to make sense of the name.  If this name
+  is going to eliminate the need for a comment, it needs to be even longer.
 
-**JOHN:**
-
-First, there is important infomation that cannot be represented in the code.
-For example:
-
-* One of the key ideas behind this code is to improve performance by avoiding divisions, which are relatively expensive. Readers will wonder "why didn't you just use `mod` instead of all this complexity with prime multiples?"
-
-**UB:**
-
-Why is that important to understanding the lesson of that chapter?
-
-Consider my audience.  I was writing for software developers in 2008, and I was explaining how large functions can be split into several classes.  Why would I clutter up that explanatory code with a comment about what programmers feared in the early '80s?  My readers would have had utterly no interest in that.
-
-**JOHN:**
-
-* The first multiple for each new prime number is computed by squaring the prime, rather than multiplying it by 3. This is mysterious: why is it safe to skip the intervening odd multiples?
-
-**UB:**
-
-Why indeed?  This is not at all easy to understand.  I needed to go on an hour long bike ride to finally work it out.  Again, maybe I'm dense, but this is not an easy thing to understand.
-
-And again I was not teaching software developers the most optimal way to calculate prime numbers.  I was teaching them how and when to break large methods up into smaller classes and smaller methods.
-
-**JOHN:**
-
-There is no way to explain either of these things in the code; without
-comments, readers are left to figure them out on their own. The students
-in my class are generally unable to figure out either of these in the
-30 minutes I give them, but comments would have
-allowed them to understand in a minute or two. Going back to my
-introductory remarks, this is an example where information is important,
-but it isn't made available.
+In my opinion, the traditional approach of using shorter names with
+descriptive comments is more convenient and conveys the required information
+more effectively. What advantage is there in the approach you advocate?
 
 **UB:**
 
-That bike ride I took was *after* I had read the comment you put in your version of this method.  So -- again, maybe I'm dense, but that comment didn't help me at all -- it was just a jumble of numbers that I could not map to the problem.  Now that I understand the algorithm (again), I understand your comment.  But the reverse was not true.
+(your answer goes here)
 
 **JOHN:**
 
-The second reason for comments is abstraction. Simply put, without
-comments there is no way to have abstraction or modularity.
+Now that we've discussed the specific issue of comments vs. long method
+names, let's talk about comments in general. There are two major reasons
+why comments are needed. The first reason for comments is abstraction.
+Simply put, without comments there is no way to have abstraction or modularity.
 
 Abstraction is one of the most important components of good software design.
 I define an abstraction as "a simplified way of thinking about something
@@ -716,6 +753,8 @@ to invoke the method). If the method is well designed, the interface will be
 much simpler than the code of the method (it omits implementation details),
 so the comments reduce the amount of information people must have in
 their heads.
+
+(Note: I changed the order of the two reasons for comments.)
 
 **UB:**
 
@@ -732,17 +771,27 @@ This seems like a very nice abstraction to me, and I cannot imagine how a commen
 
 **JOHN:**
 
+Our definitions of abstraction are very similar; that's good to see.
+However, the `addSongToLibrary` declaration is not (yet) a good abstraction
+because it omits information
+that is essential. In order to use `addSongToLibrary`, developers
+will need answers to the following questions:
+
+* Is there any expected format for an author string, such as "LastName, FirstName"?
+* Are the authors expected to be in alphabetical order? If not, is the order
+  significant in some other way?
+* What happens if there is already a song in the library with the given title
+  but different authors? Is it replaced with the new one, or will the library
+  keep multiple songs with the same title?
+* How is the library stored (e.g. is it entirely in memory? saved on disk?)?
+  If this information is documented somewhere else, such as the
+  overall class documentation, then it need not be repeated here.
+
 Sometimes the signature of a method (names and types of the method, its
 arguments, and its return value) contains all the information
 needed to use it, but this is pretty rare. Just skim through the documentation
 for your favorite library package: in how many cases could you understand how
-to use a method with only its signature? Even in the `addSongToLibrary` example
-above more information is needed:
-
-* Is there any expected format for an author string, such as "LastName, FirstName"?
-* Are the authors expected to be in alphabetical order? If not, is the order significant in some other way?
-* What happens if there is already a song in the library with the given title? Is it replaced with the new one, or will the library keep multiple songs with the same title?
-* How is the library stored (e.g. is it entirely in memory? saved on disk?)? This information may have been documented somewhere else, such as the overall class documentation, in which case it wouldn't be needed here.
+to use a method with only its signature?
 
 **UB:**
 
@@ -750,9 +799,43 @@ John, all four of those questions are diametrically opposed to the abstraction i
 
 **JOHN:**
 
-Consider the `isNot...` method in `PrimeGenerator`. This method has no header
-comment, so readers are forced to read the method's code to figure out how
-to use it.
+I don't understand this. Don't developers need to know this
+information in order to use the method? If so, then doesn't that information
+need to be visible as part of the method's interface? Otherwise
+developers will have to read the code of the method to figure it out.
+Can you explain what you mean by "should be pushed down to a lower level"
+(I'm curious where you would put this information, if not in the interface
+description)?
+
+**JOHN:**
+
+Let's consider an example from `PrimeGenerator`: the `isMultipleOfNthPrimeFactor`
+method. When someone reading the code encounters the call to `isMultiple...`
+in `isNot...` they need to understand enough about how `isMultiple...` works
+in order to see how it fits into the code of `isNot...`.
+The method name does not fully document the interface, so if there
+is no header comment then readers will have to read the code of `isMultiple`.
+This will force readers to load more information into their
+heads, which makes it harder to work in the code.
+
+Here is my first attempt at a header comment for `isMultiple`:
+```
+    /**
+     * Returns true if candidate is a multiple of primes[n], false otherwise.
+     * May modify multiplesOfPrimeFactors[n].
+     * @param candidate
+     *      Number being tested for primality; must be at least as
+     *      large as any value passed to this method in the past.
+     * @param n
+     *      Selects a prime number to test against; must be
+     *      <= multiplesOfPrimeFactors.size().
+     */
+```
+What do you think of this?
+
+(Note: I have completely reworked the text above; among other things,
+it no longer uses the word "use". Also, I've picked a different method to
+examine, which I think will be more interesting).
 
 **UB:**
 
@@ -760,20 +843,65 @@ John, my readers don't have to use it.  It was not written for them to use.  I d
 
 **JOHN:**
 
-This means that readers have to load more information into their
-heads, which makes it harder to work in the code.
-Here are a couple of things that would need to be described in
-the header comment for `isNot...`:
+I mentioned earlier that there are two general reasons why comments are
+needed. So far we've been discussing the first reason (abstraction).
+The second general reason for comments is for important information
+that is not obvious from the code. The algorithm in `PrimeGenerator`
+is very non-obvious, so quite a few comments are needed to help readers
+understand what is going on and why. Most of the complexity arises because
+the algorithm is designed to compute primes efficiently:
 
-* Its side effects (modifying `multiplesOfPrimeFactors`); without comments, the entire tree of methods underneath `isNot...` must be read to discover the side effects.
-* The fact that it works only if invoked with ascending argument values (this constraint is unlikely to be obvious even after reading the code).
+* The algorithm goes out of its way to avoid divisions, which were quite
+  expensive  when Knuth wrote his original version (they aren't that expensive
+  nowadays).
 
-Bob, can you explain why you chose not to include any comments in the `PrimeGenerator`
-class? How is code better when it has no comments?
+* The first multiple for each new prime number is computed by squaring the
+  prime, rather than multiplying it by 3. This is mysterious: why is it safe
+  to skip the intervening odd multiples? Furthermore, it might seem that this
+  optimization only has a small impact on performance, but in fact it makes an
+  *enormous* difference (orders of magnitude). Using the square has the
+  side-effect that when
+  testing a candidate, only primes up to the square root of the
+  candidate are tested. If 3x were used as the initial multiple, primes
+  within a factor of 3 of the candidate would be tested; that's a *lot*
+  more tests.
+  This implication of using the square is so non-obvious that I only realized
+  it while preparing material for this discussion; it never occurred to me in
+  the many times I have discussed the code with students.
+
+Neither of these issues is obvious from the code; without
+comments, readers are left to figure them out on their own. The students
+in my class are generally unable to figure out either of them in the
+30 minutes I give them, but comments would have
+allowed them to understand in a few minutes. Going back to my
+introductory remarks, this is an example where information is important,
+so it needs to be made available.
+
+Do you agree that there should be comments to explain each of these
+two issues?
 
 **UB:**
 
-As I explained earlier, those kinds of comments in this code would have detracted from the lesson of the chapter, which was how and why to break large methods into smaller classes containing smaller methods, and not to understand Knuth's ancient prime generator algorithm.
+Why is that important to understanding the lesson of that chapter?
+
+Consider my audience.  I was writing for software developers in 2008, and I was explaining how large functions can be split into several classes.  Why would I clutter up that explanatory code with a comment about what programmers feared in the early '80s?  My readers would have had utterly no interest in that.
+
+**UB:**
+
+That bike ride I took was *after* I had read the comment you put in your version of this method.  So -- again, maybe I'm dense, but that comment didn't help me at all -- it was just a jumble of numbers that I could not map to the problem.  Now that I understand the algorithm (again), I understand your comment.  But the reverse was not true.\
+
+**JOHN:**
+
+I pulled the above two comments down so they don't interrupt my thought train.
+They may also need revision because "the lesson of that chapter" is no longer
+relevant to the discussion. I also reworked my comments quite a bit.
+You can delete this comment.
+
+**UB:**
+
+Why indeed?  This is not at all easy to understand.  I needed to go on an hour long bike ride to finally work it out.  Again, maybe I'm dense, but this is not an easy thing to understand.
+
+And again I was not teaching software developers the most optimal way to calculate prime numbers.  I was teaching them how and when to break large methods up into smaller classes and smaller methods.
 
 ## John's Rewrite of PrimeGenerator
 
