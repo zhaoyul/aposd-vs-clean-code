@@ -533,7 +533,19 @@ Is there some benefit to having so many methods that I have missed?
 
 **UB:**
 
-In general I believe in the principle of small well-named methods. Generally speaking if you can break a large method into several well-named smaller method, and by doing so expose the high level functional decomposition, then that's a good thing.
+I think you and I are just going to disagree on this.  In general I believe in the principle of small well-named methods and the separation of concerns. Generally speaking if you can break a large method into several well-named smaller methods with different concerns, and by doing so expose the high level functional decomposition, then that's a good thing.
+
+* Looping over the odd numbers is one concern.
+* Determining primality is another.
+* Marking off the multiples of primes is yet another.
+
+It seems to me that separating and naming those concerns helps to expose the way the algorithm works.
+
+In your solution, below, you break the algorithm up in a similar way.  However, instead of separating the concerns into functions, you separate them into sections with comments above them.
+
+You mentioned how in my solution readers will have to keep the loop context in mind while reading the other functions.  I suggest that in your solution, readers will have to keep the loop context in mind while reading your explanatory comments.  They may have to "flip back and forth" between the sections in order to establish their understanding.
+
+Now perhaps you are concerned that in my solution the "flipping" is a longer distance (in lines) than in yours.  I'm not sure that's a significant point since they all fit on the same screen (at least they do on my screen) and the landmarks are pretty obvious.
 
 **JOHN:**
 
@@ -557,6 +569,12 @@ do with that). However (and I'm sorry to be blunt) `PrimeGenerator` is a
 really bad decomposition. I hope readers will not emulate it. Furthermore, I
 don't think it's bad because of an accident; it ended up way over-decomposed
 and hard to read because you followed the advice of *Clean Code*.
+
+**UB:**
+
+It was not my goal, in this chapter, to show the best possible decomposition of the algorithm.  The algorithm was irrelevant.  It was my goal to show how large functions can be broken up into smaller classes.  
+
+As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
 
 ## Comments
 
@@ -1266,14 +1284,18 @@ What I care about is "days until the whole project works".
 
 **UB:**
 
-This very intense cycle is part of a larger cycle that we call RED-GREEN-REFACTOR.  First we make it fail, then we make it pass, then we clean it up and consider the design.
+John, it may be that you are such a hyper-disciplined programmer that you have never altered a line of code only to see something unexpected happen.  Perhaps you can plan out your functions, write them all, and test them all in a nice straight line.  If so, more power to you!
+
+As for me, and most of the programmers I've met in my lifetime, we frequently have the experience that a small change in one place can cause something else to break in an unexpected way.  The sooner we find that, the better.  And that's why seconds and minutes matter.
+
+But allow me to continue with the explanation.  The very intense cycle I just described is part of a larger cycle that we call RED-GREEN-REFACTOR.  First we make it fail, then we make it pass, then we clean it up and consider the design.
 
 This follows the old maxim:
 
  * First make it work.
  * Then make it right.
 
- **JO:**
+ **JOHN:**
 
  I think this maxim is bad advice. This is what I call "tactical programming"
  in APOSD, where the emphasis in development is on getting the next thing working,
@@ -1323,7 +1345,24 @@ This follows the old maxim:
 
 **UB:**
 
-In your book you claim (falsely) that TDD is a kind of hacking because it is tactical, and there is no obvious time to do design.  On the contrary, TDD is both tactical and strategic.  It is tactical because it is focussed upon the current task at hand.  But it is strategic for at least two reasons.  First, there is the frequent refactoring step during which the programmer(s) consider design options.  Secondly, the production code must be designed to be testable. This is a natural outcome of writing the test first.  You cannot create a class that's hard to test if you write the tests first.  And a class that is easy to test _is_ easy to test because it is decoupled.
+(LOL)  That was a funny story -- if perhaps a bit speculative, condescending, derisive, and misrepresentative.  So let's correct a few things.  
+
+1. We certainly do think about the big picture and we certainly do spend time on working through an overall design.  The idea that we don't is an old and false meme that was used to criticize the Agile and Extreme Programming movements twenty years ago. If you've read any of my books you know that I talk about design and architecture a _lot_.  This is an activity I engage in very frequently at many different time scales: weekly, daily, hourly, and every few minutes.  
+
+1. Yes, of course the three laws are tactical -- they are a tactical discipline.  Writing code is tactical.  Every line of code you write is a tactical decision. In the best case those tactical decisions are guided by strategic thought at many different levels.
+
+1. At the lowest level of strategy we write the tests first.  Therefore the production code must be designed to be testable. You cannot create a class that's hard to test if you write the tests first.  And a class that is easy to test _is_ easy to test because it is decoupled.
+
+1. The REFACTOR phase of the RED-GREEN-REFACTOR loop identifies lower level strategic issues.  We look at the growing code, compare it to the overall plan for the current module, and clean it up as needed. This happens several times per hour.
+
+1. Those of us who follow the Agile methods engage in daily reflections during which mid level strategic issues are identified.  We also engage in weekly or bi-weekly sessions where the highest level strategic issues arise.
+
+1. The very first few days of an Agile project is generally spent working on an overall high level picture of the system.  This picture, though certainly wrong, informs the rest of the process.
+
+1. We never show working code to our manager until after it has been cleaned -- because until it has been cleaned it is not done.  And we never delay cleaning to the end.  We engage in cleaning almost every time we get a test to pass.
+
+
+>>>John, you might want to delete the following in light of what I wrote above.
 
 **JOHN:**
 
