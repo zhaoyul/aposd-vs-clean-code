@@ -549,6 +549,72 @@ Now perhaps you are concerned that in my solution the "flipping" is a longer dis
 
 **JOHN:**
 
+I agree that separation of concerns is a good thing, but only if the
+concerns are really independent. The problem with `PrimeGenerator` is
+that it separates things that are not independent.
+
+Let me try one more time. Let's start with an extreme example to
+illustrate the problem. Here is a slightly modified version
+of the Gettysburg Address:
+
+```
+Four score and seven years ago our fathers brought forth on this continent,
+all men are created equal.
+
+Now we are engaged in a great civil war, testing whether that nation, or any
+as a final resting place for those who here gave their lives that that nation
+might live. It is altogether fitting and proper that we should do this.
+
+But, in a larger sense, we can not dedicate -- we can not consecrate -- we
+here, have consecrated it, far above our poor power to add or detract. The
+world will little note, nor long remember what we say here, but it can
+never forget what they did here. It is for us the living, rather, to be
+-- that we here highly resolve that these dead shall not have died in vain --
+that this nation, under God, shall have a new birth of freedom -- and that
+government of the people, by the people, for the people, shall not perish
+from the earth.
+
+nation so conceived and so dedicated, can long endure. We are met on a great
+can not hallow -- this ground. The brave men, living and dead, who struggled
+battle-field of that war. We have come to dedicate a portion of that field,
+a new nation, conceived in Liberty, and dedicated to the proposition that
+dedicated here to the unfinished work which they who fought here have thus
+far so nobly advanced. It is rather for us to be here dedicated to the great
+task remaining before us -- that from these honored dead we take increased
+devotion to that cause for which they gave the last full measure of devotion
+```
+
+This version is identical to the original except that I
+"separated concerns" by moving a few lines of text down to the bottom.
+There is exactly the same information as in the original version,
+and it's all visible on a single screen, yet this version is
+almost impossible to decipher.
+
+The problems with `PrimeGenerator` are similar, albeit not as
+extreme. If the contents of `smallestOdd...` were moved up into the loop
+in `checkOdd...` then it would be obvious that they are related,
+just as it's obvious that words are related when they appear together
+in a single sentence. Furthermore, upon finishing reading the
+loop in `checkOdd...` I could flush all information about that loop
+from my mind. But with the current structure of `PrimeGenerator`
+it is not at all obvious when I am reading the loop in `checkOdd...` that
+it is constrained by code in a later method (when you say "the landmarks
+are obvious", I'm not sure what you're referrring to). To make the
+connection, I have to keep that loop in my mind while reading the following
+methods. I must also reconstruct the call graph. I must see
+(and remember) that `checkOdd...` invokes `isPrime`. Then I must also see
+(and remember) that `checkPrime` invokes `isNot...`, which then invokes
+`isMultiple...`, which finally invokes `smallestOdd...` I must then
+combine all of this information in my mind and deduce that, even through
+4 levels of method call, the code in `smallestOdd...` places constraints on
+the loop in `checkOdd...`.
+
+If these two approaches still seem to you like they create equal
+cognitive load, then we will have to agree to disagree. I invite
+readers to decide for themselves.
+
+**JOHN:**
+
 I agree that names are important, but I worry that you focus too narrowly
 on names without considering other factors that are even more important.
 Breaking a large method up only makes
@@ -572,7 +638,7 @@ and hard to read because you followed the advice of *Clean Code*.
 
 **UB:**
 
-It was not my goal, in this chapter, to show the best possible decomposition of the algorithm.  The algorithm was irrelevant.  It was my goal to show how large functions can be broken up into smaller classes.  
+It was not my goal, in this chapter, to show the best possible decomposition of the algorithm.  The algorithm was irrelevant.  It was my goal to show how large functions can be broken up into smaller classes.
 
 As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
 
@@ -1345,9 +1411,9 @@ This follows the old maxim:
 
 **UB:**
 
-(LOL)  That was a funny story -- if perhaps a bit speculative, condescending, derisive, and misrepresentative.  So let's correct a few things.  
+(LOL)  That was a funny story -- if perhaps a bit speculative, condescending, derisive, and misrepresentative.  So let's correct a few things.
 
-1. We certainly do think about the big picture and we certainly do spend time on working through an overall design.  The idea that we don't is an old and false meme that was used to criticize the Agile and Extreme Programming movements twenty years ago. If you've read any of my books you know that I talk about design and architecture a _lot_.  This is an activity I engage in very frequently at many different time scales: weekly, daily, hourly, and every few minutes.  
+1. We certainly do think about the big picture and we certainly do spend time on working through an overall design.  The idea that we don't is an old and false meme that was used to criticize the Agile and Extreme Programming movements twenty years ago. If you've read any of my books you know that I talk about design and architecture a _lot_.  This is an activity I engage in very frequently at many different time scales: weekly, daily, hourly, and every few minutes.
 
 1. Yes, of course the three laws are tactical -- they are a tactical discipline.  Writing code is tactical.  Every line of code you write is a tactical decision. In the best case those tactical decisions are guided by strategic thought at many different levels.
 
