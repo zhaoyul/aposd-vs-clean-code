@@ -574,10 +574,10 @@ that this nation, under God, shall have a new birth of freedom -- and that
 government of the people, by the people, for the people, shall not perish
 from the earth.
 
-nation so conceived and so dedicated, can long endure. We are met on a great
-can not hallow -- this ground. The brave men, living and dead, who struggled
-battle-field of that war. We have come to dedicate a portion of that field,
 a new nation, conceived in Liberty, and dedicated to the proposition that
+nation so conceived and so dedicated, can long endure. We are met on a great
+battle-field of that war. We have come to dedicate a portion of that field,
+can not hallow -- this ground. The brave men, living and dead, who struggled
 dedicated here to the unfinished work which they who fought here have thus
 far so nobly advanced. It is rather for us to be here dedicated to the great
 task remaining before us -- that from these honored dead we take increased
@@ -585,10 +585,11 @@ devotion to that cause for which they gave the last full measure of devotion
 ```
 
 This version is identical to the original except that I
-"separated concerns" by moving a few lines of text down to the bottom.
+moved a few lines of text down to the bottom.
 There is exactly the same information as in the original version,
-and it's all visible on a single screen, yet this version is
-almost impossible to decipher.
+I maintained the order of the extracted lines,
+and everything is visible on a single screen. Even so, this version is
+almost impossible to read.
 
 The problems with `PrimeGenerator` are similar, albeit not as
 extreme. If the contents of `smallestOdd...` were moved up into the loop
@@ -597,17 +598,18 @@ just as it's obvious that words are related when they appear together
 in a single sentence. Furthermore, upon finishing reading the
 loop in `checkOdd...` I could flush all information about that loop
 from my mind. But with the current structure of `PrimeGenerator`
-it is not at all obvious when I am reading the loop in `checkOdd...` that
+it is not obvious when I am reading the loop in `checkOdd...` that
 it is constrained by code in a later method (when you say "the landmarks
 are obvious", I'm not sure what you're referrring to). To make the
 connection, I have to keep that loop in my mind while reading the following
 methods. I must also reconstruct the call graph. I must see
 (and remember) that `checkOdd...` invokes `isPrime`. Then I must also see
-(and remember) that `checkPrime` invokes `isNot...`, which then invokes
+(and remember) that `isPrime` invokes `isNot...`, which then invokes
 `isMultiple...`, which finally invokes `smallestOdd...` I must then
 combine all of this information in my mind and deduce that, even through
 4 levels of method call, the code in `smallestOdd...` places constraints on
-the loop in `checkOdd...`.
+the loop in `checkOdd...`. If all the information is in one method, there's
+no need for me to reconstruct a call graph.
 
 If these two approaches still seem to you like they create equal
 cognitive load, then we will have to agree to disagree. I invite
@@ -640,7 +642,22 @@ and hard to read because you followed the advice of *Clean Code*.
 
 It was not my goal, in this chapter, to show the best possible decomposition of the algorithm.  The algorithm was irrelevant.  It was my goal to show how large functions can be broken up into smaller classes.
 
+**JOHN:**
+
+It sounds like we'll have to disagree here. Readers can decide for
+themselves: when deciding how to decompose code, is the algorithm
+relevant? And, when breaking up functions is it OK to produce a decomposition
+that makes it hard to understand how the algorithm works?
+
+**UB:**
+
 As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
+
+**JOHN:**
+
+We already discussed this (it isn't just how many pieces there are, but
+how they are arranged); I refer readers to the preceding discussion
+related to the Gettysburg Address.
 
 ## Comments
 
@@ -1338,15 +1355,19 @@ This very quick cycle means that you are never more than a few seconds or minute
 
 **JOHN:**
 
-I believe all of these properties also hold if I write a larger chunk of code,
-then fill in tests one-by-one. The only exception is the last clause
-"it must be something...", which changes to "it must be something related
-to the most recent test". And when I write unit tests, I do it in a
-"white-box" fashion where each unit test exercises a specific piece of source
-code, so when a test fails I know exactly what code is responsible.
+These claims seem pretty fantastical (and you've provided no supporting
+evidence). You seem to be claiming that TDD makes it harder to create bugs;
+I don't see why that would be true, and I will argue
+just the opposite below. And, when a problem arises, it isn't necessarily
+"something you did within the last minute". It could be a latent bug in
+code you wrote months ago, which simply wasn't triggered until the latest
+code was added. Adding a small amount of new code could
+result in a long and painful debugging process. You seem to be assuming
+that if code is added in tiny increments it isn't possible to create
+big problems; I don't think any experienced programmer would find this
+claim credible.
 
-But honestly, I don't see why "minutes until the next passes" matters.
-What I care about is "days until the whole project works".
+>>> I rewrote the text above, so you may want to revise your response below.
 
 **UB:**
 
@@ -1361,28 +1382,42 @@ This follows the old maxim:
  * First make it work.
  * Then make it right.
 
- **JOHN:**
+**JOHN:**
 
- I think this maxim is bad advice. This is what I call "tactical programming"
- in APOSD, where the emphasis in development is on getting the next thing working,
- rather than producing a good design. At each step it's easy to justify taking
- a shortcut or making things a bit more complicated, because that's the
- fastest way to get the next thing working. The result is rapid accumulation
- of complexity and technical debt. Here's how I would describe the TDD
- process:
+I think this maxim is bad advice. This is what I call "tactical programming"
+in APOSD, where the emphasis in development is on getting the next thing working,
+rather than producing a good design. At each step it's easy to justify taking
+a shortcut or making things a bit more complicated, because that's the
+fastest way to get the next thing working. The result is a rapid accumulation
+of complexity and technical debt.
 
-* I write a line or two of a unit test and just enough production code to make
-  it work. Wow, that was fast!
-* Five minutes later, the next test is passing. I'm a Master of the Universe!
+Your suggestion that I (or anyone) might work in a perfectly straight
+line without errors is silly, of
+course, and I agree that finding bugs quickly is a good thing. But there's
+one thing that's even better than finding bugs quickly, and that's
+preventing bugs from occurring in the first place. That's what design
+is for.
+
+TDD discourages design, which leads to more complex code
+with more bugs. For example, TDD discourages thinking ahead
+("You are not allowed to write more production code than is sufficient
+to make the currently failing test pass") but the whole idea of design
+is to think ahead to avoid problems in the future.
+
+Here is the kind of nightmare scenario I worry about with TDD:
+
+* I write my first unit test and just enough production code to make
+  it work. Within a couple of minutes, the test passes.
+* Five minutes later, the next test is passing.
 * I write the next unit test and start filling in its production code.
-  Hmmm, the code I wrote for earlier tests doesn't exactly work for this
-  new test. I could revise the earlier code to fix this, but Uncle Bob says I
-  should never be more than a minute or two from making the next test pass
-  and a clean fix would would take more time than that.
-  I see that I can make a couple of tweaks to get the next test to
-  pass quickly without too much ugliness, so I do that.
+  However, the code I wrote for earlier tests doesn't exactly work for this
+  new test. I could revise the earlier code to fix this, but the fastest
+  way to make the new test pass is to make a couple of tweaks rather
+  than a clean fix.
 * Each test exposes more problems with the code structure that is evolving,
   but there's always a hack I can make to get the next test running.
+  This seems consistent with TDD's instruction that I must write no more
+  production code than is needed to make the next test pass.
 * The code gets uglier and uglier, and the hacks get more and more complicated.
   Pretty soon, the hacks for one
   test start breaking other tests, so I need to try several hacks to
@@ -1396,18 +1431,23 @@ This follows the old maxim:
   throw it out. So, I keep layering on Band-Aids.
 * Eventually, I get everything working. It was painful and took
   longer than if I had done some design at the beginning. The
-  code is in really bad shape. I no longer feel like a Master of the Universe.
-* Now Uncle Bob tells me I should "make it right". I think: "And throw
-  away every line of code that I have written so far? You must be kidding."
-* I go to my boss and tell her: "I finished the project you asked me to do.
-  The code base is pretty messy, but I have extensive unit tests and they
-  all pass. Uncle Bob says I should now rewrite it all to produce a decent
-  design; should I do that?"
-* My boss says: "Well, that project already took way longer than we
+  code is in really bad shape.
+* I know that I'm now supposed to "make it right", but that would
+  require throwing out most of the code that I've written
+  so far, and that would take a long time.
+* I go to my boss to ask for advice. After I describe the situation,
+  she says "Well, that project already took way longer than we
   thought it would, and I have a lot of other things I need you to work
-  on. Since your code seems to work, let's leave it as is. Hopefully we
-  won't need to go into that code to make changes, and maybe we can
-  hire a summer intern to clean it up next year."
+  on. Since your code seems to work and you have extensive unit tests,
+  let's leave it as is. Hopefully we won't need to go into that code to
+  make changes, and maybe we can hire a summer intern to clean it up next
+  year."
+
+As this scenario shows, exposing a lot of bugs quickly isn't
+necessarily a good sign...
+
+>>> Note: I revised the above to make it less condescending, though, sadly,
+less funny
 
 **UB:**
 
@@ -1427,38 +1467,98 @@ This follows the old maxim:
 
 1. We never show working code to our manager until after it has been cleaned -- because until it has been cleaned it is not done.  And we never delay cleaning to the end.  We engage in cleaning almost every time we get a test to pass.
 
-
->>>John, you might want to delete the following in light of what I wrote above.
-
 **JOHN:**
 
-I stand by my claims that TDD is tactical and that it provides no obvious time
-to do design. I think this comes out pretty clearly in the scenario I described
-above. It is telling that the word "design" does not even appear in
-your main description of TDD. I did a quick skim of Chapter 9 of *Clean Code*
-("Unit Tests") and I couldn't find the word "design" there either, or any
-mention of refactoring.
-TDD discourages any sort of thinking ahead ("You are not allowed to write
-more production code than is sufficient to make the currently failing test
-pass"), but the whole idea of design is to think ahead and coordinate the
-solution of multiple problems.
-
+I stand by my claims that TDD is tactical and discourages design.
 I'm not saying it's impossible to do good design in a TDD environment,
-but it takes a high level of self-discipline. Furthermore, it will require
-developers to break the TDD rules.
-I doubt that most developers will have the self-discipline to avoid the
-mess I described above.
+but to do so you must develop additional processes to compensate for
+the tactical pressure created by TDD. Perhaps the approaches you described
+above, if diligently
+executed, can produce an acceptable outcome. However, I fear that most
+developers won't have the self-discipline to avoid the mess I described
+earlier.
 
-You have hinted above that there is room for design in TDD, but can you
-be more precise? Exactly where and when does design occur in a TDD
-environment? How do we ensure that it really happens? Is this something
-that you have described in *Clean Code*, or are you assuming that
-developers will somehow figure this out on their own?
+Even if it's possible to make TDD work, why use an approach that must be
+compensated for? The fundamental problem with TDD is that it prioritizes
+the wrong thing. Yes, tests are essential to software development.
+But they are not the most important thing. The most important thing
+in software is good design. Thus, the software development process
+should be organized with design, not tests, as the highest priority.
 
-Also, I'd like to challenge your suggestion that writing tests first makes
-it easier to write testable code. Do you have any data to back this up? Can
-you give an example? If you haven't written the code yet, how can you even
-tell whether it will be hard to test?
+Instead of TDD, I would argue that we should design and implement code
+in larger chunks that encourage design thinking. Ideally, the unit of
+coding will be a modest-size collection of related things with a coherent
+mission, such as a class. Take a bit of
+time up front to think about the sub-problems that will have to be
+solved while implementing this abstraction. Look for simple components
+that will help to solve those problems. Find commonalities, where
+one piece of code solves multiple problems.
+
+Then write the code for this chunk of functionality, probably in
+stages, with unit tests. Personally, I prefer to write enough code
+in each stage to (mostly?) solve a sub-problem so I can see how its
+pieces work together (anywhere from 50-500 lines). Then I write the unit tests
+for that sub-problem. I drive the unit tests from the code, working through
+each method line-by-line, writing tests for a few lines of code at
+a time (such as a loop or conditional). The structure of the tests
+mirrors the structure of the code, so when I make code changes it's
+easy to see which tests are affected.
+
+That said, I don't object to other approaches to unit testing, as long
+as they produce a comprehensive and high-quality suite of tests.
+The thing I'm adamant about is that the development process
+should be driven by *design*, not tests.
+
+Also, to be clear, there is a limit to how much design can be done
+before implementing anything; it's just too hard to visualize all of the
+consequences of design decisions. And, even if you design up front, you
+still won't get it right the first time. So plan on time to refactor
+(it typically takes me three tries to get a new class right). But starting from
+some design ideas will get you to good code a lot faster than starting
+with spaghetti code.
+
+Here are some questions for you:
+* Do you agree that a good design is the most important goal of
+  software development?
+* Do you believe that TDD is more likely to produce a better design than other
+  approaches that are design-centric? If so, please explain.
+* If TDD produces a worse design, what advantages does TDD have that
+  compensate for an inferior design?
+
+You have argued that writing the tests first will lead to more testable
+code ("You cannot create a class that's hard to test if you write the tests
+first"). This is not at all obvious to me. Do you have evidence to support
+this claim? Can you provide an illustrative example? I think what is more
+likely is that with TDD developers simply won't write the hard tests. This
+is easy to do when tests are created out of the blue, with no code to guide them.
+On the other hand, if you write the code first, and if you are conscientious
+about writing tests that cover all of your code, then you will be forced
+to deal with the hard cases.
+
+Now let's suppose that you are right, and that code produced via TDD is
+easier to test than code that is ideal from a design standpoint. If
+this happens, it means that the TDD code is not ideal from a
+design standpoint. This sounds like a bad trade-off to me: it's
+better to adopt the best possible design and spend a bit more time
+writing tests. In my experience, though, this is mostly a non-problem:
+hard-to-test code doesn't occur very often.  Every once in a while
+I will encounter a situation where it is worth modifying the design
+slightly (perhaps even making it a bit worse) in order to improve
+testability. But again, this is very rare. So, why not focus on
+what's most important (design) and only worry about testability
+in the rare cases where it is a problem?
+
+I'd like to raise an additional concern about TDD: I don't see how it
+can produce good test coverage. If I write tests before I write code,
+I can test the overall functionality of the code (effectively, its
+interface) but I can't test how that functionality is implemented
+(loop structure, details of special-case handling, etc.).
+Don't I need to look at the code in order to determine the best
+way to test it? For example, in `PrimeGenerator` some of the first
+primes are generated with special-case code, which may require special
+tests. How do I know that if I haven't seen the code?
+It seems to me that TDD not only compromises design, but it also
+compromises test quality. Am I missing something here?
 
 **UB:**
 
@@ -1480,44 +1580,7 @@ I could go on.  I have gone on.  I've written several books on the topic.  The m
 
 **JOHN:**
 
-At this point I still have not heard a compelling argument why it
-is better to write the unit tests *before* the code. At the same
-time, I've pointed out serious risks that come from the
-TDD approach. Why accept those risks when there is no compensating
-benefit?
-
-Instead of TDD, I would argue that we should design and implement code
-in larger chunks. Ideally, the unit of coding will be a modest-size
-collection of related things with a coherent mission, such as a class.
-Take a bit of
-time up front to think about the sub-problems that will have to be
-solved while implementing this abstraction. Look for simple components
-that will help to solve those problems. Find commonalities, where
-one piece of code solves multiple problems.
-
-Then write the code for this chunk of functionality, followed
-by unit tests. Personally, I prefer to write enough code to (mostly?) solve a
-sub-problem (anywhere from 50-500 lines) so I can see how its pieces
-work together. Then I write the unit tests
-for that code. I drive the unit tests from the code, working through
-each method line-by-line, writing tests for a few lines of code at
-a time (such as a loop or conditional). The structure of the tests
-mirrors the structure of the code, so when I make code changes it's
-easy to see which tests are affected.
-
-That said, I'm comfortable with other approaches to unit testing, as long
-as they produce a comprehensive and high-quality suite of tests.
-The thing I'm adamant about is that the development process
-should be driven by *design*, not tests. Design is the most important thing
-in software development, so it should be the primary focus. Tests are also
-essential, but doing design first doesn't make it (much?) more difficult
-to write tests. On the other hand, writing code in tiny increments in
-order to pass the next unit test makes it very difficult to do good design.
-
-Also, to be clear, there is a limit to how much design can be done
-before implementing anything; it's just too hard to visualize all of the
-consequences of design decisions. And, even if you design up front, you
-still won't get it right the first time. So plan on time to refactor.
-It typically takes me three tries to get a new class right. But starting from
-some design ideas will get you to good code a lot faster than starting
-with spaghetti code.
+Um, how many of your books do I have to read before I can actually
+write good code?  For example, I don't recall seeing anything in *Clean Code*
+about ensuring a good design in spite of TDD (the word "design" doesn't
+seem to appear in the chapter on testing); did I miss something?
