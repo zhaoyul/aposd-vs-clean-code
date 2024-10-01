@@ -125,7 +125,7 @@ It is certainly possible to over-decompose code.  Here's an example:
 
 	void doSomething() {doTheThing()} // over-decomposed.
 
-In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods drives a class towards the wide/shallow end.  This is because when I extract methods they are private.  The method I extract them from is public, and remains as the interface of the class.  The narrow/deep nature of the  class is preserved.
+In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods drives a class towards the wide/shallow end.  This is because when I extract methods they are private.  The root method I extract them from is public, and remains as the interface of the class.  The narrow/deep nature of the  class is preserved.
 
 **JOHN:**
 
@@ -138,8 +138,9 @@ everywhere.  (I'm happy to drop this comment if you are willing to drop the
 suggestion that shallow interfaces are OK within a class.)
 
 **UB:**
+I think, rather, I am saying that the interface between two extractable snippets of code is not not well expressed if they are kept inline within a function.  The wideness of the interface between them is hidden.  By extracting them we that interface is named, and becomes much clearer.  From there the programmer can determine if that interface is too wide.
 
-However, the extraction of the small methods creates an internal structure that separates the high level policy of the original method, from the lower level details of that method.  It gives those lower level details names, and allows their implementations to be hidden behind those names.
+The extraction of small private methods from the public methods of a class creates an internal structure that separates the high level policy of the original public methods, from the lower level details of those methods.  It gives those lower level details names, declared interfaces, and allows their implementations to be hidden behind those names and interfaces.
 
 This helps the reader to understand the flow of the original method without having to understand the details.
 
@@ -159,9 +160,7 @@ Unfortunately the One Thing approach will lead to over-decompositon:
 
 **UB:**
 
-Let me address each of those three points.  True. True. True.
-
-But the argument is a bit reductive, isn't it.  I mean, you and I are never going to reduce programming to a deterministic algorithm.  There will always be this thing called _judgement_.
+That argument is a bit reductive, isn't it?  I mean, you and I are never going to reduce programming to a deterministic algorithm.  There will always be this thing called _judgement_.
 
 So when faced with this snippet of code in a larger method:
 
@@ -200,6 +199,98 @@ of thought over whether to pull 2 lines of code into a separate method?
 (I'm not sure this example will be particularly illuminating for
 readers; I'd be happy to drop it).
 
+**UB:**
+
+Actually, that's an example from Martin Fowler's _Refactoring_.  The original code from that example looks like this:
+
+	public String statement() {
+	  double totalAmount = 0;
+	  int frequentRenterPoints = 0;
+	  Enumeration rentals = this.rentals.elements();
+	  String result = "Rental Record for " + getName() + "\n";
+
+	  while (rentals.hasMoreElements()) {
+	    double thisAmount = 0;
+	    Rental each = (Rental) rentals.nextElement();
+
+	    // determines the amount for each line
+	    switch (each.getMovie().getPriceCode()) {
+	      case Movie.REGULAR:
+	        thisAmount += 2;
+	        if (each.getDaysRented() > 2)
+	          thisAmount += (each.getDaysRented() - 2) * 1.5;
+	        break;
+	      case Movie.NEW_RELEASE:
+	        thisAmount += each.getDaysRented() * 3;
+	        break;
+	      case Movie.CHILDRENS:
+	        thisAmount += 1.5;
+	        if (each.getDaysRented() > 3)
+	          thisAmount += (each.getDaysRented() - 3) * 1.5;
+	        break;
+	    }
+
+	    frequentRenterPoints++;
+
+	    if (each.getMovie().getPriceCode() == Movie.NEW_RELEASE
+	      && each.getDaysRented() > 1)
+	      frequentRenterPoints++;
+
+	    result += "\t" + each.getMovie().getTitle() + "\t"
+	      + String.valueOf(thisAmount) + "\n";
+	    totalAmount += thisAmount;
+	  }
+
+	  result += "You owed " + String.valueOf(totalAmount) + "\n";
+	  result += "You earned " + String.valueOf(frequentRenterPoints) + " frequent renter points\n";
+
+	  return result;
+	}
+	
+And after a good refactoring looks like this:
+
+	public String makeStatement() {
+	  clearTotals();
+	  return makeHeader() + makeRentalDetails() + makeFooter();
+	}
+
+	private void clearTotals() {
+	  totalAmount = 0;
+	  frequentRenterPoints = 0;
+	}
+
+	private String makeHeader() {
+	  return "Rental Record for " + getCustomerName() + "\n";
+	}
+
+	private String makeRentalDetails() {
+	  String rentalDetails = "";
+	  for (Rental rental : rentals)
+	    rentalDetails += makeRentalDetail(rental);
+
+	  return rentalDetails;
+	}
+
+	private String makeRentalDetail(Rental rental) {
+	  double amount = rental.determineAmount();
+	  frequentRenterPoints += rental.determinePoints();
+	  totalAmount += amount;
+	  return formatRentalDetail(rental, amount);
+	}
+
+	private String formatRentalDetail(Rental rental, double amount) {
+	  return "\t" + rental.getTitle() + "\t" + amount + "\n";
+	}
+
+	private String makeFooter() {
+	  return "You owed " + totalAmount + "\n" +
+	    "You earned " + frequentRenterPoints + " frequent renter points\n";
+	}
+	
+BTW, that's _my_ refactoring, not Martin's.  
+
+**JOHN:**
+
 I agree that it isn't possible to provide precise recipes for software
 design, and judgment will inevitably be involved. But judgment depends
 on principles and guidance. The
@@ -212,12 +303,20 @@ buried in the middle of exhortations
 to "chop, chop, chop". Is there something more comprehensive that
 I missed?
 
+**UB:**
+
+You make a good point that I don't talk much, in the book, about the how to make the judgement call.  Back in 2008 my concern was breaking the habit of the very large functions that were common in those early days of the web.  I'll have to consider being a bit more balanced in the 2d ed.  
+
+Still, if I must err, I'd rather err on the side of extraction.  Extractions can always be inlined if they we judge them to be too decomposed. 
+
+**JOHN:**
+
 One of the reasons I use the deep/shallow characterization is that it
 captures both sides of the tradeoff; it will tell you when a decomposition
 is good and also when decomposition makes things worse.
 
 I think it will be easier to clarify our differences if we consider
-a specific code example. Let's look at the PrimeGenerator class from
+a specific code example. Let's look at the `PrimeGenerator` class from
 *Clean Code*, which is Listing 10-8 on pages 145-146. This Java class
 generates the first N prime numbers:
 
@@ -313,9 +412,25 @@ Of course this code was never meant for production.  It's clearly a pedagogical 
 It sounds like we may disagree not just on software design, but also
 on teaching pedagogy. In my experience, when students see example code they
 assume it is "good" in every way, and they will emulate it (in every way).
+
+**UB:**
+
+Hai Miyagi-san.  Teacher say.  Student do.  
+
+However, there are plenty of other examples in the book that go into substantially more depth; so I'm not overly concerned that this one will lead anyone astray.  Still, this is more fodder for the 2d. ed.
+
+**JOHN:**
+
 If we want to
 teach people how to write production code, then our examples should appear
 as close as possible to the way we think production code should appear.
+
+**UB:**
+
+Well, within the limits of being polite.  If the final code goes off into a deep exposition of an algorithm that has nothing, whatever, to do with the point of the lesson; then it could be seen as rude to focus on the ancillary details to the detriment of the lesson.
+
+**JOHN:**
+
 In any case, can you clarify (a) in what ways you would like readers to
 emulate this example in production and (b) in what ways they should *not*
 emulate the example (if there are any)? (Note: if you can answer questions
@@ -324,9 +439,11 @@ without the digression into teaching pedagogy).
 
 **UB:**
 
-Knuth's original code was also never meant for production.  It too was a pedagogical example.  It was one big monolithic function that not only generated prime numbers but also printed them in columns and pages with page numbers.
+The lesson of the chapter is that a large function can contain many different sections of code that are better extracted into independent classes.  So I would like my readers to attempt such extractions when they see large functions; and they should *not* allow such unextracted functions to persist.
 
-**JOHN:**
+BTW, that is also the lesson of Martin Fowler's video store example above.
+
+**JOHN:** >>You can delete this
 
 I disagree: I think that Knuth intended for his approach to
 be used for production code. (We are really off in the weeds here...)
@@ -372,7 +489,15 @@ Once the classes were extracted, the `PrimeGenerator` looked like this: (which I
 
 **JOHN**:
 
-I don't think you have represented Knuth's work fairly. If I understand
+I don't think you have represented Knuth's work fairly. 
+
+**UB:**
+
+In fact, on page 141 I say: "To be fair to Knuth, this is not the program as he wrote it but rather as it was output by his WEB tool.  I'm using it because it mamkes a great starting place for breaking up a big function into many smaller functions and classes."
+
+**JOHN:**
+
+If I understand
 the Literate Programming paper, the idea was to intermix extensive documentation
 with the program code in order to make the code easier to understand.
 I don't necessarily agree with Knuth's approach, but
@@ -381,7 +506,7 @@ of the documentation that Knuth intended to accompany it. It's no surprise
 that the extracted code is hard to read. (Are you sure you
 want to go into this example? I don't see how it will enhance the rest of
 the discussion. The
-PrimeGenerator code should be able to stand on its own; whether it is better
+`PrimeGenerator` code should be able to stand on its own; whether it is better
 or worse than Knuth's code is irrelevant for our discussion.)
 
 **UB**:
@@ -423,8 +548,6 @@ when discussing comments.
 **UB**:
 
 So, a good critique of those names is that they depend, to some extent, upon gaining some understanding of the algorithm.
-
-But again, teaching this algorithm was not the intent of that chapter.  The chatper was about breaking large functions into smaller classes.
 
 **JOHN:**
 
@@ -471,6 +594,10 @@ it's thinking you understand it when you don't.
 
 **UB:**
 
+That's a valid concern.  However, it is tempered by the fact that the functions are presented in the order they are called.  Thus we can expect that the reader has already seen the main loop and understands that candidate increases by two each iteration.
+
+The side effect buried down in `smallestOddNth...` is a bit more problematic. Now that you've pointed it out I don't like it much.  Still, that side effect should not confound the basic understanding of `isNot...`.   
+
 In general, if you trust the names of the methods being called then understanding the caller does not require understanding the callee.  For example:
 
 	for (Employee e : employees)
@@ -494,7 +621,7 @@ for readers to convince themselves that it works.
 
 **UB:**
 
-Which is why the methods are ordered the way they are.  I expect that by the time you get to `isNot...` you've already read `checkOddNumbersForSubsequentPrimes` and know that `candidate` increases monotonically.
+Which, as I said before, is why the methods are ordered the way they are.  I expect that by the time you get to `isNot...` you've already read `checkOddNumbersForSubsequentPrimes` and know that `candidate` increases by twos.
 
 **JOHN:**
 
@@ -507,6 +634,12 @@ loop in `checkOdd...` and `isNot...`, so readers will have forgotten
 the loop context before they get to `isNot...`. Furthermore, the actual
 code that creates a dependency on the loop isn't in `isNot...`: it's in
 `smallestOdd...`, which is even farther away from `checkOdd...`.
+
+**UB:**
+
+I sincerely doubt anyone is going to forget that `candidate` is being increased by twos.  It's a pretty obvious way to avoid waste.
+
+**JOHN:**
 
 In my opening remarks I talked about how it's important to reduce the
 amount of information people have to keep in their minds at once.
@@ -533,7 +666,7 @@ Is there some benefit to having so many methods that I have missed?
 
 **UB:**
 
-I think you and I are just going to disagree on this.  In general I believe in the principle of small well-named methods and the separation of concerns. Generally speaking if you can break a large method into several well-named smaller methods with different concerns, and by doing so expose the high level functional decomposition, then that's a good thing.
+I think you and I are just going to disagree on this.  In general I believe in the principle of small well-named methods and the separation of concerns. Generally speaking if you can break a large method into several well-named smaller methods with different concerns, and by doing so expose their interfaces, and the high level functional decomposition, then that's a good thing.
 
 * Looping over the odd numbers is one concern.
 * Determining primality is another.
@@ -591,6 +724,8 @@ I maintained the order of the extracted lines,
 and everything is visible on a single screen. Even so, this version is
 almost impossible to read.
 
+>>I think you need a better example than this.  Many of our readers will now know the Gettysburgh address.  And many others won't want to read all of it.  And, in any case, moving lines of prose and extracting functions are very, very, different things.  A better analog would be legalese; but in that language the extracting of paragraphs is very common.
+
 The problems with `PrimeGenerator` are similar, albeit not as
 extreme. If the contents of `smallestOdd...` were moved up into the loop
 in `checkOdd...` then it would be obvious that they are related,
@@ -627,9 +762,11 @@ independence vs. entanglement.
 
 **UB:**
 
-In this case I think I improved the structure and naming of the original quite a bit.  I think you can make the argumennt that I did not improve it enough.  However, the goal of this chapter, and the goal of this example, were not to show the best possible prime number generator.  Rather it was to present the strategy for breaking up large methods into smaller classes and methods.  In that regard I think the example was a success.
+We will have to disagree on that.  I think that if a method is terse enough, then the name should be sufficient to describe it in most cases.  
 
-**JOHN:**
+In this case I think I improved the structure and naming of the original quite a bit.  Perhaps I did not improve it enough but I think it serves to present the strategy for breaking up large methods into smaller classes and methods.  
+
+**JOHN:** >>reword
 
 I'm comfortable with your goal (but I'm not sure why you keep bringing up "best
 possible prime number generator": none of my concerns have anything to
@@ -651,7 +788,7 @@ that makes it hard to understand how the algorithm works?
 
 **UB:**
 
-As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
+As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution (below) into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
 
 **JOHN:**
 
@@ -704,6 +841,8 @@ chapter.
 
 **UB:**
 
+The difference in page count is because there are just a few ways to write good comments, and so many more ways to write bad ones.
+
 You and I likely both survived through a time when comments were absolutely necessary.  In the '70s and '80s I was an assembly language programmer.  I also wrote a bit of FORTRAN. Programs in those languages that had no comments were impenetrable.  (As was Knuth's original prime generator.)
 
 As a result it became conventional wisdom to write comments by default.  And, indeed, computer science students were taught to write comments uncritically.  Comments became _pure good_.
@@ -718,9 +857,9 @@ any less necessary today than they were 40 years ago.
 
 **UB:**
 
-I didn't say they were evil.  I said they were a _necessary_ evil because we fail to express ourselves in code.
+I didn't say they were evil.  I used the well-known idiom of _necessary_ evil. That's because we write them when we fail to express ourselves in code.
 
-**JOHN:**
+**JOHN:** >> delete
 
 Yes, you did say they are evil: a "necessary evil" is still evil, just
 like a "red car" is still a car.
@@ -737,7 +876,7 @@ understand.
 
 I didn't say they were "the problem".  I certainly said that some comments were problematic.
 
-**JOHN:**
+**JOHN:** >> suggest you use "a problem" instead of "the problem".
 
 I moved the above comment down so that it doesn't interrupt my thought.
 To me, this comment seems nitpicky in an uninteresting way. I didn't say
@@ -753,7 +892,7 @@ comment once you have read it.
 
 It's very true that there is important information that is not, or cannot be, expresssed in code.  That's a failure.  A failure of our languages, or of our ability to use them to express ourselves.  In every case a comment is a failure of our ability to use our languages to express our intent.
 
-And we fail at that very frequently, and so comments are a necessary evil.  If we had the perfect programming language TM we would never write another comment.
+And we fail at that very frequently, and so comments are a necessary evil -- or, if you prefer, an unfortunate necessity.  If we had the perfect programming language TM we would never write another comment.
 
 **JOHN:**
 
@@ -768,13 +907,9 @@ and English?
 
 **UB:**
 
-I am _not_ adamant that all information about a program must be expressed in code.  I bemoan the fact that we must sometimes use a human language instead of a programming language.  Human languages are imprecise and full of ambiguities. Using a human language to describe something precisely is very hard, and fraught with many opportunities for error and inadvertent misinformation.
+I bemoan the fact that we must sometimes use a human language instead of a programming language.  Human languages are imprecise and full of ambiguities. Using a human language to describe something as precise as a program is very hard, and fraught with many opportunities for error and inadvertent misinformation.
 
 **JOHN:**
-
-(I removed the word "adamant" and changed "must" to "should" to avoid
-an argument over terminology. You can delete this parenthetical once you
-have read it.)
 
 I agree that English isn't as precise as code, but it can be used in
 in fairly precise ways and comments typically don't need the same
@@ -794,6 +929,12 @@ very often and when I do, they rarely cost me much time. In contrast, I waste
 unusual for me to spend 50-80% of my development time wading through
 code to figure out things that would be obvious if the code was properly
 commented.
+
+**UB:**
+
+You and I have had very different experiences.  ;-)
+
+**JOHN:**
 
 I invite everyone reading this article to ask yourself the following questions:
 * How much does your software development speed suffer because of
@@ -848,7 +989,16 @@ more effectively. What advantage is there in the approach you advocate?
 
 **UB:**
 
-(your answer goes here)
+I like my method names to be sentence fragments that fit nicely with keywords and assignment statements.  It makes the code a bit more natural to read.
+
+	if (isTooHot)
+	  cooler.turnOn();
+
+I also follow a simple rule about the length of names.  The larger the scope of a function, the shorter its name should be.  The private functions I extracted in this case live in very small scopes, and so have longish names.  Functions like this are typically called from only one place, so there is no burden on the programmer to remember and long name for another call.
+
+As for being hard to parse, that's a matter of practice.  Code is full things like that.
+
+As for the meaning of "leastRelevant", that's a much larger problem that you and I will encounter shortly.  It has to do with the intimacy that the author has with the solution, and the reader's lack of that intimacy.
 
 **JOHN:**
 
@@ -921,6 +1071,16 @@ Can you explain what you mean by "should be pushed down to a lower level"
 (I'm curious where you would put this information, if not in the interface
 description)?
 
+**UB:**
+
+Consider this:
+
+	addSongToLibrary(song.getTitle(), 
+	                 song.getAuthors(), 
+									 song.getDuration())
+									 
+In this case `addSongToLibrary` is part of the `song` abstraction which hides all the details you were concerned about.  
+
 **JOHN:**
 
 Let's consider an example from `PrimeGenerator`: the `isMultipleOfNthPrimeFactor`
@@ -953,7 +1113,23 @@ examine, which I think will be more interesting).
 
 **UB:**
 
-John, my readers don't have to use it.  It was not written for them to use.  I don't expect that any of my readers will call it.  If for some unknown reason one of them really wants to know how to use it then there is a very good example of how it is used in the `isPrime` method.
+I think it's accurate.  I wouldn't delete it if I encountered it.  I don't think it should be a javadoc.
+
+The first sentence is redundant with the name and so could be deleted.  The warning of the side effect is useful.
+
+The name 'candidate' is synonymous with "Number being tested for primality".
+
+The constraints on the arugments could be written as executable preconditions following Bertrand Meyer's idea of _Design by Contract_ used in the Eiffel language.
+
+	require
+		candidate >= last.candidate and
+		n <- multipleOfPrimeFactors.size()
+
+In Eiffel these could be turned off during production.
+
+Eiffel is an example of a language that diminishes the need for comments like that.
+
+In the end, however, all those words are just going to have to sit in my brain until I understand why they are there.  I'm also going to have to worry if they are accurate.  So I'm going to have to read the code to understand and validate the comment.
 
 **JOHN:**
 
@@ -996,26 +1172,27 @@ two issues?
 
 **UB:**
 
-Why is that important to understanding the lesson of that chapter?
+I agree that the algorithm is subtle.  Setting the first prime multiple as the square of the prime was deeply mysterious at first.  I had to go on an hour long bike ride to understand it.
 
-Consider my audience.  I was writing for software developers in 2008, and I was explaining how large functions can be split into several classes.  Why would I clutter up that explanatory code with a comment about what programmers feared in the early '80s?  My readers would have had utterly no interest in that.
+Would a comment help?  Perhaps.  However, my guess is that no one who has been reading our conversation has been helped by it, because you and I are now too intimate with the solution.  You and I can talk about that solution using words that fit into that intimacy; but our readers likely do not yet enjoy that fit.
 
-**UB:**
+One solution is to paint a picture -- being worth a thousand words.  Here's my attempt.
 
-That bike ride I took was *after* I had read the comment you put in your version of this method.  So -- again, maybe I'm dense, but that comment didn't help me at all -- it was just a jumble of numbers that I could not map to the problem.  Now that I understand the algorithm (again), I understand your comment.  But the reverse was not true.\
+	                                                                X
+	                                                    1111111111111111111111111
+	       1111122222333334444455555666667777788888999990000011111222223333344444
+	   35791357913579135791357913579135791357913579135791357913579135791357913579
+	   !!! !! !! !  !!  ! !! !  !  !!  ! !!  ! !  !   ! !! !! !      
+	 3 |||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-
+	 5 |||||||||||-||||-||||-||||-||||-||||-||||-||||-||||-||||-||||-
+	 7 |||||||||||||||||||||||-||||||-||||||-||||||-||||||-||||||-||||||-
+	11 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||-||||||||||-
+	13 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+	...
+	113||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+	
+I expect that our readers will have to stare at this for some time, and also look at the code.  But then there will be a _click_ in their brains and they'll say "Ohhh!  Yes!  I see it now!"
 
-**JOHN:**
-
-I pulled the above two comments down so they don't interrupt my thought train.
-They may also need revision because "the lesson of that chapter" is no longer
-relevant to the discussion. I also reworked my comments quite a bit.
-You can delete this comment.
-
-**UB:**
-
-Why indeed?  This is not at all easy to understand.  I needed to go on an hour long bike ride to finally work it out.  Again, maybe I'm dense, but this is not an easy thing to understand.
-
-And again I was not teaching software developers the most optimal way to calculate prime numbers.  I was teaching them how and when to break large methods up into smaller classes and smaller methods.
 
 ## John's Rewrite of PrimeGenerator
 
@@ -1104,7 +1281,7 @@ I presume this is a complete rewrite.  My guess is that you worked to understand
 
 That's not what I did.  I *refactored* Knuth's algorithm in order to give it a little structure.
 
-Having said that, your version is much better than either Knuth's or mine.  I could not have used it in the chapter I was writing *because* it is still in a single method, and I needed to show the partioning.
+Having said that, your version is much better than either Knuth's or mine.  I could not have used it in the chapter I was writing *because* it is still in a single method, and I needed to show a more granular partioning.
 
 I wrote that chapter 18 years ago, so it's been a long time since I saw and understood this algorithm.  When I first saw your challenge I thought: "Oh, I can figure out my own code!"  But, no.  I could see all the moving parts, but I could not figure out why those moving parts generated a list of prime numbers.
 
@@ -1371,9 +1548,11 @@ claim credible.
 
 **UB:**
 
-John, it may be that you are such a hyper-disciplined programmer that you have never altered a line of code only to see something unexpected happen.  Perhaps you can plan out your functions, write them all, and test them all in a nice straight line.  If so, more power to you!
+Asking for supporting evidence is a two-way street.  All through this document I could have been asking you to show evidence of your claims.  But that's not what this document is about.  This is about two very experienced practitioners describing recommendations based upon their experiences.
 
-As for me, and most of the programmers I've met in my lifetime, we frequently have the experience that a small change in one place can cause something else to break in an unexpected way.  The sooner we find that, the better.  And that's why seconds and minutes matter.
+I have been practicing TDD for over 25 years.  So if I say something that sounds "fantastical" that's only because you and I have had very different experiences.  From my point of view, nothign I said was fantastical.
+
+Or rather, it's not fantastical _now_.  It was 25 years ago when I first encountered this discipline.  Back then I thought it was a load of hooey.  But then I tried it -- and my mind was changed very quickly.  
 
 But allow me to continue with the explanation.  The very intense cycle I just described is part of a larger cycle that we call RED-GREEN-REFACTOR.  First we make it fail, then we make it pass, then we clean it up and consider the design.
 
@@ -1446,12 +1625,9 @@ Here is the kind of nightmare scenario I worry about with TDD:
 As this scenario shows, exposing a lot of bugs quickly isn't
 necessarily a good sign...
 
->>> Note: I revised the above to make it less condescending, though, sadly,
-less funny
-
 **UB:**
 
-(LOL)  That was a funny story -- if perhaps a bit speculative, condescending, derisive, and misrepresentative.  So let's correct a few things.
+(LOL)  That was a funny story -- if perhaps a bit speculative.  And like all speculation based upon inexperience, it's quite inaccurate. So let's correct a few things.
 
 1. We certainly do think about the big picture and we certainly do spend time on working through an overall design.  The idea that we don't is an old and false meme that was used to criticize the Agile and Extreme Programming movements twenty years ago. If you've read any of my books you know that I talk about design and architecture a _lot_.  This is an activity I engage in very frequently at many different time scales: weekly, daily, hourly, and every few minutes.
 
@@ -1470,6 +1646,14 @@ less funny
 **JOHN:**
 
 I stand by my claims that TDD is tactical and discourages design.
+
+**UB:**
+
+Try it, Sam I Am.  And then tell me if you still think it discourages design.  
+If you'd like some help you can I can pair on a few things.   Or if you'd like you can watch some of the videos I, or others, have done regarding this discipline.
+
+**JOHN:**
+
 I'm not saying it's impossible to do good design in a TDD environment,
 but to do so you must develop additional processes to compensate for
 the tactical pressure created by TDD. Perhaps the approaches you described
@@ -1477,6 +1661,19 @@ above, if diligently
 executed, can produce an acceptable outcome. However, I fear that most
 developers won't have the self-discipline to avoid the mess I described
 earlier.
+
+**UB:**
+
+But you think that most developers have the self-discipline to write careful comments and work though, and then follow, up front designs?  
+
+Discipline is discipline.  Either you've got it, or you don't.  And if you don't, you wind up with a mess.
+
+
+>>At this point John you are speculating about things you don't know.  These are very old, and very tired, arguments that have been proven wrong over the last two and a half decades.  
+
+>>The offer is open.  I'm happy to work with you to show you the discipline if you like. It is nothing at all like what you fear.
+
+**JOHN:**
 
 Even if it's possible to make TDD work, why use an approach that must be
 compensated for? The fundamental problem with TDD is that it prioritizes
