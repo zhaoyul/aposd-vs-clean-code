@@ -129,22 +129,39 @@ In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't th
 
 **JOHN:**
 
-It sounds like you are saying that only a class's external interfaces need
-to be deep, and it's OK for internal interfaces to be shallow and complex.
-I disagree. I think that *all* interfaces should be deep, including
+Are you saying that only a class's external interfaces need
+to be deep, and it's OK for internal interfaces to be shallow and complex?
+If so, I disagree. I think that *all* interfaces should be deep, including
 lower-level interfaces for methods within a class and higher-level interfaces
 for subsystems, micro-services, etc. Clean interfaces provide benefits
-everywhere.  (I'm happy to drop this comment if you are willing to drop the
-suggestion that shallow interfaces are OK within a class.)
+everywhere.
 
 **UB:**
+
 I think, rather, I am saying that the interface between two extractable snippets of code is not not well expressed if they are kept inline within a function.  The wideness of the interface between them is hidden.  By extracting them we that interface is named, and becomes much clearer.  From there the programmer can determine if that interface is too wide.
+
+**JOHN:**
+
+I'm not sure I understand this. Are you saying that within the body of a single
+method there exist interfaces, and that a reader must discover these "internal
+interfaces" in order to understand how a method works?
+
+**UB:**
 
 The extraction of small private methods from the public methods of a class creates an internal structure that separates the high level policy of the original public methods, from the lower level details of those methods.  It gives those lower level details names, declared interfaces, and allows their implementations to be hidden behind those names and interfaces.
 
 This helps the reader to understand the flow of the original method without having to understand the details.
 
 I call this kind of structure: Polite.
+
+**JOHN:**
+
+I would call this "modular design" and I agree it is a good thing
+(when it really is modular). However, this doesn't address the issue I raised:
+do you consider it OK for private methods within a class to have shallow and
+complex interfaces?
+
+**UB:**
 
 The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
@@ -191,105 +208,11 @@ The latter has a nice descriptive name that is abstract enough to be meaningful 
 **JOHN:**
 
 Without seeing more context, I'm skeptical that the `clearTotals`
-method makes sense. If the meaning of those two lines isn't already clear
-from context, why not just add a short comment before them, rather
-than creating a separate method (which, by the way, is shallow)?
-This example seems pretty trivial to me: is it really worth a lot
-of thought over whether to pull 2 lines of code into a separate method?
-(I'm not sure this example will be particularly illuminating for
-readers; I'd be happy to drop it).
+method makes sense, but let's not argue about that.
 
-**UB:**
-
-Actually, that's an example from Martin Fowler's _Refactoring_.  The original code from that example looks like this:
-
-	public String statement() {
-	  double totalAmount = 0;
-	  int frequentRenterPoints = 0;
-	  Enumeration rentals = this.rentals.elements();
-	  String result = "Rental Record for " + getName() + "\n";
-
-	  while (rentals.hasMoreElements()) {
-	    double thisAmount = 0;
-	    Rental each = (Rental) rentals.nextElement();
-
-	    // determines the amount for each line
-	    switch (each.getMovie().getPriceCode()) {
-	      case Movie.REGULAR:
-	        thisAmount += 2;
-	        if (each.getDaysRented() > 2)
-	          thisAmount += (each.getDaysRented() - 2) * 1.5;
-	        break;
-	      case Movie.NEW_RELEASE:
-	        thisAmount += each.getDaysRented() * 3;
-	        break;
-	      case Movie.CHILDRENS:
-	        thisAmount += 1.5;
-	        if (each.getDaysRented() > 3)
-	          thisAmount += (each.getDaysRented() - 3) * 1.5;
-	        break;
-	    }
-
-	    frequentRenterPoints++;
-
-	    if (each.getMovie().getPriceCode() == Movie.NEW_RELEASE
-	      && each.getDaysRented() > 1)
-	      frequentRenterPoints++;
-
-	    result += "\t" + each.getMovie().getTitle() + "\t"
-	      + String.valueOf(thisAmount) + "\n";
-	    totalAmount += thisAmount;
-	  }
-
-	  result += "You owed " + String.valueOf(totalAmount) + "\n";
-	  result += "You earned " + String.valueOf(frequentRenterPoints) + " frequent renter points\n";
-
-	  return result;
-	}
-	
-And after a good refactoring looks like this:
-
-	public String makeStatement() {
-	  clearTotals();
-	  return makeHeader() + makeRentalDetails() + makeFooter();
-	}
-
-	private void clearTotals() {
-	  totalAmount = 0;
-	  frequentRenterPoints = 0;
-	}
-
-	private String makeHeader() {
-	  return "Rental Record for " + getCustomerName() + "\n";
-	}
-
-	private String makeRentalDetails() {
-	  String rentalDetails = "";
-	  for (Rental rental : rentals)
-	    rentalDetails += makeRentalDetail(rental);
-
-	  return rentalDetails;
-	}
-
-	private String makeRentalDetail(Rental rental) {
-	  double amount = rental.determineAmount();
-	  frequentRenterPoints += rental.determinePoints();
-	  totalAmount += amount;
-	  return formatRentalDetail(rental, amount);
-	}
-
-	private String formatRentalDetail(Rental rental, double amount) {
-	  return "\t" + rental.getTitle() + "\t" + amount + "\n";
-	}
-
-	private String makeFooter() {
-	  return "You owed " + totalAmount + "\n" +
-	    "You earned " + frequentRenterPoints + " frequent renter points\n";
-	}
-	
-BTW, that's _my_ refactoring, not Martin's.  
-
-**JOHN:**
+>>> I took the liberty of deleting the example you added along with a bunch
+of  my text above. Discussing this additional example would be a huge
+digression, potentially another entire blog. Let's try to stay focused?
 
 I agree that it isn't possible to provide precise recipes for software
 design, and judgment will inevitably be involved. But judgment depends
@@ -305,9 +228,9 @@ I missed?
 
 **UB:**
 
-You make a good point that I don't talk much, in the book, about the how to make the judgement call.  Back in 2008 my concern was breaking the habit of the very large functions that were common in those early days of the web.  I'll have to consider being a bit more balanced in the 2d ed.  
+You make a good point that I don't talk much, in the book, about the how to make the judgement call.  Back in 2008 my concern was breaking the habit of the very large functions that were common in those early days of the web.  I'll have to consider being a bit more balanced in the 2d ed.
 
-Still, if I must err, I'd rather err on the side of extraction.  Extractions can always be inlined if they we judge them to be too decomposed. 
+Still, if I must err, I'd rather err on the side of extraction.  Extractions can always be inlined if they we judge them to be too decomposed.
 
 **JOHN:**
 
@@ -407,6 +330,8 @@ Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Litera
 
 Of course this code was never meant for production.  It's clearly a pedagogical exercise.  It appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and methods.
 
+>>> The comments below feel like an uninteresting digression to me. Can we delete everything down through the "END DIGRESSION" comment below?
+
 **JOHN:**
 
 It sounds like we may disagree not just on software design, but also
@@ -415,7 +340,7 @@ assume it is "good" in every way, and they will emulate it (in every way).
 
 **UB:**
 
-Hai Miyagi-san.  Teacher say.  Student do.  
+Hai Miyagi-san.  Teacher say.  Student do.
 
 However, there are plenty of other examples in the book that go into substantially more depth; so I'm not overly concerned that this one will lead anyone astray.  Still, this is more fodder for the 2d. ed.
 
@@ -448,9 +373,16 @@ BTW, that is also the lesson of Martin Fowler's video store example above.
 I disagree: I think that Knuth intended for his approach to
 be used for production code. (We are really off in the weeds here...)
 
+>>> END DIGRESSION. Also, I'm not sure that your comment below follows
+naturally anymore from what is above it.
+
 **UB:**
 
 In the chapter I extracted three classes from that function: `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.
+
+>>> Can you pull up information from your comment below (which I propose
+to delete) that clarifies that this isn't Knuth's original code, but
+rather back-end output?
 
 Once the classes were extracted, the `PrimeGenerator` looked like this: (which I did not publish in the book.)  The variable names were Knuth's.
 
@@ -487,9 +419,10 @@ Once the classes were extracted, the `PrimeGenerator` looked like this: (which I
 	  }
 	}
 
+>>> I propose to delete from here down through END DIGRESSION 2
 **JOHN**:
 
-I don't think you have represented Knuth's work fairly. 
+I don't think you have represented Knuth's work fairly.
 
 **UB:**
 
@@ -509,11 +442,22 @@ the discussion. The
 `PrimeGenerator` code should be able to stand on its own; whether it is better
 or worse than Knuth's code is irrelevant for our discussion.)
 
-**UB**:
+>>> END DIGRESSION 2
+
+**UB:**
 
 I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large methods, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named methods.
 
 I think it's somewhat better than where it started.
+
+**JOHN:**
+
+I don't think it's meaningful to compare your source code
+with what is essentially assembly language output generated from Knuth's
+source (which was embedded in a text document intended to make the code
+easy to read and understand). I suggest we focus on your code.
+
+**UB:**
 
 It was _not_ my intent, in this chapter, to teach my readers how to write the most optimal prime number generator.  That was the last thing on my mind, and the last thing I wanted on theirs.
 
@@ -523,8 +467,7 @@ Agreed; for this discussion I assume we will take the algorithm as a given,
 and focus on the cleanest possible way to implement that algorithm.
 
 I think there are many design problems with `PrimeGenerator`, but for now I'll
-focus on method length (I'll come back to this code later when we
-discuss comments). The code is chopped up so much (8 teeny-tiny methods)
+focus on method length. The code is chopped up so much (8 teeny-tiny methods)
 that it's difficult to read. For starters, consider the
 `isNotMultipleOfAnyPreviousPrimeFactor` method. This method invokes
 `isMultipleOfNthPrimeFactor`, which invokes
@@ -538,7 +481,7 @@ you can't see that unless you read all three methods.
 
 **UB:**
 
-I agree.  Though I would not have agreed eighteen years ago when I was in the throes of refactoring this.  At the time the names and structure made perfect sense to me.  They make sense to me now, too -- but that's because I once again understand the algorithm.  When I returned to the algorithm a few days ago, I also struggled with the names and structure.  Once you understand the algorithm the names make perfect sense, and that understanding breaks the entaglement.
+I agree.  Though I would not have agreed eighteen years ago when I was in the throes of refactoring this.  At the time the names and structure made perfect sense to me.  They make sense to me now, too -- but that's because I once again understand the algorithm.  When I returned to the algorithm a few days ago, I also struggled with the names and structure.  Once you understand the algorithm the names make perfect sense, and that understanding breaks the entanglement.
 
 **JOHN:**
 
@@ -579,15 +522,16 @@ Now it would be fair to ask the question how we determine whether the candidate 
 
 **JOHN:**
 
-I agree that it would be easy for someone reading `isNot...` to think they
-understood it completely without needing to read `isMultiple...` or
-`smallestOdd...`. Unfortunately they would be mistaken. For example, they
-would not realize that `isNot...` has side effects and that its
-`candidate` argument must be monotonically non-decreasing from invocation
-to invocation. To understand these important behaviors, you have to
+This code does appear to be simple and obvious.
+Unfortunately, this appearance is deceiving.
+If a reader trusts the name `isMultipleOfNthPrimeFactor` (which suggests
+a predicate with no side effects) and doesn't bother to read its code, they
+will not realize that it has side effects, and that the side effects
+create a constraint on the `candidate` argument to `isNot...`
+(it must be monotonically non-decreasing from invocation
+to invocation). To understand these behaviors, you have to
 read both `isMultiple...` and `smallestOdd...`. The current decomposition
-hides this important information from the reader by pulling it out of
-`isNot...`.
+hides this important information from the reader.
 
 If there is one thing more likely to result in bugs than not understanding code,
 it's thinking you understand it when you don't.
@@ -596,7 +540,7 @@ it's thinking you understand it when you don't.
 
 That's a valid concern.  However, it is tempered by the fact that the functions are presented in the order they are called.  Thus we can expect that the reader has already seen the main loop and understands that candidate increases by two each iteration.
 
-The side effect buried down in `smallestOddNth...` is a bit more problematic. Now that you've pointed it out I don't like it much.  Still, that side effect should not confound the basic understanding of `isNot...`.   
+The side effect buried down in `smallestOddNth...` is a bit more problematic. Now that you've pointed it out I don't like it much.  Still, that side effect should not confound the basic understanding of `isNot...`.
 
 In general, if you trust the names of the methods being called then understanding the caller does not require understanding the callee.  For example:
 
@@ -625,7 +569,7 @@ Which, as I said before, is why the methods are ordered the way they are.  I exp
 
 **JOHN:**
 
-I'm glad you brought this up, because it's another area where I
+Let's discuss this briefly, because it's another area where I
 disagree with *Clean Code*. If methods are entangled, there is no
 clever ordering of the method definitions that will fix the problem.
 
@@ -644,14 +588,19 @@ I sincerely doubt anyone is going to forget that `candidate` is being increased 
 In my opening remarks I talked about how it's important to reduce the
 amount of information people have to keep in their minds at once.
 In this situation, readers have to remember that loop while they read
-four intervening methods that are mostly unrelated. But it's even worse than
+four intervening methods that are mostly unrelated. You apparently think
+this will be easy and natural (I disagree). But it's even worse than
 that. There is no indication which parts of `checkOdd...` will be important
 later on, so the only safe approach is to remember *everything*, from *every*
 method, until you have encountered every other method that could possibly
-descend from it. This can't possibly work.
+descend from it. And, to make the connection between the pieces, readers
+must also reconstruct the call graph to notice that, even through
+4 layers of method call, the code in `smallestOdd...` places constraints
+on the loop in `checkOdd...`. This is an unreasonable cognitive burden to
+place on readers.
 
 If two pieces of code are tightly related, the solution is to bring
-them together. Separating the pieces, even in adjacent methods,
+them together. Separating the pieces, even in physically adjacent methods,
 makes the code harder to understand.
 
 To me, all of the methods in `PrimeGenerator` are entangled: in order to
@@ -682,73 +631,46 @@ Now perhaps you are concerned that in my solution the "flipping" is a longer dis
 
 **JOHN:**
 
-I agree that separation of concerns is a good thing, but only if the
-concerns are really independent. The problem with `PrimeGenerator` is
-that it separates things that are not independent.
+It sounds like it's time to wrap up this section. Is this a reasonable
+summary of where we agree and disagree?
 
-Let me try one more time. Let's start with an extreme example to
-illustrate the problem. Here is a slightly modified version
-of the Gettysburg Address:
+* We agree that modular design is a good thing.
+* We agree that it is possible to over-decompose, and that *Clean Code*
+  doesn't provide much guidance on how to recognize over-decomposition.
+* We disagree on how far to decompose: you recommend decomposing
+  code into much smaller units than I do.
+* You believe that the One Thing principle, applied with judgment, will
+  lead to appropriate decompositions. I believe it lacks guardrails
+  and will lead to over-decomposition.
+* You believe that `PrimeGenerator` provides a good example of how to
+  decompose code and that it is easy to read.
+  I believe that `PrimeGenerator` is a really bad decomposition
+  (sorry to be blunt) and that the problems stem from following the
+  advice of *Clean Code*: it is way over-decomposed and as a result is
+  difficult to read.
+* You believe that `PrimeGenerator` separates concerns. I believe that
+  the code appears separated on the surface, but in fact it is entangled.
+* You believe that when someone reads a class, it's reasonable for them
+  to load all of the code of the class into their head as they go, so
+  that in each method they remember what they've read in previous methods.
+  I believe that this creates an unreasonable cognitive load: it should
+  be possible to read each method relatively independently, without having
+  to remember the implementations of other methods.
+* You believe that ordering the methods in a class is an effective way
+  to manage dependencies between them. I believe that if you need to order
+  the methods, you have a bigger problem that can't be fixed by ordering
+  the methods.
+* You believe that it's OK for (private?) methods in class to be entangled,
+  where one method cannot be fully understood without considering code
+  in other methods. I believe that entanglement is a red flag for bad
+  design; if two pieces of code are dependent, the code will be more
+  readable if the pieces are right next to each other in a single method.
 
-```
-Four score and seven years ago our fathers brought forth on this continent,
-all men are created equal.
+Does this capture things accurately?
 
-Now we are engaged in a great civil war, testing whether that nation, or any
-as a final resting place for those who here gave their lives that that nation
-might live. It is altogether fitting and proper that we should do this.
-
-But, in a larger sense, we can not dedicate -- we can not consecrate -- we
-here, have consecrated it, far above our poor power to add or detract. The
-world will little note, nor long remember what we say here, but it can
-never forget what they did here. It is for us the living, rather, to be
--- that we here highly resolve that these dead shall not have died in vain --
-that this nation, under God, shall have a new birth of freedom -- and that
-government of the people, by the people, for the people, shall not perish
-from the earth.
-
-a new nation, conceived in Liberty, and dedicated to the proposition that
-nation so conceived and so dedicated, can long endure. We are met on a great
-battle-field of that war. We have come to dedicate a portion of that field,
-can not hallow -- this ground. The brave men, living and dead, who struggled
-dedicated here to the unfinished work which they who fought here have thus
-far so nobly advanced. It is rather for us to be here dedicated to the great
-task remaining before us -- that from these honored dead we take increased
-devotion to that cause for which they gave the last full measure of devotion
-```
-
-This version is identical to the original except that I
-moved a few lines of text down to the bottom.
-There is exactly the same information as in the original version,
-I maintained the order of the extracted lines,
-and everything is visible on a single screen. Even so, this version is
-almost impossible to read.
-
->>I think you need a better example than this.  Many of our readers will now know the Gettysburgh address.  And many others won't want to read all of it.  And, in any case, moving lines of prose and extracting functions are very, very, different things.  A better analog would be legalese; but in that language the extracting of paragraphs is very common.
-
-The problems with `PrimeGenerator` are similar, albeit not as
-extreme. If the contents of `smallestOdd...` were moved up into the loop
-in `checkOdd...` then it would be obvious that they are related,
-just as it's obvious that words are related when they appear together
-in a single sentence. Furthermore, upon finishing reading the
-loop in `checkOdd...` I could flush all information about that loop
-from my mind. But with the current structure of `PrimeGenerator`
-it is not obvious when I am reading the loop in `checkOdd...` that
-it is constrained by code in a later method (when you say "the landmarks
-are obvious", I'm not sure what you're referrring to). To make the
-connection, I have to keep that loop in my mind while reading the following
-methods. I must also reconstruct the call graph. I must see
-(and remember) that `checkOdd...` invokes `isPrime`. Then I must also see
-(and remember) that `isPrime` invokes `isNot...`, which then invokes
-`isMultiple...`, which finally invokes `smallestOdd...` I must then
-combine all of this information in my mind and deduce that, even through
-4 levels of method call, the code in `smallestOdd...` places constraints on
-the loop in `checkOdd...`. If all the information is in one method, there's
-no need for me to reconstruct a call graph.
-
-If these two approaches still seem to you like they create equal
-cognitive load, then we will have to agree to disagree. I invite
-readers to decide for themselves.
+>>> Can we delete everything from here down through END DIGRESSION 3?
+This feels like a bunch of uninteresting digressions, and the important
+stuff is (or will be) discussed elsewhere.
 
 **JOHN:**
 
@@ -762,9 +684,9 @@ independence vs. entanglement.
 
 **UB:**
 
-We will have to disagree on that.  I think that if a method is terse enough, then the name should be sufficient to describe it in most cases.  
+We will have to disagree on that.  I think that if a method is terse enough, then the name should be sufficient to describe it in most cases.
 
-In this case I think I improved the structure and naming of the original quite a bit.  Perhaps I did not improve it enough but I think it serves to present the strategy for breaking up large methods into smaller classes and methods.  
+In this case I think I improved the structure and naming of the original quite a bit.  Perhaps I did not improve it enough but I think it serves to present the strategy for breaking up large methods into smaller classes and methods.
 
 **JOHN:** >>reword
 
@@ -795,6 +717,8 @@ As for your contention that the `PrimeGenerator` was over decomposed, I decompos
 We already discussed this (it isn't just how many pieces there are, but
 how they are arranged); I refer readers to the preceding discussion
 related to the Gettysburg Address.
+
+>>> END DIGRESSION 3
 
 ## Comments
 
@@ -843,6 +767,15 @@ chapter.
 
 The difference in page count is because there are just a few ways to write good comments, and so many more ways to write bad ones.
 
+**JOHN:**
+
+I disagree. If you look at Chapter 13 of APOSD, it seems to find a lot more
+constructive ways to use comments than *Clean Code*. And if you compare
+the tone of Chapter 13 of APOSD with Chapter 4 of *Clean Code*, the hostility
+of *Clean Code* towards comments becomes pretty clear.
+
+**UB:**
+
 You and I likely both survived through a time when comments were absolutely necessary.  In the '70s and '80s I was an assembly language programmer.  I also wrote a bit of FORTRAN. Programs in those languages that had no comments were impenetrable.  (As was Knuth's original prime generator.)
 
 As a result it became conventional wisdom to write comments by default.  And, indeed, computer science students were taught to write comments uncritically.  Comments became _pure good_.
@@ -859,34 +792,24 @@ any less necessary today than they were 40 years ago.
 
 I didn't say they were evil.  I used the well-known idiom of _necessary_ evil. That's because we write them when we fail to express ourselves in code.
 
-**JOHN:** >> delete
+**JOHN:**
 
-Yes, you did say they are evil: a "necessary evil" is still evil, just
-like a "red car" is still a car.
-(Both your comment and this one are distractions; can we delete them?)
+In my dictionary a "necessary" evil is still an evil. But let's not get
+hung up on this.
 
-Comments are not the problem, they are the solution.
+Comments are not a problem, they are the solution.
 The problem is that there is a lot of important
 information that simply cannot be expressed in code. When a programmer
 writes comments, they have not failed to express themselves; they have
-succeeded in providing important information that makes code easier to
+provided important information that makes code easier to
 understand.
 
 **UB:**
 
 I didn't say they were "the problem".  I certainly said that some comments were problematic.
 
-**JOHN:** >> suggest you use "a problem" instead of "the problem".
-
-I moved the above comment down so that it doesn't interrupt my thought.
-To me, this comment seems nitpicky in an uninteresting way. I didn't say
-that you used the word "problem"; I chose that word because it makes
-a natural contrast with "solution" and it's also a natural lead-in to
-the next sentence, which needs to use the word "problem". If that particular
-word really bothers you then I suppose I could switch to "failures", but
-that will be more awkward for the sentence (is there really that big of
-a difference between "problem" and "failure"?). You can delete this
-comment once you have read it.
+>>> I changed "the problem" to "a problem" above; can your comment above
+be deleted now?
 
 **UB:**
 
@@ -911,8 +834,8 @@ I bemoan the fact that we must sometimes use a human language instead of a progr
 
 **JOHN:**
 
-I agree that English isn't as precise as code, but it can be used in
-in fairly precise ways and comments typically don't need the same
+I agree that English isn't always as precise as code, but it can still be
+used in precise ways and comments typically don't need the same
 degree of precision as code.
 Comments often contain qualitative information such
 as *why* something is being done, or the overall idea of something.
@@ -921,7 +844,8 @@ expressive language.
 
 Are you concerned that comments will be incorrect or
 misleading and that this will slow down software development?
-I often hear people complain about stale comments, but
+I often hear people complain about stale comments (usually as an excuse
+for writing no comments at all), but
 I have not found them be a significant problem
 over my career. Incorrect comments do happen, but I don't encounter them
 very often and when I do, they rarely cost me much time. In contrast, I waste
@@ -933,6 +857,11 @@ commented.
 **UB:**
 
 You and I have had very different experiences.  ;-)
+
+>>> You didn't answer my question above, and this comment feels distracting
+without providing any concrete information. Do you feel that incorrect
+comments cost you more time than missing comments? If so, how about
+stating that explicitly?
 
 **JOHN:**
 
@@ -947,8 +876,7 @@ comments. That is why I cringe when I see things in *Clean Code* that
 discourage people from writing comments.
 
 Let's consider the `PrimeGenerator` class. There is not a single comment
-in this code other than the one I added at the top; do you
-think this is appropriate?
+in that code; does this seem appropriate to you?
 
 **UB:**
 
@@ -1002,8 +930,15 @@ As for the meaning of "leastRelevant", that's a much larger problem that you and
 
 **JOHN:**
 
+I have no problem with names like `isTooHot`; I was talking about names
+like `isLeastRelevantMultipleOfLargerPrimeFactor`. You didn't answer
+my question: why is it better to use names like this, rather than
+shorter names augmented with descriptive comments?
+
+**JOHN:**
+
 Now that we've discussed the specific issue of comments vs. long method
-names, let's talk about comments in general. There are two major reasons
+names, let's talk about comments in general. I think are two major reasons
 why comments are needed. The first reason for comments is abstraction.
 Simply put, without comments there is no way to have abstraction or modularity.
 
@@ -1017,8 +952,6 @@ to invoke the method). If the method is well designed, the interface will be
 much simpler than the code of the method (it omits implementation details),
 so the comments reduce the amount of information people must have in
 their heads.
-
-(Note: I changed the order of the two reasons for comments.)
 
 **UB:**
 
@@ -1075,11 +1008,22 @@ description)?
 
 Consider this:
 
-	addSongToLibrary(song.getTitle(), 
-	                 song.getAuthors(), 
-									 song.getDuration())
-									 
-In this case `addSongToLibrary` is part of the `song` abstraction which hides all the details you were concerned about.  
+	addSongToLibrary(song.getTitle(),
+	                 song.getAuthors(),
+			 song.getDuration())
+
+In this case `addSongToLibrary` is part of the `song` abstraction which hides all the details you were concerned about.
+
+**JOHN:**
+
+I don't see how this helps:
+* The `addSongToLibrary` is a general-purpose method that need not be
+  invoked using fields from an existing `song` object. How do I know how
+  to use the method in that case?
+* In the case above, how do I know that `song.getAuthors()` returns authors
+  in the right format for `addSongToLibrary`?
+* This doesn't address other issues such as what happens if there is
+  already a song in the library with the same title.
 
 **JOHN:**
 
@@ -1107,15 +1051,26 @@ Here is my first attempt at a header comment for `isMultiple`:
 ```
 What do you think of this?
 
-(Note: I have completely reworked the text above; among other things,
-it no longer uses the word "use". Also, I've picked a different method to
-examine, which I think will be more interesting).
-
 **UB:**
 
 I think it's accurate.  I wouldn't delete it if I encountered it.  I don't think it should be a javadoc.
 
 The first sentence is redundant with the name and so could be deleted.  The warning of the side effect is useful.
+
+**JOHN:**
+
+I agree that the first sentence is largely redundant with the name,
+and I debated with myself about whether to keep it. I decided to keep it
+because I think it is a bit more precise than the name; it's also easier
+to read. You propose to eliminate the redundancy between the comment and
+the method name by dropping the comment; I would eliminate it by
+shortening the method name.
+
+By the way, you complained earlier about comments being less precise than
+code, but in this case the comment is *more* precise (the method
+name can't include text like `primes[n]`).
+
+**UB:**
 
 The name 'candidate' is synonymous with "Number being tested for primality".
 
@@ -1129,7 +1084,39 @@ In Eiffel these could be turned off during production.
 
 Eiffel is an example of a language that diminishes the need for comments like that.
 
+**JOHN:**
+
+Using the Eiffel language isn't an option for this example; are you suggesting
+that the precondition should be written in Eiffel anyway? To me, the Eiffel
+description is harder to read and less precise than a comment. For example,
+it's unclear what "last" means in the Eiffel precondition. This is
+another example where you made information less precise by moving it from a
+comment to code.
+
+**UB:**
+
 In the end, however, all those words are just going to have to sit in my brain until I understand why they are there.  I'm also going to have to worry if they are accurate.  So I'm going to have to read the code to understand and validate the comment.
+
+**JOHN:**
+
+There is a fundamental issue that we need to address here: can comments
+generally be trusted? If you are unwilling to trust comments, and
+insist on reading the code to validate each comment, then
+comments are pointless. If this is your view, please say so. In that case,
+this entire
+discussion of comments will reduce to a couple of paragraphs where you
+state this opinion, I disagree, and we are done. Note that this
+would have the following implications:
+* Those long method names you recommend are no more trustworthy than
+  comments, so they can't be trusted either.
+* In order to understand a method, the reader will have to read
+  the complete text of every method it invokes, recursively. In order to
+  read the main program of an application I must read all of the code of
+  the entire application. I think readers will find this approach absurd.
+
+If you agree that comments can generally be trusted, then can you delete
+your comment above, plus this comment and any others from you that are based
+on distrust of comments?
 
 **JOHN:**
 
@@ -1142,7 +1129,7 @@ understand what is going on and why. Most of the complexity arises because
 the algorithm is designed to compute primes efficiently:
 
 * The algorithm goes out of its way to avoid divisions, which were quite
-  expensive  when Knuth wrote his original version (they aren't that expensive
+  expensive when Knuth wrote his original version (they aren't that expensive
   nowadays).
 
 * The first multiple for each new prime number is computed by squaring the
@@ -1182,7 +1169,7 @@ One solution is to paint a picture -- being worth a thousand words.  Here's my a
 	                                                    1111111111111111111111111
 	       1111122222333334444455555666667777788888999990000011111222223333344444
 	   35791357913579135791357913579135791357913579135791357913579135791357913579
-	   !!! !! !! !  !!  ! !! !  !  !!  ! !!  ! !  !   ! !! !! !      
+	   !!! !! !! !  !!  ! !! !  !  !!  ! !!  ! !  !   ! !! !! !
 	 3 |||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-||-
 	 5 |||||||||||-||||-||||-||||-||||-||||-||||-||||-||||-||||-||||-
 	 7 |||||||||||||||||||||||-||||||-||||||-||||||-||||||-||||||-||||||-
@@ -1190,9 +1177,30 @@ One solution is to paint a picture -- being worth a thousand words.  Here's my a
 	13 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 	...
 	113||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-	
+
 I expect that our readers will have to stare at this for some time, and also look at the code.  But then there will be a _click_ in their brains and they'll say "Ohhh!  Yes!  I see it now!"
 
+**JOHN:**
+
+I found this diagram extremely hard to understand.
+It begs for supplemental English text to explain the basic ideas being
+presented. Even the syntax is non-obvious: what does
+`1111111111111111111111111` mean?
+
+Maybe we have a fundamental difference of philosophy here. I get the sense
+that you are happy giving readers a few clues and leaving it to them to put
+the clues together. Perhaps you don't mind if people have to stare at something
+for a while to figure it out? I don't agree with this approach: it results
+in wasted time, misunderstandings, and bugs.
+I think software should be totally *obvious*, where readers don't need to
+be clever or "stare at this for some time" to figure things out.
+Suffering followed by catharsis is great for Greek tragedies, but not
+for reading code. Every question
+a reader might have should be naturally answered, either in the code or
+in comments. Key ideas and important conclusions should be stated explicitly,
+not left for the reader to deduce. And, even if a reader is in a hurry
+and doesn't read the code very carefully, their first guesses about how
+things work (and why) should be correct. To me, that's clean code.
 
 ## John's Rewrite of PrimeGenerator
 
@@ -1552,7 +1560,7 @@ Asking for supporting evidence is a two-way street.  All through this document I
 
 I have been practicing TDD for over 25 years.  So if I say something that sounds "fantastical" that's only because you and I have had very different experiences.  From my point of view, nothign I said was fantastical.
 
-Or rather, it's not fantastical _now_.  It was 25 years ago when I first encountered this discipline.  Back then I thought it was a load of hooey.  But then I tried it -- and my mind was changed very quickly.  
+Or rather, it's not fantastical _now_.  It was 25 years ago when I first encountered this discipline.  Back then I thought it was a load of hooey.  But then I tried it -- and my mind was changed very quickly.
 
 But allow me to continue with the explanation.  The very intense cycle I just described is part of a larger cycle that we call RED-GREEN-REFACTOR.  First we make it fail, then we make it pass, then we clean it up and consider the design.
 
@@ -1649,7 +1657,7 @@ I stand by my claims that TDD is tactical and discourages design.
 
 **UB:**
 
-Try it, Sam I Am.  And then tell me if you still think it discourages design.  
+Try it, Sam I Am.  And then tell me if you still think it discourages design.
 If you'd like some help you can I can pair on a few things.   Or if you'd like you can watch some of the videos I, or others, have done regarding this discipline.
 
 **JOHN:**
@@ -1664,12 +1672,12 @@ earlier.
 
 **UB:**
 
-But you think that most developers have the self-discipline to write careful comments and work though, and then follow, up front designs?  
+But you think that most developers have the self-discipline to write careful comments and work though, and then follow, up front designs?
 
 Discipline is discipline.  Either you've got it, or you don't.  And if you don't, you wind up with a mess.
 
 
->>At this point John you are speculating about things you don't know.  These are very old, and very tired, arguments that have been proven wrong over the last two and a half decades.  
+>>At this point John you are speculating about things you don't know.  These are very old, and very tired, arguments that have been proven wrong over the last two and a half decades.
 
 >>The offer is open.  I'm happy to work with you to show you the discipline if you like. It is nothing at all like what you fear.
 
