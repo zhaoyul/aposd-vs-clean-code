@@ -105,11 +105,11 @@ interfaces and entanglement.  Setting arbitrary numerical limits such
 as 2-4 lines in a method and a single line in the body of an
 `if` or `while` statement exacerbates this problem.
 
-**UB**
+**UB:**
 
-To be clear, the book sets no such arbitrary limits. On page 13 I make clear that the recommendations in the book have worked well for me, but might not work for others.  I claim no final authority, nor even any absolute "rightness". They are offered for consideration.
+While I do strongly recommend very short functions, I don't think it's fair to say that the book sets arbitrary numerical limits. The 2-4 line functions that you referred to on page 34 were part of the _Sparkle_ applet that Kent Beck and I wrote together in 1999 as an exercise for learning TDD. I thought it was remarkable that most of the functions in that applet were 2-4 lines long because it was Swing program; and Swing programs tend to have very long methods.  
 
-As for the 2-4 line limit, on page 34 I was describing a program that Kent Beck and I wrote together in 1999; and _that_ program consisted of methods that were 2-4 lines.  I thought that was remarkable because it was Swing program, and Swing programs tend to have very long methods.  At the end of that paragraph I strongly recommended that size by saying "that's how short your methods should be!"
+As for setting limits, on page 13 I make clear that although the recommendations in the book have worked well for me and the other authors, they might not work for everyone.  I claimed no final authority, nor even any absolute "rightness". They are offered for consideration.
 
 **JOHN:**
 
@@ -125,7 +125,7 @@ It is certainly possible to over-decompose code.  Here's an example:
 
 	void doSomething() {doTheThing()} // over-decomposed.
 
-In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods drives a class towards the wide/shallow end.  This is because when I extract methods they are private.  The root method I extract them from is public, and remains as the interface of the class.  The narrow/deep nature of the  class is preserved.
+In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods inevitably drives a module towards the wide/shallow end.  This is because the methods I extract are private.  The root method from which they were extracted remains public, and is part of the interface of the module.  The narrow/deep nature of the module is preserved.
 
 **JOHN:**
 
@@ -134,17 +134,20 @@ to be deep, and it's OK for internal interfaces to be shallow and complex.
 I disagree. I think that *all* interfaces should be deep, including
 lower-level interfaces for methods within a class and higher-level interfaces
 for subsystems, micro-services, etc. Clean interfaces provide benefits
-everywhere.  (I'm happy to drop this comment if you are willing to drop the
-suggestion that shallow interfaces are OK within a class.)
+everywhere.  
 
 **UB:**
-I think, rather, I am saying that the interface between two extractable snippets of code is not not well expressed if they are kept inline within a function.  The wideness of the interface between them is hidden.  By extracting them we that interface is named, and becomes much clearer.  From there the programmer can determine if that interface is too wide.
+No, I'm saying something different.  Every function should have a narrow interface and an implementation that is deeper than the interface. The interface should be the abstraction that the function implements.
 
-The extraction of small private methods from the public methods of a class creates an internal structure that separates the high level policy of the original public methods, from the lower level details of those methods.  It gives those lower level details names, declared interfaces, and allows their implementations to be hidden behind those names and interfaces.
+To me, depth does not mean lots of lines; rather it means deeper in the details that the interface is trying to hide. 
 
-This helps the reader to understand the flow of the original method without having to understand the details.
+My fear with longish functions is that they often contain extractable elements. The interface between two extractable elements of code is implicit and anonymous.  An anonymous implicit interface is wide because the reader must deduce it from the entire context of the module.  Extracting those elements creates named and narrow interfaces without sacrificing any depth.
 
-I call this kind of structure: Polite.
+The practice of extracting elements and giving them named narrow interfaces creates a hierachy of named functions starting at the public interface of the module and descending, one step at a time, into the detailed implementation of that module.
+
+This allows the reader to understand the flow of the module without having to read all the way down to the details.  This is very much like reading the first few paragraphs of a news article and then stopping because you got the gist of what the article was saying.
+
+I call this kind of structure: _Polite_.
 
 The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
@@ -160,7 +163,7 @@ Unfortunately the One Thing approach will lead to over-decompositon:
 
 **UB:**
 
-That argument is a bit reductive, isn't it?  I mean, you and I are never going to reduce programming to a deterministic algorithm.  There will always be this thing called _judgement_.
+I don't consider ease of abuse to be a concern. `If` statements are easy to abuse.  `Switch` statements are easy to abuse.  Assignment statements are easy to abuse.  The fact that something is easy to abuse does not mean that it should be avoided or suppressed.  It simply means people should take appropriate care. There will always be this thing called: _judgement_. 
 
 So when faced with this snippet of code in a larger method:
 
@@ -169,7 +172,7 @@ So when faced with this snippet of code in a larger method:
 	totalPoints=0;
 	...
 
-It would be poor judgement to extract them into:
+It would be poor judgement to extract them as follows, because the extraction is not meaningful.  The implementation is not more deeply detailed than the interface.
 
 	void clearAmountOwed() {
 	  amountOwed=0;
@@ -179,14 +182,14 @@ It would be poor judgement to extract them into:
 	  totalPoints=0;
 	}
 
-However it may be good judgement to extract them as:
+However it may be good judgement to extract them as follows because the interface is abstract, and the implemention has deeper detail.
 
 	void clearTotals() {
 		amountOwed=0;
 		totalPoints=0;
 	}
 
-The latter has a nice descriptive name that is abstract enough to be meaningful without being redundant.  And the two lines together are so strongly related as to qualify for doing _one thing_: initialization.
+The latter has a nice descriptive name that is abstract enough to be meaningful without being redundant.  And the two lines together are strongly related so as to qualify for doing _one thing_: initialization.
 
 **JOHN:**
 
@@ -196,8 +199,6 @@ from context, why not just add a short comment before them, rather
 than creating a separate method (which, by the way, is shallow)?
 This example seems pretty trivial to me: is it really worth a lot
 of thought over whether to pull 2 lines of code into a separate method?
-(I'm not sure this example will be particularly illuminating for
-readers; I'd be happy to drop it).
 
 **UB:**
 
@@ -287,7 +288,9 @@ And after a good refactoring looks like this:
 	    "You earned " + frequentRenterPoints + " frequent renter points\n";
 	}
 	
-BTW, that's _my_ refactoring, not Martin's.  
+BTW, that's _my_ refactoring, not Martin's.  Look at that `makeStatement` function.  It is about as clear and concise is you can get.  It communicates the high level policy of the module.  It would be a shame, IMHO, to pollute it with a couple of detailed assignment statements.  
+
+Notice also the hierarchy of functions.  Each function calls those that are just below it.  And as you read downward you also descend into deeper detail. The reader can stop reading as soon as they get the gist of the module.  Again, that's _polite_.
 
 **JOHN:**
 
@@ -405,7 +408,7 @@ production)?
 
 Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Literate Programming*](https://www.cs.tufts.edu/~nr/cs257/archive/literate-programming/01-knuth-lp.pdf) written by Donald Knuth.  The program was originally written in Pascal, and was automatically generated by Knuth's WEB system.  I translated it to Java.
 
-Of course this code was never meant for production.  It's clearly a pedagogical exercise.  It appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and methods.
+Of course this code was never meant for production because it is a pedagogical exercise.  It appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and methods.
 
 **JOHN:**
 
@@ -415,9 +418,7 @@ assume it is "good" in every way, and they will emulate it (in every way).
 
 **UB:**
 
-Hai Miyagi-san.  Teacher say.  Student do.  
-
-However, there are plenty of other examples in the book that go into substantially more depth; so I'm not overly concerned that this one will lead anyone astray.  Still, this is more fodder for the 2d. ed.
+That's a fair point.  However, there are plenty of other examples in the book that go into substantially more depth.  For example, there is another implementation of a prime number generator on page 73 (Listing 4-8) that I think you'd find more acceptable.  So I'm not overly concerned that this one will lead anyone astray.
 
 **JOHN:**
 
@@ -427,28 +428,19 @@ as close as possible to the way we think production code should appear.
 
 **UB:**
 
-Well, within the limits of being polite.  If the final code goes off into a deep exposition of an algorithm that has nothing, whatever, to do with the point of the lesson; then it could be seen as rude to focus on the ancillary details to the detriment of the lesson.
+Again, fair point.
 
 **JOHN:**
 
 In any case, can you clarify (a) in what ways you would like readers to
 emulate this example in production and (b) in what ways they should *not*
-emulate the example (if there are any)? (Note: if you can answer questions
-(a) and (b) more precisely in your preceding comment, I think I can live
-without the digression into teaching pedagogy).
+emulate the example (if there are any)? 
 
 **UB:**
 
 The lesson of the chapter is that a large function can contain many different sections of code that are better extracted into independent classes.  So I would like my readers to attempt such extractions when they see large functions; and they should *not* allow such unextracted functions to persist.
 
 BTW, that is also the lesson of Martin Fowler's video store example above.
-
-**JOHN:** >>You can delete this
-
-I disagree: I think that Knuth intended for his approach to
-be used for production code. (We are really off in the weeds here...)
-
-**UB:**
 
 In the chapter I extracted three classes from that function: `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.
 
@@ -493,7 +485,7 @@ I don't think you have represented Knuth's work fairly.
 
 **UB:**
 
-In fact, on page 141 I say: "To be fair to Knuth, this is not the program as he wrote it but rather as it was output by his WEB tool.  I'm using it because it mamkes a great starting place for breaking up a big function into many smaller functions and classes."
+In fact, on page 141 I say: "To be fair to Knuth, this is not the program as he wrote it but rather as it was output by his WEB tool.  I'm using it because it makes a great starting place for breaking up a big function into many smaller functions and classes."
 
 **JOHN:**
 
@@ -503,15 +495,11 @@ with the program code in order to make the code easier to understand.
 I don't necessarily agree with Knuth's approach, but
 you seem to have extracted the code while dropping all
 of the documentation that Knuth intended to accompany it. It's no surprise
-that the extracted code is hard to read. (Are you sure you
-want to go into this example? I don't see how it will enhance the rest of
-the discussion. The
-`PrimeGenerator` code should be able to stand on its own; whether it is better
-or worse than Knuth's code is irrelevant for our discussion.)
+that the extracted code is hard to read.
 
 **UB**:
 
-I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large methods, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named methods.
+My goal was not to describe how to generate prime numbers.  I wanted my readers to see how large methods, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named methods.
 
 I think it's somewhat better than where it started.
 
@@ -573,7 +561,7 @@ I disagree.  Here is `isNotMultipleOfAnyPreviousPrimeFactor`.
 	    return true;
 	  }
 
-If you trust the 'isMultipleOfNthPrimeFactor' method, then this method stands alone quite nicely.  I mean we loop through all n previous primes and see if the candidate is a multiple.  That's pretty straight forward.
+If you trust the `isMultipleOfNthPrimeFactor` method, then this method stands alone quite nicely.  I mean we loop through all n previous primes and see if the candidate is a multiple.  That's pretty straight forward.
 
 Now it would be fair to ask the question how we determine whether the candidate is a multiple, and in that case you'd want to inspect the `isMultiple...` method.
 
@@ -676,7 +664,7 @@ It seems to me that separating and naming those concerns helps to expose the way
 
 In your solution, below, you break the algorithm up in a similar way.  However, instead of separating the concerns into functions, you separate them into sections with comments above them.
 
-You mentioned how in my solution readers will have to keep the loop context in mind while reading the other functions.  I suggest that in your solution, readers will have to keep the loop context in mind while reading your explanatory comments.  They may have to "flip back and forth" between the sections in order to establish their understanding.
+You mentioned that in my solution readers will have to keep the loop context in mind while reading the other functions.  I suggest that in your solution, readers will have to keep the loop context in mind while reading your explanatory comments.  They may have to "flip back and forth" between the sections in order to establish their understanding.
 
 Now perhaps you are concerned that in my solution the "flipping" is a longer distance (in lines) than in yours.  I'm not sure that's a significant point since they all fit on the same screen (at least they do on my screen) and the landmarks are pretty obvious.
 
@@ -686,71 +674,9 @@ I agree that separation of concerns is a good thing, but only if the
 concerns are really independent. The problem with `PrimeGenerator` is
 that it separates things that are not independent.
 
-Let me try one more time. Let's start with an extreme example to
-illustrate the problem. Here is a slightly modified version
-of the Gettysburg Address:
-
-```
-Four score and seven years ago our fathers brought forth on this continent,
-all men are created equal.
-
-Now we are engaged in a great civil war, testing whether that nation, or any
-as a final resting place for those who here gave their lives that that nation
-might live. It is altogether fitting and proper that we should do this.
-
-But, in a larger sense, we can not dedicate -- we can not consecrate -- we
-here, have consecrated it, far above our poor power to add or detract. The
-world will little note, nor long remember what we say here, but it can
-never forget what they did here. It is for us the living, rather, to be
--- that we here highly resolve that these dead shall not have died in vain --
-that this nation, under God, shall have a new birth of freedom -- and that
-government of the people, by the people, for the people, shall not perish
-from the earth.
-
-a new nation, conceived in Liberty, and dedicated to the proposition that
-nation so conceived and so dedicated, can long endure. We are met on a great
-battle-field of that war. We have come to dedicate a portion of that field,
-can not hallow -- this ground. The brave men, living and dead, who struggled
-dedicated here to the unfinished work which they who fought here have thus
-far so nobly advanced. It is rather for us to be here dedicated to the great
-task remaining before us -- that from these honored dead we take increased
-devotion to that cause for which they gave the last full measure of devotion
-```
-
-This version is identical to the original except that I
-moved a few lines of text down to the bottom.
-There is exactly the same information as in the original version,
-I maintained the order of the extracted lines,
-and everything is visible on a single screen. Even so, this version is
-almost impossible to read.
-
->>I think you need a better example than this.  Many of our readers will now know the Gettysburgh address.  And many others won't want to read all of it.  And, in any case, moving lines of prose and extracting functions are very, very, different things.  A better analog would be legalese; but in that language the extracting of paragraphs is very common.
-
-The problems with `PrimeGenerator` are similar, albeit not as
-extreme. If the contents of `smallestOdd...` were moved up into the loop
-in `checkOdd...` then it would be obvious that they are related,
-just as it's obvious that words are related when they appear together
-in a single sentence. Furthermore, upon finishing reading the
-loop in `checkOdd...` I could flush all information about that loop
-from my mind. But with the current structure of `PrimeGenerator`
-it is not obvious when I am reading the loop in `checkOdd...` that
-it is constrained by code in a later method (when you say "the landmarks
-are obvious", I'm not sure what you're referrring to). To make the
-connection, I have to keep that loop in my mind while reading the following
-methods. I must also reconstruct the call graph. I must see
-(and remember) that `checkOdd...` invokes `isPrime`. Then I must also see
-(and remember) that `isPrime` invokes `isNot...`, which then invokes
-`isMultiple...`, which finally invokes `smallestOdd...` I must then
-combine all of this information in my mind and deduce that, even through
-4 levels of method call, the code in `smallestOdd...` places constraints on
-the loop in `checkOdd...`. If all the information is in one method, there's
-no need for me to reconstruct a call graph.
-
 If these two approaches still seem to you like they create equal
 cognitive load, then we will have to agree to disagree. I invite
 readers to decide for themselves.
-
-**JOHN:**
 
 I agree that names are important, but I worry that you focus too narrowly
 on names without considering other factors that are even more important.
@@ -768,18 +694,10 @@ In this case I think I improved the structure and naming of the original quite a
 
 **JOHN:** >>reword
 
-I'm comfortable with your goal (but I'm not sure why you keep bringing up "best
-possible prime number generator": none of my concerns have anything to
-do with that). However (and I'm sorry to be blunt) `PrimeGenerator` is a
+I'm comfortable with your goal. However (and I'm sorry to be blunt) `PrimeGenerator` is a
 really bad decomposition. I hope readers will not emulate it. Furthermore, I
 don't think it's bad because of an accident; it ended up way over-decomposed
 and hard to read because you followed the advice of *Clean Code*.
-
-**UB:**
-
-It was not my goal, in this chapter, to show the best possible decomposition of the algorithm.  The algorithm was irrelevant.  It was my goal to show how large functions can be broken up into smaller classes.
-
-**JOHN:**
 
 It sounds like we'll have to disagree here. Readers can decide for
 themselves: when deciding how to decompose code, is the algorithm
@@ -788,13 +706,16 @@ that makes it hard to understand how the algorithm works?
 
 **UB:**
 
-As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution (below) into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
+I don't mind people being blunt.  As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution (below) into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
 
 **JOHN:**
 
 We already discussed this (it isn't just how many pieces there are, but
-how they are arranged); I refer readers to the preceding discussion
-related to the Gettysburg Address.
+how they are arranged); 
+
+**UB:**
+
+I like the way I arranged it because it follows the principle of functional decomposition:  Higher level policies should be above lower level details.  
 
 ## Comments
 
@@ -843,7 +764,7 @@ chapter.
 
 The difference in page count is because there are just a few ways to write good comments, and so many more ways to write bad ones.
 
-You and I likely both survived through a time when comments were absolutely necessary.  In the '70s and '80s I was an assembly language programmer.  I also wrote a bit of FORTRAN. Programs in those languages that had no comments were impenetrable.  (As was Knuth's original prime generator.)
+You and I likely both survived through a time when comments were absolutely necessary.  In the '70s and '80s I was an assembly language programmer.  I also wrote a bit of FORTRAN. Programs in those languages that had no comments were impenetrable. 
 
 As a result it became conventional wisdom to write comments by default.  And, indeed, computer science students were taught to write comments uncritically.  Comments became _pure good_.
 
@@ -855,16 +776,6 @@ In the book I decided to fight that mindset.  Comments can be _really bad_ as we
 I don't agree that comments are evil, and I don't agree that comments are
 any less necessary today than they were 40 years ago.
 
-**UB:**
-
-I didn't say they were evil.  I used the well-known idiom of _necessary_ evil. That's because we write them when we fail to express ourselves in code.
-
-**JOHN:** >> delete
-
-Yes, you did say they are evil: a "necessary evil" is still evil, just
-like a "red car" is still a car.
-(Both your comment and this one are distractions; can we delete them?)
-
 Comments are not the problem, they are the solution.
 The problem is that there is a lot of important
 information that simply cannot be expressed in code. When a programmer
@@ -874,25 +785,9 @@ understand.
 
 **UB:**
 
-I didn't say they were "the problem".  I certainly said that some comments were problematic.
-
-**JOHN:** >> suggest you use "a problem" instead of "the problem".
-
-I moved the above comment down so that it doesn't interrupt my thought.
-To me, this comment seems nitpicky in an uninteresting way. I didn't say
-that you used the word "problem"; I chose that word because it makes
-a natural contrast with "solution" and it's also a natural lead-in to
-the next sentence, which needs to use the word "problem". If that particular
-word really bothers you then I suppose I could switch to "failures", but
-that will be more awkward for the sentence (is there really that big of
-a difference between "problem" and "failure"?). You can delete this
-comment once you have read it.
-
-**UB:**
-
 It's very true that there is important information that is not, or cannot be, expresssed in code.  That's a failure.  A failure of our languages, or of our ability to use them to express ourselves.  In every case a comment is a failure of our ability to use our languages to express our intent.
 
-And we fail at that very frequently, and so comments are a necessary evil -- or, if you prefer, an unfortunate necessity.  If we had the perfect programming language TM we would never write another comment.
+And we fail at that very frequently, and so comments are a necessary evil -- or, if you prefer, _an unfortunate necessity_.  If we had the perfect programming language (TM) we would never write another comment.
 
 **JOHN:**
 
@@ -937,6 +832,7 @@ You and I have had very different experiences.  ;-)
 **JOHN:**
 
 I invite everyone reading this article to ask yourself the following questions:
+
 * How much does your software development speed suffer because of
   incorrect comments?
 * How much does your software development speed suffer because of
@@ -952,7 +848,9 @@ think this is appropriate?
 
 **UB:**
 
-If I was putting that code into a library then some comments would be appropriate. But this code is not getting put into a library.  It was created to make the point that large methods can be broken down into smaller classes containing smaller methods. Adding lots of explanatory comments would have detracted from that point.
+I think it was appropriate for the purpose for which I wrote it. It was created to make the point that large methods can be broken down into smaller classes containing smaller methods. Adding lots of explanatory comments would have detracted from that point.
+
+I agree, however, that the commenting style in Listing 4-8 is generally more appropriate.
 
 **JOHN:**
 
@@ -966,6 +864,7 @@ For starters, let's discuss your use of megasyllabic names like
 you advocate using names like this instead of using shorter names
 augmented with descriptive comments: you're effectively moving the
 comments into code. To me, this approach is problematic:
+
 * Long names are awkward. Developers effectively have to retype
   the documentation for a method every time they invoke it, and the long
   names waste horizontal space and trigger line wraps in the code. The names are
@@ -989,14 +888,16 @@ more effectively. What advantage is there in the approach you advocate?
 
 **UB:**
 
+"_Megasyllabic_": Great word! 
+
 I like my method names to be sentence fragments that fit nicely with keywords and assignment statements.  It makes the code a bit more natural to read.
 
 	if (isTooHot)
 	  cooler.turnOn();
 
-I also follow a simple rule about the length of names.  The larger the scope of a function, the shorter its name should be.  The private functions I extracted in this case live in very small scopes, and so have longish names.  Functions like this are typically called from only one place, so there is no burden on the programmer to remember and long name for another call.
+I also follow a simple rule about the length of names.  The larger the scope of a function, the shorter its name should be.  The private functions I extracted in this case live in very small scopes, and so have longish names.  Functions like this are typically called from only one place, so there is no burden on the programmer to remember a long name for another call.
 
-As for being hard to parse, that's a matter of practice.  Code is full things like that.
+As for being hard to parse, that's a matter of practice.  Code is full things that take practice to get used to.
 
 As for the meaning of "leastRelevant", that's a much larger problem that you and I will encounter shortly.  It has to do with the intimacy that the author has with the solution, and the reader's lack of that intimacy.
 
@@ -1017,8 +918,6 @@ to invoke the method). If the method is well designed, the interface will be
 much simpler than the code of the method (it omits implementation details),
 so the comments reduce the amount of information people must have in
 their heads.
-
-(Note: I changed the order of the two reasons for comments.)
 
 **UB:**
 
@@ -1059,27 +958,7 @@ to use a method with only its signature?
 
 **UB:**
 
-John, all four of those questions are diametrically opposed to the abstraction itself. I don't want to force the reader to know those kinds of details when looking at this method.  Those details should be pushed down to a lower level IMHO.
-
-**JOHN:**
-
-I don't understand this. Don't developers need to know this
-information in order to use the method? If so, then doesn't that information
-need to be visible as part of the method's interface? Otherwise
-developers will have to read the code of the method to figure it out.
-Can you explain what you mean by "should be pushed down to a lower level"
-(I'm curious where you would put this information, if not in the interface
-description)?
-
-**UB:**
-
-Consider this:
-
-	addSongToLibrary(song.getTitle(), 
-	                 song.getAuthors(), 
-									 song.getDuration())
-									 
-In this case `addSongToLibrary` is part of the `song` abstraction which hides all the details you were concerned about.  
+Yes, there are times when the signature of a method is an incomplete abstraction and a comment is required.  There are other times when the signature tells you everything you want to know.  It seems to me that we should try to create more of the later kind and avoid the former where possible.  
 
 **JOHN:**
 
@@ -1093,6 +972,7 @@ This will force readers to load more information into their
 heads, which makes it harder to work in the code.
 
 Here is my first attempt at a header comment for `isMultiple`:
+
 ```
     /**
      * Returns true if candidate is a multiple of primes[n], false otherwise.
@@ -1105,19 +985,16 @@ Here is my first attempt at a header comment for `isMultiple`:
      *      <= multiplesOfPrimeFactors.size().
      */
 ```
-What do you think of this?
 
-(Note: I have completely reworked the text above; among other things,
-it no longer uses the word "use". Also, I've picked a different method to
-examine, which I think will be more interesting).
+What do you think of this?
 
 **UB:**
 
 I think it's accurate.  I wouldn't delete it if I encountered it.  I don't think it should be a javadoc.
 
-The first sentence is redundant with the name and so could be deleted.  The warning of the side effect is useful.
+The first sentence is redundant with the name `isMultipleOfNthPrimeFactor` and so could be deleted.  The warning of the side effect is useful.
 
-The name 'candidate' is synonymous with "Number being tested for primality".
+The name `candidate` is synonymous with "Number being tested for primality".
 
 The constraints on the arugments could be written as executable preconditions following Bertrand Meyer's idea of _Design by Contract_ used in the Eiffel language.
 
@@ -1199,7 +1076,7 @@ I expect that our readers will have to stare at this for some time, and also loo
 **JOHN:**
 
 I mentioned that I ask the students in my software design class to rewrite
-PrimeGenerator to fix all of its design problems. Here is my rewrite:
+`PrimeGenerator` to fix all of its design problems. Here is my rewrite:
 
 	package literatePrimes;
 
@@ -1279,7 +1156,7 @@ couple of overall things:
 
 I presume this is a complete rewrite.  My guess is that you worked to understand the algorithm from Clean Code and then wrote this from scratch.  If that's so, then fair enough.
 
-That's not what I did.  I *refactored* Knuth's algorithm in order to give it a little structure.
+In _Clean Code_ I *refactored* Knuth's algorithm in order to give it a little structure.  That's not the same as a complete rewrite.
 
 Having said that, your version is much better than either Knuth's or mine.  I could not have used it in the chapter I was writing *because* it is still in a single method, and I needed to show a more granular partioning.
 
@@ -1352,11 +1229,21 @@ That doesn't make a lot of sense.  The code it's talking about is:
 	            for (int i = 1; i <= lastMultiple; i++) {
 	                while (multiples[i] < candidate) {
 
-The `multiples` array, as we have now learned, is an array of *multiples* of prime numbers.  This loop is not testing the candidate against prime *factors*, it's testing it against the current prime multiples.
+The `multiples` array, as we have now learned, is an array of *multiples* of prime numbers.  This loop is not testing the candidate against prime *factors*, it's testing it against the current prime _multiples_.
 
 Fortunately for me the third of fourth time I read this comment I realized that you really meant to use the word "multiples".  But the only way for me to know that was to understand the algorithm.  And when I understand the algorithm, why do I need the comment?
 
-The last comment is:
+That left me with one final question.  What the deuce was the reason behind:
+
+	multiples[primesFound] = candidate*candidate;
+
+Why the square?  That makes no sense.  So I changed it to:
+
+	multiples[primesFound] = candidate;
+
+And it worked just fine.  So this must be an optimization of some kind.  
+
+Your comment to explain this is:
 
 	            // Start with the prime's square here, rather than 3x the prime.
 	            // This saves time and is safe because all of the intervening
@@ -1366,25 +1253,15 @@ The last comment is:
 	            // 35 will be ruled out as a multiple of 5, so 49 is the first
 	            // multiple that won't be ruled out by a smaller prime.
 
-The first few times I read this it made no sense to me at all.  It was just a jumble of numbers.  So I ignored it.
+The first few times I read this it made no sense to me at all.  It was just a jumble of numbers. 
 
-As I started at the ceiling, and closed my eyes to visualize, I finally realized that the `multiples` array was the equivalent of the array of booleans we use in the *Sieve of Eratosthenes* -- but with a really interesting twist.  If you were to do the sieve on a whiteboard, you _could_ erase every number less than the candidate, and only cross out the numbers that were the next multiples of all the previous primes.
+I stared at the ceiling, and closed my eyes to visualize. I couldn't see it.  So I went on a long contemplative bike ride during which I realized that the prime multiples of 2 will at one point contain 2*3 and then 2*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  _And it clicked!_  
+
+Suddenly it all made sense. I realized that the `multiples` array was the equivalent of the array of booleans we use in the *Sieve of Eratosthenes* -- but with a really interesting twist.  If you were to do the sieve on a whiteboard, you _could_ erase every number less than the candidate, and only cross out the numbers that were the next multiples of all the previous primes. 
 
 That explanation makes perfect sense to me -- now, but I'd be willing to bet that those who are reading it are puzzling over it.  The idea is just hard to explain.
 
-OK, so that left me with one final question.  What the deuce was the reason behind:
-
-	multiples[primesFound] = candidate*candidate;
-
-Why the square?  That makes no sense.  So I changed it to:
-
-	multiples[primesFound] = candidate;
-
-And it worked just fine.  So this must just be an optimization.  That whole long comment is about an optimization.  OK, so why?  Why can you start the multiple for a prime at prime^2?
-
-That's not an easy question to answer.  Eventually, after a long bike ride, I realized that the prime multiples of 2 will at one point contain 2*3 and then 2*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  !!!  And then it all made sense.
-
-Then I could read your comment and see what you were saying.
+Finally I went back to your comment and could see what you were saying.
 
 ###A Tale of Two Programmers
 The bottom line here is that you and I both fell into the same trap.  I refactored that old algorithm 18 years ago, and I thought all those method and variable names would make my intent clear -- *because I understood that algorithm*.
@@ -1407,70 +1284,68 @@ I like this because the implementation of the `generateFirstNPrimes` method desc
 
 I think it is just the reality of this algorithm that the effort required to properly explain it, and the effort required for anyone else to read and understand that explanation is roughly equivalent to the effort needed to read the code and go on a bike ride.
 
-```
-package literatePrimes;
+	package literatePrimes;
 
-public class PrimeGenerator3 {
-    private static int[] primes;
-    private static int[] primeMultiples;
-    private static int lastRelevantMultiple;
-    private static int primesFound;
-    private static int candidate;
+	public class PrimeGenerator3 {
+	    private static int[] primes;
+	    private static int[] primeMultiples;
+	    private static int lastRelevantMultiple;
+	    private static int primesFound;
+	    private static int candidate;
 
-    // Lovely little algorithm that finds primes by predicting
-    // the next composite number and skipping over it. That prediction
-    // consists of a set of prime multiples that are continuously
-    // increased to keep pace with the candidate.
+	    // Lovely little algorithm that finds primes by predicting
+	    // the next composite number and skipping over it. That prediction
+	    // consists of a set of prime multiples that are continuously
+	    // increased to keep pace with the candidate.
 
-    public static int[] generateFirstNPrimes(int n) {
-        initializeTheGenerator(n);
+	    public static int[] generateFirstNPrimes(int n) {
+	        initializeTheGenerator(n);
 
-        for (candidate = 5; primesFound < n; candidate += 2) {
-            increaseEachPrimeMultipleToOrBeyondCandidate();
-            if (candidateIsNotOneOfThePrimeMultiples()) {
-                registerTheCandiateAsPrime();
-            }
-        }
-        return primes;
-    }
+	        for (candidate = 5; primesFound < n; candidate += 2) {
+	            increaseEachPrimeMultipleToOrBeyondCandidate();
+	            if (candidateIsNotOneOfThePrimeMultiples()) {
+	                registerTheCandiateAsPrime();
+	            }
+	        }
+	        return primes;
+	    }
 
-    private static void initializeTheGenerator(int n) {
-        primes = new int[n];
-        primeMultiples = new int[n];
-        lastRelevantMultiple = 1;
+	    private static void initializeTheGenerator(int n) {
+	        primes = new int[n];
+	        primeMultiples = new int[n];
+	        lastRelevantMultiple = 1;
 
-        // prime the pump. (Sorry, couldn't resist.)
-        primesFound = 2;
-        primes[0] = 2;
-        primes[1] = 3;
+	        // prime the pump. (Sorry, couldn't resist.)
+	        primesFound = 2;
+	        primes[0] = 2;
+	        primes[1] = 3;
 
-        primeMultiples[0] = -1;// irrelevant
-        primeMultiples[1] = 9;
-    }
+	        primeMultiples[0] = -1;// irrelevant
+	        primeMultiples[1] = 9;
+	    }
 
-    private static void increaseEachPrimeMultipleToOrBeyondCandidate() {
-        if (candidate >= primeMultiples[lastRelevantMultiple])
-            lastRelevantMultiple++;
+	    private static void increaseEachPrimeMultipleToOrBeyondCandidate() {
+	        if (candidate >= primeMultiples[lastRelevantMultiple])
+	            lastRelevantMultiple++;
 
-        for (int i = 1; i <= lastRelevantMultiple; i++)
-            while (primeMultiples[i] < candidate)
-                primeMultiples[i] += 2 * primes[i];
-    }
+	        for (int i = 1; i <= lastRelevantMultiple; i++)
+	            while (primeMultiples[i] < candidate)
+	                primeMultiples[i] += 2 * primes[i];
+	    }
 
-    private static boolean candidateIsNotOneOfThePrimeMultiples() {
-        for (int i = 1; i <= lastRelevantMultiple; i++)
-            if (primeMultiples[i] == candidate)
-                return false;
-        return true;
-    }
+	    private static boolean candidateIsNotOneOfThePrimeMultiples() {
+	        for (int i = 1; i <= lastRelevantMultiple; i++)
+	            if (primeMultiples[i] == candidate)
+	                return false;
+	        return true;
+	    }
 
-    private static void registerTheCandiateAsPrime() {
-        primes[primesFound] = candidate;
-        primeMultiples[primesFound] = candidate * candidate;
-        primesFound++;
-    }
-}
-```
+	    private static void registerTheCandiateAsPrime() {
+	        primes[primesFound] = candidate;
+	        primeMultiples[primesFound] = candidate * candidate;
+	        primesFound++;
+	    }
+	}
 
 ## Test-Driven Development
 
