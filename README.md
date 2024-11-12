@@ -105,11 +105,11 @@ interfaces and entanglement.  Setting arbitrary numerical limits such
 as 2-4 lines in a method and a single line in the body of an
 `if` or `while` statement exacerbates this problem.
 
-**UB**
+**UB:**
 
-To be clear, the book sets no such arbitrary limits. On page 13 I make clear that the recommendations in the book have worked well for me, but might not work for others.  I claim no final authority, nor even any absolute "rightness". They are offered for consideration.
+While I do strongly recommend very short functions, I don't think it's fair to say that the book sets arbitrary numerical limits. The 2-4 line functions that you referred to on page 34 were part of the _Sparkle_ applet that Kent Beck and I wrote together in 1999 as an exercise for learning TDD. I thought it was remarkable that most of the functions in that applet were 2-4 lines long because it was Swing program; and Swing programs tend to have very long methods.  
 
-As for the 2-4 line limit, on page 34 I was describing a program that Kent Beck and I wrote together in 1999; and _that_ program consisted of methods that were 2-4 lines.  I thought that was remarkable because it was Swing program, and Swing programs tend to have very long methods.  At the end of that paragraph I strongly recommended that size by saying "that's how short your methods should be!"
+As for setting limits, on page 13 I make clear that although the recommendations in the book have worked well for me and the other authors, they might not work for everyone.  I claimed no final authority, nor even any absolute "rightness". They are offered for consideration.
 
 **JOHN:**
 
@@ -125,7 +125,7 @@ It is certainly possible to over-decompose code.  Here's an example:
 
 	void doSomething() {doTheThing()} // over-decomposed.
 
-In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods drives a class towards the wide/shallow end.  This is because when I extract methods they are private.  The root method I extract them from is public, and remains as the interface of the class.  The narrow/deep nature of the  class is preserved.
+In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods inevitably drives a module towards the wide/shallow end.  This is because the methods I extract are private.  The root method from which they were extracted remains public, and is part of the interface of the module.  The narrow/deep nature of the module is preserved.
 
 **JOHN:**
 
@@ -134,25 +134,20 @@ to be deep, and it's OK for internal interfaces to be shallow and complex?
 If so, I disagree. I think that *all* interfaces should be deep, including
 lower-level interfaces for methods within a class and higher-level interfaces
 for subsystems, micro-services, etc. Clean interfaces provide benefits
-everywhere.
+everywhere.  
 
 **UB:**
+No, I'm saying something different.  Every function should have a narrow interface and an implementation that is deeper than the interface. The interface should be the abstraction that the function implements.
 
-I think, rather, I am saying that the interface between two extractable snippets of code is not not well expressed if they are kept inline within a function.  The wideness of the interface between them is hidden.  By extracting them we that interface is named, and becomes much clearer.  From there the programmer can determine if that interface is too wide.
+To me, depth does not mean lots of lines; rather it means deeper in the details that the interface is trying to hide. 
 
-**JOHN:**
+My fear with longish functions is that they often contain extractable elements. The interface between two extractable elements of code is implicit and anonymous.  An anonymous implicit interface is wide because the reader must deduce it from the entire context of the module.  Extracting those elements creates named and narrow interfaces without sacrificing any depth.
 
-I'm not sure I understand this. Are you saying that within the body of a single
-method there exist interfaces, and that a reader must discover these "internal
-interfaces" in order to understand how a method works?
+The practice of extracting elements and giving them named narrow interfaces creates a hierachy of named functions starting at the public interface of the module and descending, one step at a time, into the detailed implementation of that module.
 
-**UB:**
+This allows the reader to understand the flow of the module without having to read all the way down to the details.  This is very much like reading the first few paragraphs of a news article and then stopping because you got the gist of what the article was saying.
 
-The extraction of small private methods from the public methods of a class creates an internal structure that separates the high level policy of the original public methods, from the lower level details of those methods.  It gives those lower level details names, declared interfaces, and allows their implementations to be hidden behind those names and interfaces.
-
-This helps the reader to understand the flow of the original method without having to understand the details.
-
-I call this kind of structure: Polite.
+I call this kind of structure: _Polite_.
 
 **JOHN:**
 
@@ -162,6 +157,8 @@ do you consider it OK for private methods within a class to have shallow and
 complex interfaces?
 
 **UB:**
+
+Not at all.  Private methods should have narrow interfaces, and implementations that are one level deeper in detail.
 
 The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
@@ -177,7 +174,7 @@ Unfortunately the One Thing approach will lead to over-decompositon:
 
 **UB:**
 
-That argument is a bit reductive, isn't it?  I mean, you and I are never going to reduce programming to a deterministic algorithm.  There will always be this thing called _judgement_.
+I don't consider ease of abuse to be a concern. `If` statements are easy to abuse.  `Switch` statements are easy to abuse.  Assignment statements are easy to abuse.  The fact that something is easy to abuse does not mean that it should be avoided or suppressed.  It simply means people should take appropriate care. There will always be this thing called: _judgement_. 
 
 So when faced with this snippet of code in a larger method:
 
@@ -186,7 +183,7 @@ So when faced with this snippet of code in a larger method:
 	totalPoints=0;
 	...
 
-It would be poor judgement to extract them into:
+It would be poor judgement to extract them as follows, because the extraction is not meaningful.  The implementation is not more deeply detailed than the interface.
 
 	void clearAmountOwed() {
 	  amountOwed=0;
@@ -196,23 +193,38 @@ It would be poor judgement to extract them into:
 	  totalPoints=0;
 	}
 
-However it may be good judgement to extract them as:
+However it may be good judgement to extract them as follows because the interface is abstract, and the implemention has deeper detail.
 
 	void clearTotals() {
 		amountOwed=0;
 		totalPoints=0;
 	}
-
-The latter has a nice descriptive name that is abstract enough to be meaningful without being redundant.  And the two lines together are so strongly related as to qualify for doing _one thing_: initialization.
+	
+The latter has a nice descriptive name that is abstract enough to be meaningful without being redundant.  And the two lines together are strongly related so as to qualify for doing _one thing_: initialization.
 
 **JOHN:**
 
 Without seeing more context, I'm skeptical that the `clearTotals`
 method makes sense, but let's not argue about that.
 
->>> I took the liberty of deleting the example you added along with a bunch
-of  my text above. Discussing this additional example would be a huge
-digression, potentially another entire blog. Let's try to stay focused?
+**UB:**
+
+OK, but I hope you agree that between these two examples, the former is a bit better.
+
+	public String makeStatement() {
+	  clearTotals();
+	  return makeHeader() + makeRentalDetails() + makeFooter();
+	}
+	
+---
+
+	public String makeStatement() {
+      amountOwed=0;
+      totalPoints=0;
+      return makeHeader() + makeRentalDetails() + makeFooter();
+	}
+
+**JOHN:**
 
 I agree that it isn't possible to provide precise recipes for software
 design, and judgment will inevitably be involved. But judgment depends
@@ -328,63 +340,13 @@ production)?
 
 Ah, yes.  The `PrimeGenerator`.  This code comes from the 1982 paper on [*Literate Programming*](https://www.cs.tufts.edu/~nr/cs257/archive/literate-programming/01-knuth-lp.pdf) written by Donald Knuth.  The program was originally written in Pascal, and was automatically generated by Knuth's WEB system.  I translated it to Java.
 
-Of course this code was never meant for production.  It's clearly a pedagogical exercise.  It appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and methods.
+Of course this code was never meant for production because it is a pedagogical exercise.  It appears in a chapter named *Classes*.  I used it as a demonstration for how to partition a large and messy legacy function into a set of smaller classes and methods.
 
->>> The comments below feel like an uninteresting digression to me. Can we delete everything down through the "END DIGRESSION" comment below?
-
-**JOHN:**
-
-It sounds like we may disagree not just on software design, but also
-on teaching pedagogy. In my experience, when students see example code they
-assume it is "good" in every way, and they will emulate it (in every way).
-
-**UB:**
-
-Hai Miyagi-san.  Teacher say.  Student do.
-
-However, there are plenty of other examples in the book that go into substantially more depth; so I'm not overly concerned that this one will lead anyone astray.  Still, this is more fodder for the 2d. ed.
-
-**JOHN:**
-
-If we want to
-teach people how to write production code, then our examples should appear
-as close as possible to the way we think production code should appear.
-
-**UB:**
-
-Well, within the limits of being polite.  If the final code goes off into a deep exposition of an algorithm that has nothing, whatever, to do with the point of the lesson; then it could be seen as rude to focus on the ancillary details to the detriment of the lesson.
-
-**JOHN:**
-
-In any case, can you clarify (a) in what ways you would like readers to
-emulate this example in production and (b) in what ways they should *not*
-emulate the example (if there are any)? (Note: if you can answer questions
-(a) and (b) more precisely in your preceding comment, I think I can live
-without the digression into teaching pedagogy).
-
-**UB:**
-
-The lesson of the chapter is that a large function can contain many different sections of code that are better extracted into independent classes.  So I would like my readers to attempt such extractions when they see large functions; and they should *not* allow such unextracted functions to persist.
-
-BTW, that is also the lesson of Martin Fowler's video store example above.
-
-**JOHN:** >>You can delete this
-
-I disagree: I think that Knuth intended for his approach to
-be used for production code. (We are really off in the weeds here...)
-
->>> END DIGRESSION. Also, I'm not sure that your comment below follows
-naturally anymore from what is above it.
-
-**UB:**
+The lesson of the chapter is that a large function can contain many different sections of code that are better extracted into independent classes.  My recommendation was that my readers should attempt such extractions when they see large functions.
 
 In the chapter I extracted three classes from that function: `PrimePrinter`, `RowColumnPagePrinter` and `PrimeGenerator`.
 
->>> Can you pull up information from your comment below (which I propose
-to delete) that clarifies that this isn't Knuth's original code, but
-rather back-end output?
-
-Once the classes were extracted, the `PrimeGenerator` looked like this: (which I did not publish in the book.)  The variable names were Knuth's.
+Once the classes were extracted, the `PrimeGenerator` class had the following code (which I did not publish in the book.)  
 
 	public class PrimeGenerator {
 	  protected static int[] generate(int n) {
@@ -418,48 +380,12 @@ Once the classes were extracted, the `PrimeGenerator` looked like this: (which I
 	    return p;
 	  }
 	}
+	
+To be fair to Knuth, this is not the program as he wrote it but rather as it was output by his WEB tool.  The variable names, however, were Knuth's.  I used this code because it made a great starting place for breaking up a big function into many smaller functions and classes.
 
->>> I propose to delete from here down through END DIGRESSION 2
-**JOHN**:
+My goal was not to describe how to generate prime numbers.  I wanted my readers to see how large methods, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named methods.
 
-I don't think you have represented Knuth's work fairly.
-
-**UB:**
-
-In fact, on page 141 I say: "To be fair to Knuth, this is not the program as he wrote it but rather as it was output by his WEB tool.  I'm using it because it mamkes a great starting place for breaking up a big function into many smaller functions and classes."
-
-**JOHN:**
-
-If I understand
-the Literate Programming paper, the idea was to intermix extensive documentation
-with the program code in order to make the code easier to understand.
-I don't necessarily agree with Knuth's approach, but
-you seem to have extracted the code while dropping all
-of the documentation that Knuth intended to accompany it. It's no surprise
-that the extracted code is hard to read. (Are you sure you
-want to go into this example? I don't see how it will enhance the rest of
-the discussion. The
-`PrimeGenerator` code should be able to stand on its own; whether it is better
-or worse than Knuth's code is irrelevant for our discussion.)
-
->>> END DIGRESSION 2
-
-**UB:**
-
-I refactored that wad of code in order to break it up into a few reasonbaly sized and reasonably named chunks so that my readers could see how large methods, that violate the Single Responsibility Principle, can be broken down into a few smaller well-named classes containing a few smaller well-named methods.
-
-I think it's somewhat better than where it started.
-
-**JOHN:**
-
-I don't think it's meaningful to compare your source code
-with what is essentially assembly language output generated from Knuth's
-source (which was embedded in a text document intended to make the code
-easy to read and understand). I suggest we focus on your code.
-
-**UB:**
-
-It was _not_ my intent, in this chapter, to teach my readers how to write the most optimal prime number generator.  That was the last thing on my mind, and the last thing I wanted on theirs.
+It was _not_ my intent, in that chapter, to teach my readers how to write the most optimal prime number generator.  That was the last thing on my mind, and the last thing I wanted on theirs.
 
 **JOHN:**
 
@@ -516,7 +442,7 @@ I disagree.  Here is `isNotMultipleOfAnyPreviousPrimeFactor`.
 	    return true;
 	  }
 
-If you trust the 'isMultipleOfNthPrimeFactor' method, then this method stands alone quite nicely.  I mean we loop through all n previous primes and see if the candidate is a multiple.  That's pretty straight forward.
+If you trust the `isMultipleOfNthPrimeFactor` method, then this method stands alone quite nicely.  I mean we loop through all n previous primes and see if the candidate is a multiple.  That's pretty straight forward.
 
 Now it would be fair to ask the question how we determine whether the candidate is a multiple, and in that case you'd want to inspect the `isMultiple...` method.
 
@@ -625,7 +551,7 @@ It seems to me that separating and naming those concerns helps to expose the way
 
 In your solution, below, you break the algorithm up in a similar way.  However, instead of separating the concerns into functions, you separate them into sections with comments above them.
 
-You mentioned how in my solution readers will have to keep the loop context in mind while reading the other functions.  I suggest that in your solution, readers will have to keep the loop context in mind while reading your explanatory comments.  They may have to "flip back and forth" between the sections in order to establish their understanding.
+You mentioned that in my solution readers will have to keep the loop context in mind while reading the other functions.  I suggest that in your solution, readers will have to keep the loop context in mind while reading your explanatory comments.  They may have to "flip back and forth" between the sections in order to establish their understanding.
 
 Now perhaps you are concerned that in my solution the "flipping" is a longer distance (in lines) than in yours.  I'm not sure that's a significant point since they all fit on the same screen (at least they do on my screen) and the landmarks are pretty obvious.
 
@@ -634,91 +560,57 @@ Now perhaps you are concerned that in my solution the "flipping" is a longer dis
 It sounds like it's time to wrap up this section. Is this a reasonable
 summary of where we agree and disagree?
 
+>**UB:** I'll put my answers in callouts like this.
+
 * We agree that modular design is a good thing.
+>Yes.
+
 * We agree that it is possible to over-decompose, and that *Clean Code*
   doesn't provide much guidance on how to recognize over-decomposition.
+>Yes.
+
 * We disagree on how far to decompose: you recommend decomposing
   code into much smaller units than I do.
+>Yes.
+
 * You believe that the One Thing principle, applied with judgment, will
   lead to appropriate decompositions. I believe it lacks guardrails
   and will lead to over-decomposition.
+>Yes.
+
 * You believe that `PrimeGenerator` provides a good example of how to
   decompose code and that it is easy to read.
   I believe that `PrimeGenerator` is a really bad decomposition
   (sorry to be blunt) and that the problems stem from following the
   advice of *Clean Code*: it is way over-decomposed and as a result is
   difficult to read.
+>No. `PrimeGenerator` is one element within a larger example of how to extract classes from very large functions.  I think the decomposition of the methods within that element could be better (as seen below)-- but that was not the point of the chapter.  
+
 * You believe that `PrimeGenerator` separates concerns. I believe that
   the code appears separated on the surface, but in fact it is entangled.
+>Yes.
+
 * You believe that when someone reads a class, it's reasonable for them
   to load all of the code of the class into their head as they go, so
   that in each method they remember what they've read in previous methods.
   I believe that this creates an unreasonable cognitive load: it should
   be possible to read each method relatively independently, without having
   to remember the implementations of other methods.
+>No. I think that the public methods of a class should be broken down by the principle of functional decomposition, and that the functions should be ordered according to that decomposition.  This creates a hierarchy with lower level functions immediately following the higher level functions that call them. This allows readers to read downwards until they have gotten the gist of the function, thus avoiding being swamped by lower level details.  I consider this "polite". 
+
 * You believe that ordering the methods in a class is an effective way
   to manage dependencies between them. I believe that if you need to order
   the methods, you have a bigger problem that can't be fixed by ordering
   the methods.
+>Yes, ordering methods by their level of abstraction is an effective technique, and is polite.  I do not think you believe that methods should be scattered in any order.  
+
 * You believe that it's OK for (private?) methods in class to be entangled,
   where one method cannot be fully understood without considering code
   in other methods. I believe that entanglement is a red flag for bad
   design; if two pieces of code are dependent, the code will be more
   readable if the pieces are right next to each other in a single method.
+> Yes, the extent to which classes have fields suggests that the methods within them are somewhat entangled. I think such entanglements are often better communicated through those fields, and through well-named and narrow function interfaces, rather then through local variables within a method.
 
-Does this capture things accurately?
-
->>> Can we delete everything from here down through END DIGRESSION 3?
-This feels like a bunch of uninteresting digressions, and the important
-stuff is (or will be) discussed elsewhere.
-
-**JOHN:**
-
-I agree that names are important, but I worry that you focus too narrowly
-on names without considering other factors that are even more important.
-Breaking a large method up only makes
-sense if the smaller methods have clean interfaces and are relatively
-independent. A method's name almost never captures the full complexity of its
-interface (we will discuss this later) and it doesn't say anything about
-independence vs. entanglement.
-
-**UB:**
-
-We will have to disagree on that.  I think that if a method is terse enough, then the name should be sufficient to describe it in most cases.
-
-In this case I think I improved the structure and naming of the original quite a bit.  Perhaps I did not improve it enough but I think it serves to present the strategy for breaking up large methods into smaller classes and methods.
-
-**JOHN:** >>reword
-
-I'm comfortable with your goal (but I'm not sure why you keep bringing up "best
-possible prime number generator": none of my concerns have anything to
-do with that). However (and I'm sorry to be blunt) `PrimeGenerator` is a
-really bad decomposition. I hope readers will not emulate it. Furthermore, I
-don't think it's bad because of an accident; it ended up way over-decomposed
-and hard to read because you followed the advice of *Clean Code*.
-
-**UB:**
-
-It was not my goal, in this chapter, to show the best possible decomposition of the algorithm.  The algorithm was irrelevant.  It was my goal to show how large functions can be broken up into smaller classes.
-
-**JOHN:**
-
-It sounds like we'll have to disagree here. Readers can decide for
-themselves: when deciding how to decompose code, is the algorithm
-relevant? And, when breaking up functions is it OK to produce a decomposition
-that makes it hard to understand how the algorithm works?
-
-**UB:**
-
-As for your contention that the `PrimeGenerator` was over decomposed, I decomposed it into 8 small functions.  You decomposed your solution (below) into seven commented sections.  So I'm not sure your argument holds a lot of water.  ;-)
-
-**JOHN:**
-
-We already discussed this (it isn't just how many pieces there are, but
-how they are arranged); I refer readers to the preceding discussion
-related to the Gettysburg Address.
-
->>> END DIGRESSION 3
 
 ## Comments
 
@@ -775,29 +667,22 @@ the tone of Chapter 13 of APOSD with Chapter 4 of *Clean Code*, the hostility
 of *Clean Code* towards comments becomes pretty clear.
 
 **UB:**
+I'll leave you to balance that last comment with the initial statement, and the final example, in the _Comments_ chapter. They do not communicate "hostility". 
 
-You and I likely both survived through a time when comments were absolutely necessary.  In the '70s and '80s I was an assembly language programmer.  I also wrote a bit of FORTRAN. Programs in those languages that had no comments were impenetrable.  (As was Knuth's original prime generator.)
+I'm not hostile to comments in general.  I _am_ very hostile to gratuitous comments.
+
+You and I likely both survived through a time when comments were absolutely necessary.  In the '70s and '80s I was an assembly language programmer.  I also wrote a bit of FORTRAN. Programs in those languages that had no comments were impenetrable.
 
 As a result it became conventional wisdom to write comments by default.  And, indeed, computer science students were taught to write comments uncritically.  Comments became _pure good_.
 
 In the book I decided to fight that mindset.  Comments can be _really bad_ as well as good.
-
 
 **JOHN:**
 
 I don't agree that comments are evil, and I don't agree that comments are
 any less necessary today than they were 40 years ago.
 
-**UB:**
-
-I didn't say they were evil.  I used the well-known idiom of _necessary_ evil. That's because we write them when we fail to express ourselves in code.
-
-**JOHN:**
-
-In my dictionary a "necessary" evil is still an evil. But let's not get
-hung up on this.
-
-Comments are not a problem, they are the solution.
+Comments are not the problem, they are the solution.
 The problem is that there is a lot of important
 information that simply cannot be expressed in code. When a programmer
 writes comments, they have not failed to express themselves; they have
@@ -806,16 +691,9 @@ understand.
 
 **UB:**
 
-I didn't say they were "the problem".  I certainly said that some comments were problematic.
-
->>> I changed "the problem" to "a problem" above; can your comment above
-be deleted now?
-
-**UB:**
-
 It's very true that there is important information that is not, or cannot be, expresssed in code.  That's a failure.  A failure of our languages, or of our ability to use them to express ourselves.  In every case a comment is a failure of our ability to use our languages to express our intent.
 
-And we fail at that very frequently, and so comments are a necessary evil -- or, if you prefer, an unfortunate necessity.  If we had the perfect programming language TM we would never write another comment.
+And we fail at that very frequently, and so comments are a necessary evil -- or, if you prefer, _an unfortunate necessity_.  If we had the perfect programming language (TM) we would never write another comment.
 
 **JOHN:**
 
@@ -856,16 +734,14 @@ commented.
 
 **UB:**
 
-You and I have had very different experiences.  ;-)
+You and I have had sopme very different experiences.  
 
->>> You didn't answer my question above, and this comment feels distracting
-without providing any concrete information. Do you feel that incorrect
-comments cost you more time than missing comments? If so, how about
-stating that explicitly?
+I have certainly been helped by well placed comments.  I have also, just as certainly, (and within this very document) been distracted and confused by a comment that was incorrect, misplaced, gratuitous, or otherwise just plain bad.
 
 **JOHN:**
 
 I invite everyone reading this article to ask yourself the following questions:
+
 * How much does your software development speed suffer because of
   incorrect comments?
 * How much does your software development speed suffer because of
@@ -880,7 +756,9 @@ in that code; does this seem appropriate to you?
 
 **UB:**
 
-If I was putting that code into a library then some comments would be appropriate. But this code is not getting put into a library.  It was created to make the point that large methods can be broken down into smaller classes containing smaller methods. Adding lots of explanatory comments would have detracted from that point.
+I think it was appropriate for the purpose for which I wrote it. It was created to make the point that large methods can be broken down into smaller classes containing smaller methods. Adding lots of explanatory comments would have detracted from that point.
+
+I agree, however, that the commenting style in Listing 4-8 is generally more appropriate.
 
 **JOHN:**
 
@@ -894,6 +772,7 @@ For starters, let's discuss your use of megasyllabic names like
 you advocate using names like this instead of using shorter names
 augmented with descriptive comments: you're effectively moving the
 comments into code. To me, this approach is problematic:
+
 * Long names are awkward. Developers effectively have to retype
   the documentation for a method every time they invoke it, and the long
   names waste horizontal space and trigger line wraps in the code. The names are
@@ -917,14 +796,16 @@ more effectively. What advantage is there in the approach you advocate?
 
 **UB:**
 
+"_Megasyllabic_": Great word! 
+
 I like my method names to be sentence fragments that fit nicely with keywords and assignment statements.  It makes the code a bit more natural to read.
 
 	if (isTooHot)
 	  cooler.turnOn();
 
-I also follow a simple rule about the length of names.  The larger the scope of a function, the shorter its name should be.  The private functions I extracted in this case live in very small scopes, and so have longish names.  Functions like this are typically called from only one place, so there is no burden on the programmer to remember and long name for another call.
+I also follow a simple rule about the length of names.  The larger the scope of a function, the shorter its name should be.  The private functions I extracted in this case live in very small scopes, and so have longish names.  Functions like this are typically called from only one place, so there is no burden on the programmer to remember a long name for another call.
 
-As for being hard to parse, that's a matter of practice.  Code is full things like that.
+As for being hard to parse, that's a matter of practice.  Code is full things that take practice to get used to.
 
 As for the meaning of "leastRelevant", that's a much larger problem that you and I will encounter shortly.  It has to do with the intimacy that the author has with the solution, and the reader's lack of that intimacy.
 
@@ -992,38 +873,7 @@ to use a method with only its signature?
 
 **UB:**
 
-John, all four of those questions are diametrically opposed to the abstraction itself. I don't want to force the reader to know those kinds of details when looking at this method.  Those details should be pushed down to a lower level IMHO.
-
-**JOHN:**
-
-I don't understand this. Don't developers need to know this
-information in order to use the method? If so, then doesn't that information
-need to be visible as part of the method's interface? Otherwise
-developers will have to read the code of the method to figure it out.
-Can you explain what you mean by "should be pushed down to a lower level"
-(I'm curious where you would put this information, if not in the interface
-description)?
-
-**UB:**
-
-Consider this:
-
-	addSongToLibrary(song.getTitle(),
-	                 song.getAuthors(),
-			 song.getDuration())
-
-In this case `addSongToLibrary` is part of the `song` abstraction which hides all the details you were concerned about.
-
-**JOHN:**
-
-I don't see how this helps:
-* The `addSongToLibrary` is a general-purpose method that need not be
-  invoked using fields from an existing `song` object. How do I know how
-  to use the method in that case?
-* In the case above, how do I know that `song.getAuthors()` returns authors
-  in the right format for `addSongToLibrary`?
-* This doesn't address other issues such as what happens if there is
-  already a song in the library with the same title.
+Yes, there are times when the signature of a method is an incomplete abstraction and a comment is required.  There are other times when the signature tells you everything you want to know.  It seems to me that we should try to create more of the later kind and avoid the former where possible.  
 
 **JOHN:**
 
@@ -1037,6 +887,7 @@ This will force readers to load more information into their
 heads, which makes it harder to work in the code.
 
 Here is my first attempt at a header comment for `isMultiple`:
+
 ```
     /**
      * Returns true if candidate is a multiple of primes[n], false otherwise.
@@ -1049,13 +900,14 @@ Here is my first attempt at a header comment for `isMultiple`:
      *      <= multiplesOfPrimeFactors.size().
      */
 ```
+
 What do you think of this?
 
 **UB:**
 
 I think it's accurate.  I wouldn't delete it if I encountered it.  I don't think it should be a javadoc.
 
-The first sentence is redundant with the name and so could be deleted.  The warning of the side effect is useful.
+The first sentence is redundant with the name `isMultipleOfNthPrimeFactor` and so could be deleted.  The warning of the side effect is useful.
 
 **JOHN:**
 
@@ -1207,7 +1059,7 @@ things work (and why) should be correct. To me, that's clean code.
 **JOHN:**
 
 I mentioned that I ask the students in my software design class to rewrite
-PrimeGenerator to fix all of its design problems. Here is my rewrite:
+`PrimeGenerator` to fix all of its design problems. Here is my rewrite:
 
 	package literatePrimes;
 
@@ -1287,7 +1139,7 @@ couple of overall things:
 
 I presume this is a complete rewrite.  My guess is that you worked to understand the algorithm from Clean Code and then wrote this from scratch.  If that's so, then fair enough.
 
-That's not what I did.  I *refactored* Knuth's algorithm in order to give it a little structure.
+In _Clean Code_ I *refactored* Knuth's algorithm in order to give it a little structure.  That's not the same as a complete rewrite.
 
 Having said that, your version is much better than either Knuth's or mine.  I could not have used it in the chapter I was writing *because* it is still in a single method, and I needed to show a more granular partioning.
 
@@ -1360,11 +1212,21 @@ That doesn't make a lot of sense.  The code it's talking about is:
 	            for (int i = 1; i <= lastMultiple; i++) {
 	                while (multiples[i] < candidate) {
 
-The `multiples` array, as we have now learned, is an array of *multiples* of prime numbers.  This loop is not testing the candidate against prime *factors*, it's testing it against the current prime multiples.
+The `multiples` array, as we have now learned, is an array of *multiples* of prime numbers.  This loop is not testing the candidate against prime *factors*, it's testing it against the current prime _multiples_.
 
 Fortunately for me the third of fourth time I read this comment I realized that you really meant to use the word "multiples".  But the only way for me to know that was to understand the algorithm.  And when I understand the algorithm, why do I need the comment?
 
-The last comment is:
+That left me with one final question.  What the deuce was the reason behind:
+
+	multiples[primesFound] = candidate*candidate;
+
+Why the square?  That makes no sense.  So I changed it to:
+
+	multiples[primesFound] = candidate;
+
+And it worked just fine.  So this must be an optimization of some kind.  
+
+Your comment to explain this is:
 
 	            // Start with the prime's square here, rather than 3x the prime.
 	            // This saves time and is safe because all of the intervening
@@ -1374,25 +1236,15 @@ The last comment is:
 	            // 35 will be ruled out as a multiple of 5, so 49 is the first
 	            // multiple that won't be ruled out by a smaller prime.
 
-The first few times I read this it made no sense to me at all.  It was just a jumble of numbers.  So I ignored it.
+The first few times I read this it made no sense to me at all.  It was just a jumble of numbers. 
 
-As I started at the ceiling, and closed my eyes to visualize, I finally realized that the `multiples` array was the equivalent of the array of booleans we use in the *Sieve of Eratosthenes* -- but with a really interesting twist.  If you were to do the sieve on a whiteboard, you _could_ erase every number less than the candidate, and only cross out the numbers that were the next multiples of all the previous primes.
+I stared at the ceiling, and closed my eyes to visualize. I couldn't see it.  So I went on a long contemplative bike ride during which I realized that the prime multiples of 2 will at one point contain 2*3 and then 2*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  _And it clicked!_  
+
+Suddenly it all made sense. I realized that the `multiples` array was the equivalent of the array of booleans we use in the *Sieve of Eratosthenes* -- but with a really interesting twist.  If you were to do the sieve on a whiteboard, you _could_ erase every number less than the candidate, and only cross out the numbers that were the next multiples of all the previous primes. 
 
 That explanation makes perfect sense to me -- now, but I'd be willing to bet that those who are reading it are puzzling over it.  The idea is just hard to explain.
 
-OK, so that left me with one final question.  What the deuce was the reason behind:
-
-	multiples[primesFound] = candidate*candidate;
-
-Why the square?  That makes no sense.  So I changed it to:
-
-	multiples[primesFound] = candidate;
-
-And it worked just fine.  So this must just be an optimization.  That whole long comment is about an optimization.  OK, so why?  Why can you start the multiple for a prime at prime^2?
-
-That's not an easy question to answer.  Eventually, after a long bike ride, I realized that the prime multiples of 2 will at one point contain 2*3 and then 2*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  !!!  And then it all made sense.
-
-Then I could read your comment and see what you were saying.
+Finally I went back to your comment and could see what you were saying.
 
 ###A Tale of Two Programmers
 The bottom line here is that you and I both fell into the same trap.  I refactored that old algorithm 18 years ago, and I thought all those method and variable names would make my intent clear -- *because I understood that algorithm*.
@@ -1415,70 +1267,68 @@ I like this because the implementation of the `generateFirstNPrimes` method desc
 
 I think it is just the reality of this algorithm that the effort required to properly explain it, and the effort required for anyone else to read and understand that explanation is roughly equivalent to the effort needed to read the code and go on a bike ride.
 
-```
-package literatePrimes;
+	package literatePrimes;
 
-public class PrimeGenerator3 {
-    private static int[] primes;
-    private static int[] primeMultiples;
-    private static int lastRelevantMultiple;
-    private static int primesFound;
-    private static int candidate;
+	public class PrimeGenerator3 {
+	    private static int[] primes;
+	    private static int[] primeMultiples;
+	    private static int lastRelevantMultiple;
+	    private static int primesFound;
+	    private static int candidate;
 
-    // Lovely little algorithm that finds primes by predicting
-    // the next composite number and skipping over it. That prediction
-    // consists of a set of prime multiples that are continuously
-    // increased to keep pace with the candidate.
+	    // Lovely little algorithm that finds primes by predicting
+	    // the next composite number and skipping over it. That prediction
+	    // consists of a set of prime multiples that are continuously
+	    // increased to keep pace with the candidate.
 
-    public static int[] generateFirstNPrimes(int n) {
-        initializeTheGenerator(n);
+	    public static int[] generateFirstNPrimes(int n) {
+	        initializeTheGenerator(n);
 
-        for (candidate = 5; primesFound < n; candidate += 2) {
-            increaseEachPrimeMultipleToOrBeyondCandidate();
-            if (candidateIsNotOneOfThePrimeMultiples()) {
-                registerTheCandiateAsPrime();
-            }
-        }
-        return primes;
-    }
+	        for (candidate = 5; primesFound < n; candidate += 2) {
+	            increaseEachPrimeMultipleToOrBeyondCandidate();
+	            if (candidateIsNotOneOfThePrimeMultiples()) {
+	                registerTheCandiateAsPrime();
+	            }
+	        }
+	        return primes;
+	    }
 
-    private static void initializeTheGenerator(int n) {
-        primes = new int[n];
-        primeMultiples = new int[n];
-        lastRelevantMultiple = 1;
+	    private static void initializeTheGenerator(int n) {
+	        primes = new int[n];
+	        primeMultiples = new int[n];
+	        lastRelevantMultiple = 1;
 
-        // prime the pump. (Sorry, couldn't resist.)
-        primesFound = 2;
-        primes[0] = 2;
-        primes[1] = 3;
+	        // prime the pump. (Sorry, couldn't resist.)
+	        primesFound = 2;
+	        primes[0] = 2;
+	        primes[1] = 3;
 
-        primeMultiples[0] = -1;// irrelevant
-        primeMultiples[1] = 9;
-    }
+	        primeMultiples[0] = -1;// irrelevant
+	        primeMultiples[1] = 9;
+	    }
 
-    private static void increaseEachPrimeMultipleToOrBeyondCandidate() {
-        if (candidate >= primeMultiples[lastRelevantMultiple])
-            lastRelevantMultiple++;
+	    private static void increaseEachPrimeMultipleToOrBeyondCandidate() {
+	        if (candidate >= primeMultiples[lastRelevantMultiple])
+	            lastRelevantMultiple++;
 
-        for (int i = 1; i <= lastRelevantMultiple; i++)
-            while (primeMultiples[i] < candidate)
-                primeMultiples[i] += 2 * primes[i];
-    }
+	        for (int i = 1; i <= lastRelevantMultiple; i++)
+	            while (primeMultiples[i] < candidate)
+	                primeMultiples[i] += 2 * primes[i];
+	    }
 
-    private static boolean candidateIsNotOneOfThePrimeMultiples() {
-        for (int i = 1; i <= lastRelevantMultiple; i++)
-            if (primeMultiples[i] == candidate)
-                return false;
-        return true;
-    }
+	    private static boolean candidateIsNotOneOfThePrimeMultiples() {
+	        for (int i = 1; i <= lastRelevantMultiple; i++)
+	            if (primeMultiples[i] == candidate)
+	                return false;
+	        return true;
+	    }
 
-    private static void registerTheCandiateAsPrime() {
-        primes[primesFound] = candidate;
-        primeMultiples[primesFound] = candidate * candidate;
-        primesFound++;
-    }
-}
-```
+	    private static void registerTheCandiateAsPrime() {
+	        primes[primesFound] = candidate;
+	        primeMultiples[primesFound] = candidate * candidate;
+	        primesFound++;
+	    }
+	}
 
 ## Test-Driven Development
 
@@ -1494,16 +1344,11 @@ that tests must be written before code and that code must be written
 and tested in tiny increments. This approach has serious problems
 without any compensating advantages that I have been able to identify.
 
-*Clean Code* advocates for TDD, but I was not able to find any
-explanation in *Clean Code* of *why* TDD is a good idea. Bob,
-perhaps you can start the discussion off by explaining what benefits
-accrue from writing tests before code?
-
 **UB:**
 
-Oh good!  Now I get to complain about your book.  ;-)
+As I said at the start I have carefully read _A Philosophy of Software Design_. I found it to be full of worthwhile insights, and I strongly agree with most of the points you make.
 
-You briefly mention TDD on page 157 and ... well, to be kind, you get it pretty badly wrong. Allow me to quote:
+So I was surprised to find, on page 157, that you wrote a very short, dismissive, pejorative, and inaccurate section on _Test Driven Development_.  Sorry for all the adjectives, but I that's a fair characterization.  So my goal, here, is to correct the misconception you have that led you to write that section.
 
 >"Test-driven development is an approach to software development where programmers write unit tests before they write code.  When creating a new class, the develper first writes unit tests for the class, based on its expected behavior.  None of these tests pass, since there is no code for the class.  Then the developer works through the tests one at a time, writing enough code for that test to pass.  When all of the tests pass, the class is finished."
 
@@ -1514,278 +1359,70 @@ This is just wrong.  TDD is quite considerably different from what you describe.
  2. You are not allowed to write more of a unit test than is sufficient to fail, and failing to compile is failing.
 
  3. You are not allowed to write more production code than is sufficient to make the currently failing test pass.
+ 
+ A little thought will convince you that these three laws will lock you into a cycle that is just a few seconds long.  You'll write a line or two of a test that will fail, you'll write a line or two of production code that will pass, around and around every few seconds.
+ 
+ A second layer of TDD is the Red-Green-Refactor loop.  This loop is several minutes long.  It is comprised of a few cycles of the three laws, followed by a period of reflection and refactoring.  During that reflection we pull back from the intimacy of the quick cycle and look at the design of the code we've just written.  Is it clean?  Is it well structured?  Is there a better approach?  Does it match the design we are pursuing?  If not, should it?
 
  **JOHN:**
 
- Oops! I plead "guilty as charged". I will fix this in the next revision of APOSD. That said,
- your description of TDD does not change my feelings about it.
+ Oops! I plead "guilty as charged". I will fix this in the next revision of APOSD. 
+ 
+ Let me start by saying that I am a huge fan of unit testing.
+ I believe that unit tests are an indispensable part of the software
+ development process and pay for themselves over and over. I think we
+ agree on this.
+
+ So, I suggest that we discuss the potential advantages and disadvantages
+ of TDD; then readers can decide for themselves whether they think TDD is a
+ good idea overall.
+
+ Before we start that discussion, let me clarify the approach I prefer as an
+ alternative to TDD. In your online videos you describe the alternative to
+ TDD as one where a developer writes the code, gets it fully working
+ (presumably with manual tests), then goes back and writes the unit tests.
+ You argue that this approach would be terrible: developers
+ lose interest once they think code is working, so they wouldn't actually
+ write the tests. I agree with you completely. However, this isn't the only
+ alternative to TDD.
+
+ The approach I prefer is one where the developer works in somewhat
+ larger units than in TDD, perhaps a few methods or a class. The developer
+ first writes some code (anwywhere from a few tens of lines to a few hundred
+ lines), then writes unit tests for that code. As with TDD, the
+ code isn't considered to be "working" until it has comprehensive unit
+ tests.
+ 
+ >For the purposes of this document I shall call this technique: "Bundling".
+
+ The reason for working in larger units is to encourage design
+ thinking, so that a developer can think about a collection of related
+ tasks and do a bit of planning to come up with a good overall design
+ where the pieces fit together well.
+ Of course the initial design ideas will have flaws and refactoring
+ will still be necessary, but the goal is to center the development
+ process around design, not tests.
+
+ To start our discussion, can you make a list of the advantages you
+ think that TDD provides over the approach I just described?
 
  **UB:**
+The advantages I usually describe when describing TDD are:
 
-Following these three laws traps you into a loop that is, perhaps, 10 to 30 seconds long.  It's almost a line by line thing.
+* Very little need for debugging.  After all, if you just saw everything working a minute or two ago, there's not much to debug.
 
- * You write a line or two of a unit test, but it won't compile because the code it calls doesn't exist.
+* A stream of reliable low level documentation, in the form of very small and isolated unit tests.  Those tests describe the low level structure and operation of every facet of the system.  If you want to know how to do something in the system, there are tests that will show you how.  
 
- * You write a line or two of production code that makes the test compile.
+* A less coupled design which results from the fact that every small part of the system must be designed to be testable, and testability requires decoupling.  
 
- * You write another line or two of the test, but it fails to compile because you haven't finished the production code.
+* A suite of tests that you trust with your life, and therefore supports fearless refactoring.
 
- * You write another line or two of production code that makes the test compile.
+However, you asked me which of these advantages TDD might have over _your_ preferred method.  That depends on how big you make those larger units you described.  The important thing to me is to keep the cycle time short, and to prevents entanglements that block testability.
 
- * You write another line or two of the test, and it compiles, but fails because the production code isn't working.
+It seem to me that working in small units that you immediately write tests for after the fact can give you all the above advantages, so long as you are very careful to test every aspect of the code you just wrote.  I think a disciplined programmer could effectively work that way.  Indeed, I think such a programmer would produce code that I could not distiguish from code written by another programmer following TDD.  
 
- * You write another line or two of the production code that makes the test pass.
+Above you suggested that bundling is to encourage design.  I think encouraging design is a very good thing.  My question for you is: Why do you think that TDD does not encourage design?  My own experience is that design comes from strategic thought, which is independent of the tactical behavior of either TDD or Bundling.  Design is taking one step back from the code and envisioning structures that address a larger set of constraints and needs.  
 
-This very quick cycle means that you are never more than a few seconds or minutes away from seeing _all_ your currently written tests pass.   And _that_ means you almost never need to debug anything.  After all, if you saw everything work a minute ago, and now it doesn't, it must be something you did within the last minute.
+Once you have that vision in your head it seems to me bundling and TDD will yield similar results.  
 
-**JOHN:**
 
-These claims seem pretty fantastical (and you've provided no supporting
-evidence). You seem to be claiming that TDD makes it harder to create bugs;
-I don't see why that would be true, and I will argue
-just the opposite below. And, when a problem arises, it isn't necessarily
-"something you did within the last minute". It could be a latent bug in
-code you wrote months ago, which simply wasn't triggered until the latest
-code was added. Adding a small amount of new code could
-result in a long and painful debugging process. You seem to be assuming
-that if code is added in tiny increments it isn't possible to create
-big problems; I don't think any experienced programmer would find this
-claim credible.
-
->>> I rewrote the text above, so you may want to revise your response below.
-
-**UB:**
-
-Asking for supporting evidence is a two-way street.  All through this document I could have been asking you to show evidence of your claims.  But that's not what this document is about.  This is about two very experienced practitioners describing recommendations based upon their experiences.
-
-I have been practicing TDD for over 25 years.  So if I say something that sounds "fantastical" that's only because you and I have had very different experiences.  From my point of view, nothign I said was fantastical.
-
-Or rather, it's not fantastical _now_.  It was 25 years ago when I first encountered this discipline.  Back then I thought it was a load of hooey.  But then I tried it -- and my mind was changed very quickly.
-
-But allow me to continue with the explanation.  The very intense cycle I just described is part of a larger cycle that we call RED-GREEN-REFACTOR.  First we make it fail, then we make it pass, then we clean it up and consider the design.
-
-This follows the old maxim:
-
- * First make it work.
- * Then make it right.
-
-**JOHN:**
-
-I think this maxim is bad advice. This is what I call "tactical programming"
-in APOSD, where the emphasis in development is on getting the next thing working,
-rather than producing a good design. At each step it's easy to justify taking
-a shortcut or making things a bit more complicated, because that's the
-fastest way to get the next thing working. The result is a rapid accumulation
-of complexity and technical debt.
-
-Your suggestion that I (or anyone) might work in a perfectly straight
-line without errors is silly, of
-course, and I agree that finding bugs quickly is a good thing. But there's
-one thing that's even better than finding bugs quickly, and that's
-preventing bugs from occurring in the first place. That's what design
-is for.
-
-TDD discourages design, which leads to more complex code
-with more bugs. For example, TDD discourages thinking ahead
-("You are not allowed to write more production code than is sufficient
-to make the currently failing test pass") but the whole idea of design
-is to think ahead to avoid problems in the future.
-
-Here is the kind of nightmare scenario I worry about with TDD:
-
-* I write my first unit test and just enough production code to make
-  it work. Within a couple of minutes, the test passes.
-* Five minutes later, the next test is passing.
-* I write the next unit test and start filling in its production code.
-  However, the code I wrote for earlier tests doesn't exactly work for this
-  new test. I could revise the earlier code to fix this, but the fastest
-  way to make the new test pass is to make a couple of tweaks rather
-  than a clean fix.
-* Each test exposes more problems with the code structure that is evolving,
-  but there's always a hack I can make to get the next test running.
-  This seems consistent with TDD's instruction that I must write no more
-  production code than is needed to make the next test pass.
-* The code gets uglier and uglier, and the hacks get more and more complicated.
-  Pretty soon, the hacks for one
-  test start breaking other tests, so I need to try several hacks to
-  find one that works. It's taking longer and longer to make each new test
-  pass as I work through an ever-increasing cascade of bugs.
-* At this point I realize that if I had spent a bit of time up-front
-  coming up with an overall design and thinking about the big picture
-  rather than just the next test, life would be a lot easier. Many
-  of the bugs I've been chasing never would have happened in the first
-  place. But I've written so much code that it would be painful to
-  throw it out. So, I keep layering on Band-Aids.
-* Eventually, I get everything working. It was painful and took
-  longer than if I had done some design at the beginning. The
-  code is in really bad shape.
-* I know that I'm now supposed to "make it right", but that would
-  require throwing out most of the code that I've written
-  so far, and that would take a long time.
-* I go to my boss to ask for advice. After I describe the situation,
-  she says "Well, that project already took way longer than we
-  thought it would, and I have a lot of other things I need you to work
-  on. Since your code seems to work and you have extensive unit tests,
-  let's leave it as is. Hopefully we won't need to go into that code to
-  make changes, and maybe we can hire a summer intern to clean it up next
-  year."
-
-As this scenario shows, exposing a lot of bugs quickly isn't
-necessarily a good sign...
-
-**UB:**
-
-(LOL)  That was a funny story -- if perhaps a bit speculative.  And like all speculation based upon inexperience, it's quite inaccurate. So let's correct a few things.
-
-1. We certainly do think about the big picture and we certainly do spend time on working through an overall design.  The idea that we don't is an old and false meme that was used to criticize the Agile and Extreme Programming movements twenty years ago. If you've read any of my books you know that I talk about design and architecture a _lot_.  This is an activity I engage in very frequently at many different time scales: weekly, daily, hourly, and every few minutes.
-
-1. Yes, of course the three laws are tactical -- they are a tactical discipline.  Writing code is tactical.  Every line of code you write is a tactical decision. In the best case those tactical decisions are guided by strategic thought at many different levels.
-
-1. At the lowest level of strategy we write the tests first.  Therefore the production code must be designed to be testable. You cannot create a class that's hard to test if you write the tests first.  And a class that is easy to test _is_ easy to test because it is decoupled.
-
-1. The REFACTOR phase of the RED-GREEN-REFACTOR loop identifies lower level strategic issues.  We look at the growing code, compare it to the overall plan for the current module, and clean it up as needed. This happens several times per hour.
-
-1. Those of us who follow the Agile methods engage in daily reflections during which mid level strategic issues are identified.  We also engage in weekly or bi-weekly sessions where the highest level strategic issues arise.
-
-1. The very first few days of an Agile project is generally spent working on an overall high level picture of the system.  This picture, though certainly wrong, informs the rest of the process.
-
-1. We never show working code to our manager until after it has been cleaned -- because until it has been cleaned it is not done.  And we never delay cleaning to the end.  We engage in cleaning almost every time we get a test to pass.
-
-**JOHN:**
-
-I stand by my claims that TDD is tactical and discourages design.
-
-**UB:**
-
-Try it, Sam I Am.  And then tell me if you still think it discourages design.
-If you'd like some help you can I can pair on a few things.   Or if you'd like you can watch some of the videos I, or others, have done regarding this discipline.
-
-**JOHN:**
-
-I'm not saying it's impossible to do good design in a TDD environment,
-but to do so you must develop additional processes to compensate for
-the tactical pressure created by TDD. Perhaps the approaches you described
-above, if diligently
-executed, can produce an acceptable outcome. However, I fear that most
-developers won't have the self-discipline to avoid the mess I described
-earlier.
-
-**UB:**
-
-But you think that most developers have the self-discipline to write careful comments and work though, and then follow, up front designs?
-
-Discipline is discipline.  Either you've got it, or you don't.  And if you don't, you wind up with a mess.
-
-
->>At this point John you are speculating about things you don't know.  These are very old, and very tired, arguments that have been proven wrong over the last two and a half decades.
-
->>The offer is open.  I'm happy to work with you to show you the discipline if you like. It is nothing at all like what you fear.
-
-**JOHN:**
-
-Even if it's possible to make TDD work, why use an approach that must be
-compensated for? The fundamental problem with TDD is that it prioritizes
-the wrong thing. Yes, tests are essential to software development.
-But they are not the most important thing. The most important thing
-in software is good design. Thus, the software development process
-should be organized with design, not tests, as the highest priority.
-
-Instead of TDD, I would argue that we should design and implement code
-in larger chunks that encourage design thinking. Ideally, the unit of
-coding will be a modest-size collection of related things with a coherent
-mission, such as a class. Take a bit of
-time up front to think about the sub-problems that will have to be
-solved while implementing this abstraction. Look for simple components
-that will help to solve those problems. Find commonalities, where
-one piece of code solves multiple problems.
-
-Then write the code for this chunk of functionality, probably in
-stages, with unit tests. Personally, I prefer to write enough code
-in each stage to (mostly?) solve a sub-problem so I can see how its
-pieces work together (anywhere from 50-500 lines). Then I write the unit tests
-for that sub-problem. I drive the unit tests from the code, working through
-each method line-by-line, writing tests for a few lines of code at
-a time (such as a loop or conditional). The structure of the tests
-mirrors the structure of the code, so when I make code changes it's
-easy to see which tests are affected.
-
-That said, I don't object to other approaches to unit testing, as long
-as they produce a comprehensive and high-quality suite of tests.
-The thing I'm adamant about is that the development process
-should be driven by *design*, not tests.
-
-Also, to be clear, there is a limit to how much design can be done
-before implementing anything; it's just too hard to visualize all of the
-consequences of design decisions. And, even if you design up front, you
-still won't get it right the first time. So plan on time to refactor
-(it typically takes me three tries to get a new class right). But starting from
-some design ideas will get you to good code a lot faster than starting
-with spaghetti code.
-
-Here are some questions for you:
-* Do you agree that a good design is the most important goal of
-  software development?
-* Do you believe that TDD is more likely to produce a better design than other
-  approaches that are design-centric? If so, please explain.
-* If TDD produces a worse design, what advantages does TDD have that
-  compensate for an inferior design?
-
-You have argued that writing the tests first will lead to more testable
-code ("You cannot create a class that's hard to test if you write the tests
-first"). This is not at all obvious to me. Do you have evidence to support
-this claim? Can you provide an illustrative example? I think what is more
-likely is that with TDD developers simply won't write the hard tests. This
-is easy to do when tests are created out of the blue, with no code to guide them.
-On the other hand, if you write the code first, and if you are conscientious
-about writing tests that cover all of your code, then you will be forced
-to deal with the hard cases.
-
-Now let's suppose that you are right, and that code produced via TDD is
-easier to test than code that is ideal from a design standpoint. If
-this happens, it means that the TDD code is not ideal from a
-design standpoint. This sounds like a bad trade-off to me: it's
-better to adopt the best possible design and spend a bit more time
-writing tests. In my experience, though, this is mostly a non-problem:
-hard-to-test code doesn't occur very often.  Every once in a while
-I will encounter a situation where it is worth modifying the design
-slightly (perhaps even making it a bit worse) in order to improve
-testability. But again, this is very rare. So, why not focus on
-what's most important (design) and only worry about testability
-in the rare cases where it is a problem?
-
-I'd like to raise an additional concern about TDD: I don't see how it
-can produce good test coverage. If I write tests before I write code,
-I can test the overall functionality of the code (effectively, its
-interface) but I can't test how that functionality is implemented
-(loop structure, details of special-case handling, etc.).
-Don't I need to look at the code in order to determine the best
-way to test it? For example, in `PrimeGenerator` some of the first
-primes are generated with special-case code, which may require special
-tests. How do I know that if I haven't seen the code?
-It seems to me that TDD not only compromises design, but it also
-compromises test quality. Am I missing something here?
-
-**UB:**
-
-Now I'm not going to tell you that TDD is sufficient.  I'm not going to tell you that we who pratice TDD don't also lay back in the hammock and consider design.  We do.  All the old wive's tales about TDD being the only design tool you need are baloney.  Of course we consider design and architecture.  We don't spend months, weeks, or even days on it; but we do think the problems through.
-
-And then, of course, there comes the day when you realize you've chosen the wrong design.  This happens to everyone, even those of us who plan their designs for months.  This is a natural result of customers wanting to make changes that the developers could not predict.
-
-The great thing about TDD is that the discipline produces a suite of tests that you can trust with your life.  And therefore you can easily refactor the design of the system in small increments without breaking anything.
-
-**JOHN:**
-
-This is indeed wonderful. But it is true of any approach that generates a
-comprehensive unit test suite. It doesn't require the tests to be written
-before the code.
-
-**UB:**
-
-I could go on.  I have gone on.  I've written several books on the topic.  The most complete one is _Clean Craftsmanship_.  You might want to give it a look.  ;-)
-
-**JOHN:**
-
-Um, how many of your books do I have to read before I can actually
-write good code?  For example, I don't recall seeing anything in *Clean Code*
-about ensuring a good design in spite of TDD (the word "design" doesn't
-seem to appear in the chapter on testing); did I miss something?
