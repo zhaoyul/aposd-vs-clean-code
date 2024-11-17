@@ -125,77 +125,27 @@ It is certainly possible to over-decompose code.  Here's an example:
 
 	void doSomething() {doTheThing()} // over-decomposed.
 
-In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods inevitably drives a module towards the wide/shallow end.  This is because the methods I extract are private.  The root method from which they were extracted remains public, and is part of the interface of the module.  The narrow/deep nature of the module is preserved.
+In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods inevitably drives a module towards the wide/shallow end.  In fact, I think the opposite.
 
-**JOHN:**
+In your book you define a module as "deep" if it has a powerful functionality and a narrow interface. To say this differently, you want the aspect ratio (Interface/Functionality) to be small.  
 
-Are you saying that only a class's external interfaces need
-to be deep, and it's OK for internal interfaces to be shallow and complex?
-If so, I disagree. I think that *all* interfaces should be deep, including
-lower-level interfaces for methods within a class and higher-level interfaces
-for subsystems, micro-services, etc. Clean interfaces provide benefits
-everywhere.
+This implies that deepness is relative.  A module that does very little, but that has a trivial interface, still has a small aspect ratio, and is therefore still deep.
 
-**UB:**
-No, I'm saying something different.  Every function should have a narrow interface and an implementation that is deeper than the interface. The interface should be the abstraction that the function implements.
+Consider a large and deep method that contains three sections.  If I extract those three sections into separate methods the original still has a powerful functionality and a narrow interface.  It is still deep.  It's aspect ratio is unchanged even though it's line count has decreased dramatically.
 
-To me, depth does not mean lots of lines; rather it means deeper in the details that the interface is trying to hide.
+Now let's consider the three sections prior to their extraction.  Section 1 sets up some local variables for section 2, and some for section 3, and some for both.  Those local variables become an undeclared and implicit interface to sections 2 and 3. 
 
-My fear with longish functions is that they often contain extractable elements. The interface between two extractable elements of code is implicit and anonymous.  An anonymous implicit interface is wide because the reader must deduce it from the entire context of the module.  Extracting those elements creates named and narrow interfaces without sacrificing any depth.
+At first the reader must consider all the local variables when reading sections 2 and 3.  Thus the implicit interface to those sections is wider than necessary.  It is only when the reader had understood a section that he can exclude the superfluous local variables for that section and narrow the interfaces in his mind. 
 
-The practice of extracting elements and giving them named narrow interfaces creates a hierachy of named functions starting at the public interface of the module and descending, one step at a time, into the detailed implementation of that module.
+Extracting those sections causes the interfaces to be explicit and declared.  The reader does not have to understand the functions to understand the interfaces.
 
-This allows the reader to understand the flow of the module without having to read all the way down to the details.  This is very much like reading the first few paragraphs of a news article and then stopping because you got the gist of what the article was saying.
+The extracted sections are shallower than the original function; because they do less.  They may also have wider interfaces because section 1 split some data elements from it's input. But those interfaces are no wider than the implicit and undeclared interfaces within the unextracted module; and are likely quite a bit narrower.  Thus the aspect ratio of the extracted functions will be no larger than the unextracted sections, but could well be considerably smaller.
 
-I call this kind of structure: _Polite_.
+If we repeat this process by breaking up each extracted method we create a hiearchy of extracted functions.  Those functions will become shallower and shallower as we descend; but their interfaces will become narrower too as we break the data of the problem up into smaller and smaller parts.  
 
-**JOHN:**
-
-You lost me with this argument. I had trouble parsing it and understanding what you
-were trying to say:
-* It seems like you may be using the word "deep" in a different way than I
-  do. For me, depth is the ratio of functionality to interface complexity for
-  an entity. For you depth seems to refer to implementation detail (as I dig
-  into the implementation I get deeper?). We need to resolve this conflict
-  so readers aren't confused.
-* The notion of "anonymous implicit interfaces" doesn't make any sense to me.
-  I don't think about interfaces internally to a method; there is no interface
-  until you pull functionality out into a separate method. And I don't see
-  how pulling code out into a separate method makes the interface simpler and
-  narrower.
-* I don't understand the value of a "hierarchy of named functions". Why does
-  this matter? What matters is whether the code is easy to read; we will
-  see from the PrimeGenerator example that this approach results in unreadable
-  code.
-* You still haven't explained your earlier comment that the fact that
-  extracted methods are private means they don't become shallow. I don't see
-  why private vs. public would have anything to do with the shallowness of
-  a method (that said, it does affect the shallowness of the class).
-
-At this point I think we are pretty far off in the weeds and have lost the
-original issue, which is whether extracting small methods results in them
-being shallow. Would it make sense to start again on this? You don't seem to think that methods tend to get shallower as they get smaller. Can you explain again why you believe this? For example, I don't think it has anything to do with whether a method is private. By my definition a method becomes shallower if it has less functionality or if it has a more complex interface. When you subdivide, the resulting methods must inevitably have less functionality, which will make them shallower unless the interfaces get simpler also. But my experience is that the interfaces usually get more complicated as you subdivide (we'll see this in PrimeGenerator), so there is a double-whammy when you subdivide.
-
-How about starting again, replacing everything starting with your sentence
-above "This is because the methods I extract are private" down through
-my comment "END REPLACEMENT HERE" below?
-
-I would also be happy to drop this line of argument, if you prefer.
-
-**JOHN:**
-
-I would call this "modular design" and I agree it is a good thing
-(when it really is modular). However, this doesn't address the issue I raised:
-do you consider it OK for private methods within a class to have shallow and
-complex interfaces?
-
-**UB:**
-
-Not at all.  Private methods should have narrow interfaces, and implementations that are one level deeper in detail.
-
->>> END REPLACEMENT HERE
-
-The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
+Therefore, decomposing larger methods into smaller methods does not ipso-facto lead to increasing aspect ratios and a loss of depth.  So long as the programmer is careful to manage the functionality and interface of each extracted method, he can keep the aspect ratios very small.
+  
+Thus the strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
 **JOHN:**
 
@@ -264,11 +214,13 @@ You make a good point that I don't talk much, in the book, about how to make the
 
 Still, if I must err, I'd rather err on the side of extraction.  Extractions can always be inlined if they we judge them to be too decomposed.
 
-**JO:**
+**JOHN:**
 
 Coming back to your `clearTotals` example:
+
 * I don't recall seeing the guidance "the implementation must be more deeply
   detailed than the interface" in *Clean Code*; is this something new?
+	* **UB:** No, you'll find that page 36: _The Stepdown Rule_.
 * The `clearTotals` method seems to contradict the One Thing Rule: the
   variables `amountOwed` and `totalPoints` don't seem particularly related, so
   initializing them both is doing two things, no? You say that both
@@ -283,7 +235,7 @@ Coming back to your `clearTotals` example:
 
 **UB:**
 
-OK, but I hope you agree that between these two examples, the former is a bit better.
+I hope you agree that between these two examples, the former is a bit better.
 
 	public String makeStatement() {
 	  clearTotals();
@@ -462,20 +414,23 @@ you can't see that unless you read all three methods.
 
 I agree.  Though I would not have agreed eighteen years ago when I was in the throes of refactoring this.  At the time the names and structure made perfect sense to me.  They make sense to me now, too -- but that's because I once again understand the algorithm.  When I returned to the algorithm a few days ago, I also struggled with the names and structure.  Once you understand the algorithm the names make perfect sense, and that understanding breaks the entanglement.
 
-**JOHN:**
-
-If code no longer makes sense to its writer when the writer returns to the
-code later, that's a problem.
-And, those names are highly problematic even if you understand the code;
-we'll talk about that a bit later, when discussing comments.
-
-**UB**:
-
 So, a good critique of those names is that they depend, to some extent, upon gaining some understanding of the algorithm.
 
 **JOHN:**
 
-Yes.
+Yes, if code no longer makes sense to its writer when the writer returns to the
+code later, that's a problem.
+
+**UB:**
+
+Would that we had such a crystal ball that we could see how our future selves would react to our current creations.  ;-)
+
+**JOHN:**
+
+And, those names are highly problematic even if you understand the code;
+we'll talk about that a bit later, when discussing comments.
+
+**JOHN:**
 
 Going back to my introductory remarks about complexity, splitting up
 `isNot...` into three methods doesn't reduce the amount of information
@@ -635,10 +590,7 @@ summary of where we agree and disagree?
   (sorry to be blunt) and that the problems stem from following the
   advice of *Clean Code*: it is way over-decomposed and as a result is
   difficult to read.
->No. `PrimeGenerator` is one element within a larger example of how to extract classes from very large functions.  I think the decomposition of the methods within that element could be better (as seen below)-- but that was not the point of the chapter.
-
->> **JOHN**:
->>This answer feels like a word salad. It sounds like you don't agree that "`PrimeGenerator` provides a good example of how to decompose code and that it is easy to read"; can you be more precise about which part of that statement you don't agree with? For example, was it not your intent to produce easy-to-read code?
+>`PrimeGenerator` is part of a good example of how to break a large function into classes -- which was the point of that chapter.  `PrimeGenerator` itself was not meant to be an exemplar of function decomposition.  
 
 * You believe that `PrimeGenerator` separates concerns. I believe that
   the code appears separated on the surface, but in fact it is entangled.
@@ -649,28 +601,20 @@ summary of where we agree and disagree?
   I believe that this creates an unreasonable cognitive load: it should
   be possible to read each method relatively independently, without having
   to remember the implementations of other methods.
->No. I think that the public methods of a class should be broken down by the principle of functional decomposition, and that the functions should be ordered according to that decomposition.  This creates a hierarchy with lower level functions immediately following the higher level functions that call them. This allows readers to read downwards until they have gotten the gist of the function, thus avoiding being swamped by lower level details.  I consider this "polite".
-
->>**JOHN**:
->>This feels like another word salad that is talking around the issue here. Suppose I said: "We agree that when someone reads a class, they should not need to load all of the code of the class into their head as they go." Would that be OK (it might require some revision of things you have said previously)?
+>No. I believe that is true of a method, but not of a class.  As you read a method, whether the elements are extracted or not, you have to keep the state of the execution in mind.  When you read a class, you should not have to keep the state of the execution of each method in mind. 
 
 * You believe that ordering the methods in a class is an effective way
   to manage dependencies between them. I believe that ordering can
   sometimes improve readability a bit, but if methods are entangled then
   ordering won't fix the problem.
->I reworked this; is it OK now?
+>I agree with both.  Ordering can be effective; but it is not a cure-all.
 
 * You believe that it's OK for (private?) methods in class to be entangled,
   where one method cannot be fully understood without considering code
   in other methods. I believe that entanglement is a red flag for bad
   design; if two pieces of code are dependent, the code will be more
   readable if the pieces are right next to each other in a single method.
-> Yes, the extent to which classes have fields suggests that the methods within them are somewhat entangled. I think such entanglements are often better communicated through those fields, and through well-named and narrow function interfaces, rather then through local variables within a method.
-
->>**JOHN**:
->>This isn't a good place to introduce new ideas; we should be just summarizing what we've already discussed. My preference would be to not discuss your idea for communicating information through object fields. This is going to result in another long argument (I think this is a really bad idea) and this section is already quite long. Can we leave this for another day?
-
->>BTW, are there any additional items you'd like to add to this summary?
+> Yes, the extent to which classes have fields suggests that the methods within them are somewhat entangled. 
 
 ## Comments
 
@@ -880,6 +824,7 @@ the interfaces tend to get more complex. You disagreed at the time,
 but your recommendation here seems to support my view.
 
 **UB:**
+It's not the functions that get smaller, it's the scope that gets smaller.  A private function has a smaller scope than the public function that calls it.  A function called by that private function has an even smaller scope.  As we descend in scope, we also descend in situational detail.  Describing such detail often requires a long name, or a long comment.  I prefer to use a name.
 
 As for long names being hard to parse, that's a matter of practice.  Code is full things that take practice to get used to.
 
@@ -905,7 +850,9 @@ rather than shorter names augmented with descriptive comments?
 
 **UB:**
 
-*Your answer goes here.*
+It's a matter of preference for me.  I prefer long names to comments.  I don't trust comments to be maintained, nor do I trust that they will be read.  Have you ever noticed that many IDEs paint comments in light grey so that they can be easily ignored?  It's harder to ignore a name than a comment.  
+
+(BTW, I have my IDE paint comments in bright fire-engine red)   
 
 **JOHN:**
 
@@ -1038,7 +985,10 @@ comment to code.
 
 **UB:**
 
-In the end, however, all those words are just going to have to sit in my brain until I understand why they are there.  I'm also going to have to worry if they are accurate.  So I'm going to have to read the code to understand and validate the comment.
+In the end, however, all those words are just going to have to sit in my brain 
+until I understand why they are there.  I'm also going to have to worry if 
+they are accurate.  So I'm going to have to read the code to understand and 
+validate the comment.
 
 **JOHN:**
 
@@ -1061,7 +1011,14 @@ If you agree that comments can generally be trusted, then can you delete
 your comment above, plus this comment and any others from you that are based
 on distrust of comments?
 
-> You didn't address this issue in your latest update; we still need to resolve it.
+**UB:**
+
+My trust in comments is not a binary thing.  I read them if they are there; but
+I don't implicitly trust then.  The more gratuitous I feel the author was, or the less adept at english the author is, the less I trust the comments.
+
+As I said above, our IDEs tend to paint comments in an ignorable color.  I have my IDE paint comments in bright fire engine red because when I write a comment I intend for it to be read.
+
+By the same token I use long names as a subsitute for comments because I intend for those long names to be read; and it is very hard for a programmer to ignore names.
 
 **JOHN:**
 
@@ -1147,7 +1104,10 @@ not left for the reader to deduce. Ideally, even if a reader is in a hurry
 and doesn't read the code very carefully, their first guesses about how
 things work (and why) should be correct. To me, that's clean code.
 
->> Still need a response from you here.
+**UB:**
+I don't disagree with your sentiment.  Good clean code should be as easy as possible to understand.  I want to give my readers as many clues as possible so that the code is intuitive to read.  
+
+That's the goal.  As we are about to see, that can be a tough goal to achieve.
 
 ## John's Rewrite of PrimeGenerator
 
@@ -1527,6 +1487,7 @@ Once you have that vision in your head it seems to me bundling and TDD will yiel
 **JOHN:**
 
 First, let me address the four advantages you listed for TDD:
+
 * Very little need for debugging? I think any form of unit testing can
   reduce debugging work, but not for the reason you
   suggested. The benefit comes because unit tests expose bugs earlier
@@ -1538,16 +1499,30 @@ First, let me address the four advantages you listed for TDD:
   gnarly bug that has existed for a long time but hasn't yet been
   triggered. Hard-to-debug problems arise from the accumulated complexity
   of the system, not from the size of the code increments.
+	
+	>**UB:** True.  However, when the cycles are very short then the cause 
+	of even the gnarliest of bugs have the best chance of being tracked down.
+	The shorter the cycles, the better the chances.
 * Low level documentation? I disagree: unit tests are a very poor form
   of documentation. Comments are a much more
   effective form of documentation, and you can put them right next to the
   relevant code. Searching through unit tests to figure out how a system
   works will be tedious and frustrating.
+	
+	>**UB:** Will be?  Or is?  Nowadays it's very easy to find the tests for
+	a function by using the "where-used" feature of the IDE.  As for comments
+	being better, if that were true then no one would publish example code.  
 * A less coupled design? Possibly, but I haven't experienced this myself.
   It's not clear to me that designing for testability will produce the
   best design.
+	
+	>**UB:** Generally the decoupling arises because the test requires a mock
+	of some kind.  Mocks tend to force abstractions that might otherwise not exist.
+	
 * Enabling fearless refactoring? BINGO! This is the where almost all of the
   benefits from unit testing come from, and it is a really really big deal.
+	
+	>**UB:** Agreed.
 
 I agree with your conclusion that TDD and bundling are about the
 same in terms of providing these benefits.
@@ -1568,6 +1543,10 @@ prohibits developers from writing more code than is needed to pass
 the current test; this discourages the kind of strategic thinking needed
 for good design.
 
+>**UB:** I haven't found this to be true.  We write code one line at a time.
+That's immensely tactical and yet does not discourage design.  So why would one test at a time discourage it?  Wouldn't it be nice to know that the line you
+just wrote actually does what you thought it would do?  That's the advantage of the test.  There is nothing about TDD that stops you from thinking.  
+
 TDD does not provide adequate guidance to encourage design. You mentioned
 the Red-Green-Refactor loop, which recommends refactoring after each step,
 but there's almost no guidance for refactoring. How should developers
@@ -1579,11 +1558,17 @@ I can look at a bigger chunk of code when refactoring and hence be more
 strategic? Without guidance it will be tempting for developers to keep
 putting off refactoring.
 
+>**UB:** If you familiarize yourself with the literature on TDD, you'll find
+that putting off refactoring is strongly discouraged.  While thinking about design is strongly encouraged.  
+
 TDD is similar to the One Thing Rule we discsused earlier in that it is
 biased: it provides very strong and clear instructions pushing developers
 in one direction (in this case, acting tactically) with only vague
 guidance in the other direction (designing more strategically). As a result,
 developers are likely to err on the side of being too tactical.
+
+>**UB:** Again, once you learn more about TDD, the more you will realize that
+refactoring and design are an integral part of the discipline.   
 
 TDD guarantees that developers will initially write bad code. If you start
 writing code without thinking about the whole design problem, the first code
@@ -1601,9 +1586,16 @@ of me to understand what the design should have been.
 It will be very difficult for me to force myself to throw away
 all that work.
 
+>**UB:** We all write bad code at the start.  The discipline of TDD gives us the opportunity and the safety to continuously clean it.  Design insights arise from those kinds of cleaning activities.  The discipline of refactoring allows bad designs to be transformed, one step at a time, into better designs.  
+
+> The fears that you have expressed simply do not materialize in my, rather
+long experience, with the discipline.
+
 It's easy for a developer to believe they are doing TDD correctly while
 working entirely tactically, layering on hack after hack with an
 occasional minor refactor, without ever thinking about the overall design.
+
+>**UB:** Only a developer who has not studied TDD would ever behave that way.
 
 I believe that the bundling approach is superior to TDD because it focuses
 the development process around design: design first, then code, then write
@@ -1613,12 +1605,20 @@ But starting with design will reduce the amount of bad code you write and
 get you to a good design sooner. It is possible to produce equally good
 designs with TDD; it's just harder and requires a lot more discipline.
 
+>**UB:** It's not clear to me why the act of writing tests late is a better design choice.  There's nothing in TDD that prevents me from thinking through a design, long before I write the very first tested code.
+
 Now let me ask you a couple of questions.
 
 First, at a microscopic level, why on earth does TDD prohibit developers
 from writing more code than needed to pass the current test? How does
 enforcing myopia make systems better?
 
+>**UB:** The goal of the discipline is to make sure that everything is tested.
+One good way to do that is to refuse to write any code unless it is to make a failing test pass.  Also, working in such short cycles provides insights into 
+the way the code is working.  Those insights often lead to better design decisions.
+
 Second, at a broader level, do you think TDD is likely to produce better
 designs than approaches that are more design-centric, such as the bundling
 approach I described? If so, can you explain why?
+
+>**UB:** My guess is that an adept at bundling, and an adept at TDD would produce very similar designs, with very similar test coverage.  I would also venture to guess that the TDDer would be somewhat more productive than the bundler if for no reason other than that the TDDer finds and fixes problems earlier than the bundler.
