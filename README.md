@@ -127,24 +127,54 @@ It is certainly possible to over-decompose code.  Here's an example:
 
 In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods inevitably drives a module towards the wide/shallow end.  In fact, I think the opposite.
 
-In your book you define a module as "deep" if it has a powerful functionality and a narrow interface. To say this differently, you want the aspect ratio (Interface/Functionality) to be small.  
+In your book you define a module as "deep" if it has a powerful functionality and a narrow interface. To say this differently, you want the aspect ratio (Interface/Functionality) to be small.
 
 This implies that deepness is relative.  A module that does very little, but that has a trivial interface, still has a small aspect ratio, and is therefore still deep.
 
+**JOHN**:
+
+No: if a method does almost nothing, it's going to be shallow. There's no
+way to shrink an interface to zero. If a method is tiny, almost all of its
+functionality will be visible in its interface.
+
+**UB**:
+
 Consider a large and deep method that contains three sections.  If I extract those three sections into separate methods the original still has a powerful functionality and a narrow interface.  It is still deep.  It's aspect ratio is unchanged even though it's line count has decreased dramatically.
 
-Now let's consider the three sections prior to their extraction.  Section 1 sets up some local variables for section 2, and some for section 3, and some for both.  Those local variables become an undeclared and implicit interface to sections 2 and 3. 
+**JOHN**:
 
-At first the reader must consider all the local variables when reading sections 2 and 3.  Thus the implicit interface to those sections is wider than necessary.  It is only when the reader had understood a section that he can exclude the superfluous local variables for that section and narrow the interfaces in his mind. 
+Agreed. Splitting a method's implementation does not change whether it is
+deep or shallow.
+
+**UB**:
+
+Now let's consider the three sections prior to their extraction.  Section 1 sets up some local variables for section 2, and some for section 3, and some for both.  Those local variables become an undeclared and implicit interface to sections 2 and 3.
+
+At first the reader must consider all the local variables when reading sections 2 and 3.  Thus the implicit interface to those sections is wider than necessary.  It is only when the reader had understood a section that he can exclude the superfluous local variables for that section and narrow the interfaces in his mind.
 
 Extracting those sections causes the interfaces to be explicit and declared.  The reader does not have to understand the functions to understand the interfaces.
 
-The extracted sections are shallower than the original function; because they do less.  They may also have wider interfaces because section 1 split some data elements from it's input. But those interfaces are no wider than the implicit and undeclared interfaces within the unextracted module; and are likely quite a bit narrower.  Thus the aspect ratio of the extracted functions will be no larger than the unextracted sections, but could well be considerably smaller.
+The extracted sections are shallower than the original function; because they do less.  They may also have wider interfaces because section 1 split some data elements from its input. But those interfaces are no wider than the implicit and undeclared interfaces within the unextracted module; and are likely quite a bit narrower.  Thus the aspect ratio of the extracted functions will be no larger than the unextracted sections, but could well be considerably smaller.
 
-If we repeat this process by breaking up each extracted method we create a hiearchy of extracted functions.  Those functions will become shallower and shallower as we descend; but their interfaces will become narrower too as we break the data of the problem up into smaller and smaller parts.  
+If we repeat this process by breaking up each extracted method we create a hiearchy of extracted functions.  Those functions will become shallower and shallower as we descend; but their interfaces will become narrower too as we break the data of the problem up into smaller and smaller parts.
 
 Therefore, decomposing larger methods into smaller methods does not ipso-facto lead to increasing aspect ratios and a loss of depth.  So long as the programmer is careful to manage the functionality and interface of each extracted method, he can keep the aspect ratios very small.
-  
+
+**JOHN**:
+
+Let me see if I understand what you are saying. First, it sounds like you agree
+that when a method gets split into smaller and smaller child methods, the
+children get shallower and shallower. But you are also saying that there were
+implicit interfaces inside
+the original method before it was split, and that anyone reading the method
+would need to understand those interfaces. The decomposed child methods
+don't introduce new interfaces; they are simply exposing interfaces that
+already existed. Thus they don't add to complexity. Do I have this right?
+
+**UB**:
+
+*Your answer here*
+
 Thus the strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
 **JOHN:**
@@ -218,9 +248,6 @@ Still, if I must err, I'd rather err on the side of extraction.  Extractions can
 
 Coming back to your `clearTotals` example:
 
-* I don't recall seeing the guidance "the implementation must be more deeply
-  detailed than the interface" in *Clean Code*; is this something new?
-	* **UB:** No, you'll find that page 36: _The Stepdown Rule_.
 * The `clearTotals` method seems to contradict the One Thing Rule: the
   variables `amountOwed` and `totalPoints` don't seem particularly related, so
   initializing them both is doing two things, no? You say that both
@@ -418,17 +445,14 @@ So, a good critique of those names is that they depend, to some extent, upon gai
 
 **JOHN:**
 
-Yes, if code no longer makes sense to its writer when the writer returns to the
-code later, that's a problem.
+Those names are problematic even for someone who understands the algorithm;
+we'll talk about them a bit later, when discussing comments. And, if code
+no longer makes sense to the writer when the writer returns to the code later,
+that means the code is problematic.
 
 **UB:**
 
 Would that we had such a crystal ball that we could see how our future selves would react to our current creations.  ;-)
-
-**JOHN:**
-
-And, those names are highly problematic even if you understand the code;
-we'll talk about that a bit later, when discussing comments.
 
 **JOHN:**
 
@@ -578,7 +602,10 @@ summary of where we agree and disagree?
   doesn't provide much guidance on how to recognize over-decomposition.
 
 * We disagree on how far to decompose: you recommend decomposing
-  code into much smaller units than I do.
+  code into much smaller units than I do. You believe that
+  the additional decomposition you recommend makes code easier to
+  understand; I believe that it goes too far and actually makes code
+  more difficult to understand.
 
 * You believe that the One Thing Rule, applied with judgment, will
   lead to appropriate decompositions. I believe it lacks guardrails
@@ -590,7 +617,7 @@ summary of where we agree and disagree?
   (sorry to be blunt) and that the problems stem from following the
   advice of *Clean Code*: it is way over-decomposed and as a result is
   difficult to read.
->`PrimeGenerator` is part of a good example of how to break a large function into classes -- which was the point of that chapter.  `PrimeGenerator` itself was not meant to be an exemplar of function decomposition.  
+>`PrimeGenerator` is part of a good example of how to break a large function into classes -- which was the point of that chapter.  `PrimeGenerator` itself was not meant to be an exemplar of function decomposition.
 
 * You believe that `PrimeGenerator` separates concerns. I believe that
   the code appears separated on the surface, but in fact it is entangled.
@@ -601,7 +628,7 @@ summary of where we agree and disagree?
   I believe that this creates an unreasonable cognitive load: it should
   be possible to read each method relatively independently, without having
   to remember the implementations of other methods.
->No. I believe that is true of a method, but not of a class.  As you read a method, whether the elements are extracted or not, you have to keep the state of the execution in mind.  When you read a class, you should not have to keep the state of the execution of each method in mind. 
+>No. I believe that is true of a method, but not of a class.  As you read a method, whether the elements are extracted or not, you have to keep the state of the execution in mind.  When you read a class, you should not have to keep the state of the execution of each method in mind.
 
 * You believe that ordering the methods in a class is an effective way
   to manage dependencies between them. I believe that ordering can
@@ -614,7 +641,9 @@ summary of where we agree and disagree?
   in other methods. I believe that entanglement is a red flag for bad
   design; if two pieces of code are dependent, the code will be more
   readable if the pieces are right next to each other in a single method.
-> Yes, the extent to which classes have fields suggests that the methods within them are somewhat entangled. 
+> Yes, the extent to which classes have fields suggests that the methods within them are somewhat entangled.
+
+> **JOHN**: let's resolve the remaining issues in the summary above in person in a Zoom call.
 
 ## Comments
 
@@ -690,7 +719,7 @@ I don't agree that comments are less necessary today than they were
 Comments are crucially important and add enormous value to software.
 The problem is that there is a lot of important information that simply
 cannot be expressed in code. By adding comments to fill in this missing
-information, developers make code dramatically easier to read.
+information, developers can make code dramatically easier to read.
 This is not a "failure of their ability to express themselves", as you
 put it.
 
@@ -808,36 +837,46 @@ I like my method names to be sentence fragments that fit nicely with keywords an
 	if (isTooHot)
 	  cooler.turnOn();
 
-I also follow a simple rule about the length of names.  The larger the scope of a function, the shorter its name should be.  The private functions I extracted in this case live in very small scopes, and so have longish names.  Functions like this are typically called from only one place, so there is no burden on the programmer to remember a long name for another call.
+I also follow a simple rule about the length of names.  The larger the scope of a method, the shorter its name should be.  The private methods I extracted in this case live in very small scopes, and so have longish names.  Methods like this are typically called from only one place, so there is no burden on the programmer to remember a long name for another call.
 
 **JOHN:**
 
 Names like `isTooHot` are totally fine by me.
-My concerns are about names like `isLeastRelevantMultipleOfLargerPrimeFactor`.
+My concern is about names like `isLeastRelevantMultipleOfLargerPrimeFactor`.
 
-It's interesting that as functions get smaller and narrower, you recommend
+It's interesting that as methods get smaller and narrower, you recommend
 longer names.
 What this says to me is that the interfaces for those functions are
-more complex, so it takes more words to describe them. Earlier in
-this discussion I said that when systems are decomposed into tiny functions
-the interfaces tend to get more complex. You disagreed at the time,
-but your recommendation here seems to support my view.
+more complex, so it takes more words to describe them. This provides
+supporting evidence for
+my assertion a while back that the more you split up a method,
+the shallower the resulting methods will be.
 
 **UB:**
 It's not the functions that get smaller, it's the scope that gets smaller.  A private function has a smaller scope than the public function that calls it.  A function called by that private function has an even smaller scope.  As we descend in scope, we also descend in situational detail.  Describing such detail often requires a long name, or a long comment.  I prefer to use a name.
 
-As for long names being hard to parse, that's a matter of practice.  Code is full things that take practice to get used to.
+> **JOHN**: is the above comment still relevant? It doesn't seem to follow from my comment. BTW, you can delete this comment.
+
+As for long names being hard to parse, that's a matter of practice.  Code is full of things that take practice to get used to.
 
 **JOHN:**
 
 I don't accept this. Code may be full of things that take practice to get used
-to, but that's a problem, not an excuse.
+to, but that doesn't excuse it.
 Approaches that require more practice are worse than
 those that require less.
 If it's going to take a lot of work to get comfortable with the long names
-then there better be some compensating benefit; so far I'm not seeing that.
-It's not even clear to me that practice will make the names easier to
-digest.
+then there had better be some compensating benefit; so far I'm not seeing any.
+And I don't see any reason to believe that practice will make those names
+easier to digest (readers can decide for themselves).
+
+In addition, your comment above violates one of my fundamental rules, which
+is "complexity is in the eye of the reader". If you write code that someone
+else thinks is complicated, then you must accept that the code is probably
+complicated (unless you think the reader is completely incompetent). It
+is not OK to make excuses or suggest that it is really the reader's problem
+("you just don't have enough practice"). I'm going to have to live by this
+same rule a bit later in our discussion.
 
 **UB:**
 
@@ -850,14 +889,22 @@ rather than shorter names augmented with descriptive comments?
 
 **UB:**
 
-It's a matter of preference for me.  I prefer long names to comments.  I don't trust comments to be maintained, nor do I trust that they will be read.  Have you ever noticed that many IDEs paint comments in light grey so that they can be easily ignored?  It's harder to ignore a name than a comment.  
+It's a matter of preference for me.  I prefer long names to comments.  I don't trust comments to be maintained, nor do I trust that they will be read.  Have you ever noticed that many IDEs paint comments in light grey so that they can be easily ignored?  It's harder to ignore a name than a comment.
 
-(BTW, I have my IDE paint comments in bright fire-engine red)   
+(BTW, I have my IDE paint comments in bright fire-engine red)
 
 **JOHN:**
 
+I don't see why a monster name is more likely to be "maintained" than
+a comment, and I don't agree that IDEs encourage people to ignore
+comments (this is your bias coming out again). My current IDE (VSCode)
+doesn't use a lighter color for comments.
+My previous one (NetBeans) did, but it didn't hide the comments; it
+distinguished them from the code in a way that made both code and comments
+easier to read.
+
 Now that we've discussed the specific issue of comments vs. long method
-names, let's talk about comments in general. I think are two major reasons
+names, let's talk about comments in general. I think there are two major reasons
 why comments are needed. The first reason for comments is abstraction.
 Simply put, without comments there is no way to have abstraction or modularity.
 
@@ -891,7 +938,7 @@ Our definitions of abstraction are very similar; that's good to see.
 However, the `addSongToLibrary` declaration is not (yet) a good abstraction
 because it omits information
 that is essential. In order to use `addSongToLibrary`, developers
-will need answers to the following questions:
+need answers to the following questions:
 
 * Is there any expected format for an author string, such as "LastName, FirstName"?
 * Are the authors expected to be in alphabetical order? If not, is the order
@@ -903,6 +950,7 @@ will need answers to the following questions:
   If this information is documented somewhere else, such as the
   overall class documentation, then it need not be repeated here.
 
+Thus `addSongToLibrary` needs quite a few comments.
 Sometimes the signature of a method (names and types of the method, its
 arguments, and its return value) contains all the information
 needed to use it, but this is pretty rare. Just skim through the documentation
@@ -976,8 +1024,9 @@ Eiffel is an example of a language that diminishes the need for comments like th
 
 **JOHN:**
 
-Using the Eiffel language isn't an option for this example; are you suggesting
-that the precondition should be written in Eiffel anyway? To me, the Eiffel
+This is a Java program, so using the Eiffel language isn't an option; are you
+suggesting that the precondition should be written in Eiffel anyway? To me,
+the Eiffel
 description is harder to read and less precise than a comment. For example,
 it's unclear what "last" means in the Eiffel precondition. This is
 another example where you made information less precise by moving it from a
@@ -985,12 +1034,25 @@ comment to code.
 
 **UB:**
 
-In the end, however, all those words are just going to have to sit in my brain 
-until I understand why they are there.  I'm also going to have to worry if 
-they are accurate.  So I'm going to have to read the code to understand and 
+In the end, however, all those words are just going to have to sit in my brain
+until I understand why they are there.  I'm also going to have to worry if
+they are accurate.  So I'm going to have to read the code to understand and
 validate the comment.
 
 **JOHN:**
+
+Whoah. That loud sound you just heard was my jaw hitting the floor.
+Help me understand this a bit better: approximately what
+fraction of comments that you encounter in practice are you willing to
+trust without reading the code to verify them?
+
+**UB**:
+
+*Your answer here*
+
+**JOHN:**
+
+>My comments below will change based on how you answer the question above.
 
 There is a fundamental issue that we need to address here: can comments
 generally be trusted? If you are unwilling to trust comments, and
@@ -1084,13 +1146,13 @@ I expect that our readers will have to stare at this for some time, and also loo
 
 **JOHN:**
 
-I found this diagram extremely hard to understand.
-It begs for supplemental English text to explain the basic ideas being
+I found this diagram very hard to understand.
+It begs for supplemental English text to explain the ideas being
 presented. Even the syntax is non-obvious: what does
 `1111111111111111111111111` mean?
 
 Maybe we have a fundamental difference of philosophy here. I get the sense
-that you are happy giving readers a few clues and leaving it to them to put
+that you are happy to give readers a few clues and leave it to them to put
 the clues together. Perhaps you don't mind if people have to stare at something
 for a while to figure it out? I don't agree with this approach: it results
 in wasted time, misunderstandings, and bugs.
@@ -1105,9 +1167,20 @@ and doesn't read the code very carefully, their first guesses about how
 things work (and why) should be correct. To me, that's clean code.
 
 **UB:**
-I don't disagree with your sentiment.  Good clean code should be as easy as possible to understand.  I want to give my readers as many clues as possible so that the code is intuitive to read.  
+
+I don't disagree with your sentiment.  Good clean code should be as easy as possible to understand.  I want to give my readers as many clues as possible so that the code is intuitive to read.
 
 That's the goal.  As we are about to see, that can be a tough goal to achieve.
+
+**JOHN:**
+
+In that case, do you still stand by the "picture" you painted above? It doesn't
+seem consistent with your comments above. And if you really wanted to give
+your readers as many clues as possible, you'd include a lot more comments.
+
+**UB:**
+
+*Your response here.*
 
 ## John's Rewrite of PrimeGenerator
 
@@ -1499,29 +1572,45 @@ First, let me address the four advantages you listed for TDD:
   gnarly bug that has existed for a long time but hasn't yet been
   triggered. Hard-to-debug problems arise from the accumulated complexity
   of the system, not from the size of the code increments.
-	
-	>**UB:** True.  However, when the cycles are very short then the cause 
+
+	>**UB:** True.  However, when the cycles are very short then the cause
 	of even the gnarliest of bugs have the best chance of being tracked down.
 	The shorter the cycles, the better the chances.
+
+	>**JOHN:** This is only true up to a point. I think you believe
+	that making units smaller and smaller continues to provide benefits,
+	with almost no limit to how small they can get. I think that there
+	is a point of diminishing returns, where making things even smaller
+	no longer helps and actually starts to hurt. We saw this disagreement
+	over method length, and I think we're seeing it again heer.
+
 * Low level documentation? I disagree: unit tests are a very poor form
   of documentation. Comments are a much more
   effective form of documentation, and you can put them right next to the
-  relevant code. Searching through unit tests to figure out how a system
-  works will be tedious and frustrating.
-	
+  relevant code. Trying to learn a method's
+  interface by reading a bunch of unit tests seems much more difficult
+  than just reading a couple of sentences of English text.
+  > I revised the last sentence above, so the first part of your response
+    below may no longer be relevant.
+
 	>**UB:** Will be?  Or is?  Nowadays it's very easy to find the tests for
 	a function by using the "where-used" feature of the IDE.  As for comments
-	being better, if that were true then no one would publish example code.  
+	being better, if that were true then no one would publish example code.
+
 * A less coupled design? Possibly, but I haven't experienced this myself.
   It's not clear to me that designing for testability will produce the
   best design.
-	
+
 	>**UB:** Generally the decoupling arises because the test requires a mock
 	of some kind.  Mocks tend to force abstractions that might otherwise not exist.
-	
+
+	>**JOHN:** In my experience, mocking virtually never changes interfaces;
+	it just provides replacements for existing (typically immovable)
+	interfaces.
+
 * Enabling fearless refactoring? BINGO! This is the where almost all of the
   benefits from unit testing come from, and it is a really really big deal.
-	
+
 	>**UB:** Agreed.
 
 I agree with your conclusion that TDD and bundling are about the
@@ -1530,7 +1619,7 @@ same in terms of providing these benefits.
 Now let me explain why I think TDD is likely to result in bad designs.
 The fundamental problem with TDD is that it forces developers to work
 too tactically, in
-units of development that are too smalll; discourages design
+units of development that are too small; it discourages design
 thinking.  With TDD the basic unit of
 development is one test: first the test is written, then the code to
 make that test pass. However, the natural units for design are larger
@@ -1543,10 +1632,6 @@ prohibits developers from writing more code than is needed to pass
 the current test; this discourages the kind of strategic thinking needed
 for good design.
 
->**UB:** I haven't found this to be true.  We write code one line at a time.
-That's immensely tactical and yet does not discourage design.  So why would one test at a time discourage it?  Wouldn't it be nice to know that the line you
-just wrote actually does what you thought it would do?  That's the advantage of the test.  There is nothing about TDD that stops you from thinking.  
-
 TDD does not provide adequate guidance to encourage design. You mentioned
 the Red-Green-Refactor loop, which recommends refactoring after each step,
 but there's almost no guidance for refactoring. How should developers
@@ -1558,17 +1643,11 @@ I can look at a bigger chunk of code when refactoring and hence be more
 strategic? Without guidance it will be tempting for developers to keep
 putting off refactoring.
 
->**UB:** If you familiarize yourself with the literature on TDD, you'll find
-that putting off refactoring is strongly discouraged.  While thinking about design is strongly encouraged.  
-
 TDD is similar to the One Thing Rule we discsused earlier in that it is
 biased: it provides very strong and clear instructions pushing developers
 in one direction (in this case, acting tactically) with only vague
 guidance in the other direction (designing more strategically). As a result,
 developers are likely to err on the side of being too tactical.
-
->**UB:** Again, once you learn more about TDD, the more you will realize that
-refactoring and design are an integral part of the discipline.   
 
 TDD guarantees that developers will initially write bad code. If you start
 writing code without thinking about the whole design problem, the first code
@@ -1586,16 +1665,9 @@ of me to understand what the design should have been.
 It will be very difficult for me to force myself to throw away
 all that work.
 
->**UB:** We all write bad code at the start.  The discipline of TDD gives us the opportunity and the safety to continuously clean it.  Design insights arise from those kinds of cleaning activities.  The discipline of refactoring allows bad designs to be transformed, one step at a time, into better designs.  
-
-> The fears that you have expressed simply do not materialize in my, rather
-long experience, with the discipline.
-
 It's easy for a developer to believe they are doing TDD correctly while
 working entirely tactically, layering on hack after hack with an
 occasional minor refactor, without ever thinking about the overall design.
-
->**UB:** Only a developer who has not studied TDD would ever behave that way.
 
 I believe that the bundling approach is superior to TDD because it focuses
 the development process around design: design first, then code, then write
@@ -1605,7 +1677,116 @@ But starting with design will reduce the amount of bad code you write and
 get you to a good design sooner. It is possible to produce equally good
 designs with TDD; it's just harder and requires a lot more discipline.
 
+>>I moved all of your comments down here so they don't interrupt my train
+of thought.
+You may need to rework them to reflect their new position. Delete this
+comment after reading.
+
+>**UB:** I haven't found this to be true.  We write code one line at a time.
+That's immensely tactical and yet does not discourage design.  So why would one test at a time discourage it?  Wouldn't it be nice to know that the line you
+just wrote actually does what you thought it would do?  That's the advantage of the test.  There is nothing about TDD that stops you from thinking.
+
+>**UB:** If you familiarize yourself with the literature on TDD, you'll find
+that putting off refactoring is strongly discouraged.  While thinking about design is strongly encouraged.
+
+>**UB:** Again, once you learn more about TDD, the more you will realize that
+refactoring and design are an integral part of the discipline.
+
+>**UB:** We all write bad code at the start.  The discipline of TDD gives us the opportunity and the safety to continuously clean it.  Design insights arise from those kinds of cleaning activities.  The discipline of refactoring allows bad designs to be transformed, one step at a time, into better designs.
+
+>**UB:** Only a developer who has not studied TDD would ever behave that way.
+
+>**UB:**The fears that you have expressed simply do not materialize in my, rather
+long experience, with the discipline.
+
 >**UB:** It's not clear to me why the act of writing tests late is a better design choice.  There's nothing in TDD that prevents me from thinking through a design, long before I write the very first tested code.
+
+**JOHN:**
+
+>The comments below are my based on what I think your revised comments
+above will say; I'll revise them based on what you actually say. Please
+collect all of your responses to my comments at the end, so they don't
+interrupt the flow of my thoughts.
+
+First, a couple of your arguments are so silly that I don't feel the need
+to rebut them:
+* Since everyone starts out by writing imperfect code, it's OK that TDD
+  forces people write a *lot* of bad code.
+* Since I can only be typing one line of code at a time, all development
+  must fundamentally be tactical.
+>Do you really want to keep these arguments? I think you have better
+arguments than these.
+
+You say there is nothing about TDD that stops developers from thinking ahead
+about design. This is only partly true. Under TDD I can think ahead, but I
+can't actually write my ideas down in the form of code, since that would
+violate TDD Rule 1. This is a significant discouragement.
+
+You claim that "thinking about design is strongly encouraged" in TDD,
+but I haven't seen this in your discussions of TDD. I watched your
+video example of using TDD
+for computing bowling scores, and design is never even mentioned after the
+first minute or two (ironically, one of the conclusions of this
+example is that the brief initial design turned out to be
+useless). There is no suggestion of thinking ahead in the video;
+it's all about cleaning up messes after the fact.
+In all of the TDD materials you have shown me, I have not seen any
+warnings about the dangers of becoming so tactical with TDD that
+design never occurs (perhaps you don't even view this as a serious risk?).
+
+As I was watching your TDD video for the second time, you said something
+that jumped out at me:
+  >Humans consider things that come first to be important and things that
+   come at the end to be less important and somehow optional; that's
+   why they are at the end, so we can leave them out if we have to.
+
+This captures perfectly my concern about TDD. It insists that tests must
+come first, and design, if it happens at all, comes at the end, after
+code is working. I believe that good design is the most important
+thing, so it must be the top priority. I don't consider tests optional,
+but delaying them is safer than delaying design. Writing tests isn't particularly
+difficult; the most important thing is having the discipline to do it.
+Getting a good design is really hard, even if you are very disciplined;
+that's why it needs to be the center of attention.
+
+You ask why writing tests late is a better design choice.
+The benefit of the bundled approach doesn't come from writing tests later;
+it comes from doing design sooner. Writing tests (a bit) later is a
+consequence of this choice. The tests are still written pretty early-on
+with the bundled approach, so I don't think the delay causes significant
+problems.
+
+You claim that the problems I worry about with TDD simply don't happen in
+practice. Unfortunately I have heard contrary claims from senior
+developers that I trust. They complain about horrible code produced by
+TDD-based teams, and they believe that the problems were caused by TDD.
+Of course horrible code can be produced with any design approach.
+And maybe those teams didn't implement TDD properly, or maybe those
+cases were outliers.
+But the problems reported to me line up exactly with what I would
+expect to happen, given the tactical nature of TDD.
+
+You ask me to trust your extensive experience with
+TDD, and I admit that I have no personal experience with TDD.
+On the other hand, I have a lot of experience with tactical programming,
+and I know that it rarely ends well.
+TDD is one of the most extreme forms of tactical programming I've
+encountered.
+In general, if "making it work" is the #1 prority, instead of
+"develop a clean design", code turns to spaghetti.
+I don't see enough safeguards in your approach to TDD
+to prevent the disaster scenarios; I don't even see a clear
+recognition of the risk.
+
+Overall, TDD is in a bad place on the risk-reward spectrum. In comparison
+to the bundling approch, the downside risks for poor code quality in TDD
+are huge, and I don't see enough upside reward (if any) to compensate.
+
+**UB:**
+
+*Your response goes here.*
+
+**JOHN:**
 
 Now let me ask you a couple of questions.
 
@@ -1613,12 +1794,32 @@ First, at a microscopic level, why on earth does TDD prohibit developers
 from writing more code than needed to pass the current test? How does
 enforcing myopia make systems better?
 
->**UB:** The goal of the discipline is to make sure that everything is tested.
-One good way to do that is to refuse to write any code unless it is to make a failing test pass.  Also, working in such short cycles provides insights into 
+>**UB:**
+The goal of the discipline is to make sure that everything is tested.
+One good way to do that is to refuse to write any code unless it is to make a failing test pass.  Also, working in such short cycles provides insights into
 the way the code is working.  Those insights often lead to better design decisions.
+
+>**JOHN:**
+I agree that seeing code (partially) working can provide insights. But
+surely that benefit can be had without such a severe restriction on
+how developers think?
 
 Second, at a broader level, do you think TDD is likely to produce better
 designs than approaches that are more design-centric, such as the bundling
 approach I described? If so, can you explain why?
 
->**UB:** My guess is that an adept at bundling, and an adept at TDD would produce very similar designs, with very similar test coverage.  I would also venture to guess that the TDDer would be somewhat more productive than the bundler if for no reason other than that the TDDer finds and fixes problems earlier than the bundler.
+>**UB:**
+My guess is that someone adept at bundling, and someone adept at TDD would produce very similar designs, with very similar test coverage.  I would also venture to guess that the TDDer would be somewhat more productive than the bundler if for no reason other than that the TDDer finds and fixes problems earlier than the bundler.
+
+>**JOHN:**
+I think that the bundling approach will result in a better design because
+it actually focuses on design, rather than focusing on tests and hoping
+that a good design will magically emerge. I think it's really hard to argue
+that the best way to achieve one thing is to focus your attention on
+something else. And the bundling approach will
+make progress faster because the early thinking about design will reduce the
+amount of bad code you end up having to throw away under TDD.<p>
+
+>Overall, I'd argue that the best-case outcomes for the two approaches will
+  be about the same, but average and (especially) worst-case outcomes will
+  be far worse for TDD.
