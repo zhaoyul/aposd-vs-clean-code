@@ -141,6 +141,19 @@ functionality will be visible in its interface.
 
 Consider `int abs(int i) {return i<0 ? -1 : i}`  This function does very little and has a trivial interface.  And yet I can shrink that interface to zero by inlining every call to `abs`.  Thus `abs` is deep relative to inlining.
 
+**JOHN:**
+
+Perhaps you're not using the same definition of
+"shallow" that I use. For the `abs` method, the interface equals the implementation
+(every detail of the implementation must be known to someone invoking the
+method; nothing is hidden). This, by definition, is as shallow as a method
+can possibly get. And I don't know what you mean by "deep relative to
+inlining"; inlining has nothing to do with shallowness.
+
+>>> Let's discuss via Zoom to see if we can clear this up.
+
+**UB:**
+
 Now consider a large and deep method that contains three sections.  If I extract those three sections into separate methods the original still has a powerful functionality and a narrow interface.  It is still deep.  It's aspect ratio is unchanged even though it's line count has decreased dramatically.
 
 **JOHN:**
@@ -176,6 +189,36 @@ already existed. Thus they don't add to complexity. Do I have this right?
 **UB:**
 
 Almost.  I'd say that they do not _add_ to complexity, but may also _reduce_ complexity by converting an implicit interface into an explicit interface.
+
+**JOHN:**
+
+Now that I understand your position I'm going to disagree. Perhaps we have
+different views on what interfaces are for. For me, the reason for interfaces
+is to allow independent development. If I define an interface between A and
+B, then A and B can be developed independently as long as they conform to the
+interface. Said another way, the interface tells us what changes can be
+made to A without also considering changes to B, and vice versa. The most
+common form of interface is for a method: it allows the method's implementaton
+to be modified without worrying about the impact on callers. A network
+protocol is another form of interface:
+it allows the sender side to be developed independently of the receiver
+side, or for multiple implementations of each side to be developed separately.
+
+Within the implementation of a method there is no need for independent
+development. The code is all in one place, and when working on any part
+of the method it's easy
+to consider and modify other parts of the method as needed. Thus
+interfaces make no sense within a method; the only
+interface that matters is the method's interface. If you were
+to actually impute internal interfaces, you'd need to think about an
+interface at every boundary between adjacent lines of code; this would
+create an insane cognitive load.
+
+Bottom line: there are no interfaces internal to a method, and when
+you split a method you are introducing interfaces that did not
+exist previously.
+
+**UB:**
 
 The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
@@ -593,6 +636,8 @@ You mentioned that in my solution readers will have to keep the loop context in 
 
 Now perhaps you are concerned that in my solution the "flipping" is a longer distance (in lines) than in yours.  I'm not sure that's a significant point since they all fit on the same screen (at least they do on my screen) and the landmarks are pretty obvious.
 
+### Method Length Summary
+
 **JOHN:**
 
 It sounds like it's time to wrap up this section. Is this a reasonable
@@ -899,7 +944,7 @@ I don't see why a monster name is more likely to be "maintained" than
 a comment, and I don't agree that IDEs encourage people to ignore
 comments (this is your bias coming out again). My current IDE (VSCode)
 doesn't use a lighter color for comments.
-My previous one (NetBeans) did, but it didn't hide the comments; it
+My previous one (NetBeans) did, but the color scheme didn't hide the comments; it
 distinguished them from the code in a way that made both code and comments
 easier to read.
 
@@ -1012,7 +1057,7 @@ name can't include text like `primes[n]`).
 
 The name 'candidate' is synonymous with "Number being tested for primality".
 
-The constraints on the arugments could be written as executable preconditions following Bertrand Meyer's idea of _Design by Contract_ used in the Eiffel language.
+The constraints on the arguments could be written as executable preconditions following Bertrand Meyer's idea of _Design by Contract_ used in the Eiffel language.
 
 	require
 		candidate >= last.candidate and
@@ -1054,35 +1099,28 @@ Another way to say this is that the best comments tell me something surprising a
 
 **JOHN:**
 
->My comments below will change based on how you answer the question above.
+It sounds like your answer is 0%: you don't trust any comment unless it has
+been verified against the code. This makes no sense. As I said above, the vast
+majority of comments are correct. It's not hard to write comments; the students
+in my software design class are doing this pretty well within a few weeks.
+It's also not hard to keep comments up to date as code evolves. Your refusal
+to trust comments is another sign of your irrational bias against comments.
 
-There is a fundamental issue that we need to address here: can comments
-generally be trusted? If you are unwilling to trust comments, and
-insist on reading the code to validate each comment, then
-comments are pointless. If this is your view, please say so. In that case,
-this entire
-discussion of comments will reduce to a couple of paragraphs where you
-state this opinion, I disagree, and we are done. Note that this
-would have the following implications:
+Refusing to trust comments incurs a very high cost. In order to understand
+how to invoke a method, you will have to read all of the code of that method;
+if the method invokes other methods, you will
+also have to read them, and the methods they invoke, recursively. This is
+an enormous amount of work in comparison to reading (and trusting) a
+simple interface comment like the one I wrote above.
 
-* Those long method names you recommend are no more trustworthy than
-  comments, so they can't be trusted either.
-	> **UB:** Likely so.  However, they _must_ be read.  Programmers will 
-	say them in their head every time they read the code.  There is no way to
-	escape from them.  And so if they prove unstrustworthy, they are 
-	more likely to be improved.
-	
-* In order to understand a method, the reader will have to read
-  the complete text of every method it invokes, recursively. In order to
-  read the main program of an application I must read all of the code of
-  the entire application. I think readers will find this approach absurd.
-	> **UB:** What other option is there.  The only way to truly understand
-	a system is to understand the code in that system.  Good comments can help
-	with that, but they only help as a crosscheck.
+If you choose not to write an interface comment for methods, then you
+leave the interface of that method undefined. Even if someone reads the
+code of the method, they won't be able to tell which parts of the
+implementation are expected to remain the same and which parts may
+change (there is no way to specify this "contract" in code). This will
+result in misunderstanding and more bugs.
 
-If you agree that comments can generally be trusted, then can you delete
-your comment above, plus this comment and any others from you that are based
-on distrust of comments?
+> I removed some material here, so you may wish to revise what follows below.
 
 **UB:**
 
@@ -1191,12 +1229,56 @@ your readers as many clues as possible, you'd include a lot more comments.
 
 **UB:**
 
-I stand by the picture as far as it's accuracy is concerned.  And I think it 
+I stand by the picture as far as it's accuracy is concerned.  And I think it
 makes a good crosscheck.  I have no illusions that it is easy to understand.
 
 This algorithm is challenging and will require work to comprehend.  I finally
 understood it when I drew this picture in my mind while on that bike ride.  When I got home I drew it for real and presented it in hopes that it might help
-someone willing to do the work to understand it.  
+someone willing to do the work to understand it.
+
+### Comments Summary
+
+**JOHN:**
+
+Let's wrap up this section of the discussion. Here is my summary of
+where we agree and disgree.
+
+* Our overall views of comments are fundamentally different. I see more
+value in comments than you do, and I believe that they play a fundamental
+and irreplaceable role in system design. You see more problems with
+comments than I do and see their role as relatively minor.
+
+* I would probably write 5-10x more lines of comments for a given piece of
+code than you would.
+
+* I believe that missing comments are a much greater cause of lost
+productivity than erroneous or unhelpful comments; you believe the opposite.
+
+* You view it as highly problematic that comments are written in English
+rather than a programming language. I don't see this as particularly
+problematic and think that in many cases English works better.
+
+* You recommend that developers should take information that I would
+represent as comments and recast it into code if at all possible. One
+example of this is super-long method names. I believe that super-long names
+are awkward and hard to understand, and that it would be better to use
+shorter names supplemented with comments.
+
+* I believe that it is not possible to define interfaces and create
+abstractions without a lot of comments. You see little need for
+interface comments.
+
+* You are unwilling to trust comments until you have read code to
+verify them. I generally trust comments; by doing so, I don't need to read
+as much code as you do.
+
+* You don't see much value in comments that explain implementation code;
+you think that developers can only figure out how code works by reading
+the code and thinking about it, and that comments don't help much. I don't
+tend to write a lot of implementation comments, but I think that
+they can be helpful in cases where the code isn't obvious.
+
+Overall, there is almost nothing that we agree on for this topic.
 
 ## John's Rewrite of PrimeGenerator
 
@@ -1390,7 +1472,8 @@ That explanation makes perfect sense to me -- now, but I'd be willing to bet tha
 
 Finally I went back to your comment and could see what you were saying.
 
-###A Tale of Two Programmers
+### A Tale of Two Programmers
+
 The bottom line here is that you and I both fell into the same trap.  I refactored that old algorithm 18 years ago, and I thought all those method and variable names would make my intent clear -- *because I understood that algorithm*.
 
 You wrote that code awhile back and decorated it with comments that you thought would explain your intent -- *because you understood that algorithm*.
@@ -1398,6 +1481,13 @@ You wrote that code awhile back and decorated it with comments that you thought 
 But my names didn't help me 18 years later.  They didn't help you, or your students either.  And your comments didn't help me.
 
 We were inside the box trying to communicate to those who stood outside and could not see what we saw.
+
+> **JOHN:** I'm now getting ready to respond to this, but I'm not sure what
+your overall points are; this has a stream-of-consciousness feel to it. Can
+you summarize your overall points? For example, do you believe that
+this code would have been just as easy to understand with no comments (or worse,
+it took longer with the comments that it would have taken without)? You can
+delete this comment after reading.
 
 ## Bob's Rewrite of PrimeGenerator2
 
@@ -1473,6 +1563,83 @@ I think it is just the reality of this algorithm that the effort required to pro
 	        primesFound++;
 	    }
 	}
+
+**JOHN:**
+
+This version is a considerable improvement over the version in *Clean Code*.
+Reducing the number of methods made the code easier to read and resulted
+in cleaner interfaces. If it were properly commented, I think this version
+would be about as easy to read as my version (the additional methods you
+created didn't particularly help, but they didn't hurt either). I suspect
+that if we polled readers, some would like your version better and some
+would prefer mine.
+
+Unfortunately, this revision of the code creates a serious performance
+regression: I measured a factor of 3-4x slowdown compared to either
+of the earlier revisions. The problem is that you changed the processing of a
+particular candidate from a single loop to two loops (the `increaseEach...` and
+`candidateIsNot...` methods). In the loop from earlier revisions, and in
+the `candidateIsNot`
+method, the loop aborts once the candidate is disqualified (and
+most candidates are quickly eliminated). However,
+`increaseEach...` must examine every entry in `primeMultiples`.
+This results in 5-10x as many loop iterations and a 3-4x overall slowdown.
+
+Given that the whole reason for the current algorithm (and its complexity)
+is to maximize performance, this slowdown is unacceptable. The two
+methods must be combined.
+
+I think what's happening here is that you are so focused on something
+that isn't actually all that important (creating the tiniest possible methods)
+that you are dropping the ball on other issues that really are important.
+We have now seen this twice. In the original version of `PrimeGenerator`
+you were so determined to make tiny methods that you didn't notice that the
+code was becoming incomprehensible. In this version you were so eager to
+chop up my single method that you didn't notice that you were blowing up the
+performance.
+
+I don't think this was just an unfortunate combination of oversights.
+One of the most important things
+in software design is to identify what is important and focus on that;
+if you focus on things that are unimportant, you're likely to mess up the
+things that are important.
+
+The code in your revision is still under-commented. You believe
+that there is no meaningful way for comments to assist the reader in
+understanding the code. I think this stems from your general disbelief in
+the value of comments; you are quick to throw in the towel.
+This algorithm is unusually difficult to explain,
+but I still believe that comments can help. For example, I believe you
+must make some attempt to help readers understand why the first multiple
+for a prime is the square of the prime. You have taken a lot of time to
+develop your understanding of this; surely there must be some way to convey
+that understanding to others? If you had included that information in
+your original version of the code you could have saved yourself a multi-hour
+bike ride.
+Giving up on this is an abdication of professional responsibility.
+
+The few comments that you included in your revision are of little value.
+The first comment is too cryptic to provide much help: I can't
+make any sense of the phrase "predicting the next composite number and
+skipping over it" even though I completely understand the code it purports
+to explain. One of the comments is just a joke; I was surprised to see
+this, given your opposition to extraneous comments.
+
+Clearly you and I live in different universes when it comes to comments.
+
+> Bob, I think the problem here is that you have such a negative
+attitude about comments that you have never actually learned how to
+write useful comments. I'm not going to say that
+publicly in this conversation, but you might give it some thought. It's
+really not hard to learn, and I'd be happy to work through some examples
+with you in a Zoom call if you are interested.
+
+Finally, I don't understand why you are offended by the labeled `continue`
+statement in my code. This is a clean and elegant solution to the problem
+of escaping from nested loops. I wish more languages
+had this feature; the alternative is awkward code where you set a variable,
+then exit one level of loop, then check the variable and exit the next
+level.
 
 ## Test-Driven Development
 
@@ -1623,7 +1790,7 @@ First, let me address the four advantages you listed for TDD:
 	>**JOHN:** In my experience, mocking virtually never changes interfaces;
 	it just provides replacements for existing (typically immovable)
 	interfaces.
-	
+
 	>**UB:** Our experiences differ.
 
 * Enabling fearless refactoring? BINGO! This is the where almost all of the
@@ -1695,9 +1862,9 @@ But starting with design will reduce the amount of bad code you write and
 get you to a good design sooner. It is possible to produce equally good
 designs with TDD; it's just harder and requires a lot more discipline.
 
-**UB:** I'll your points one at a time.
+**UB:** I'll address your points one at a time.
 
-* I haven't found that the scale of TDD is so tactical that it discourages thinking.  Every programmer, regardless of their testing discipline, writes code one line at a time.  That's immensely tactical and yet does not discourage design.  So why would one test at a time discourage it? 
+* I haven't found that the scale of TDD is so tactical that it discourages thinking.  Every programmer, regardless of their testing discipline, writes code one line at a time.  That's immensely tactical and yet does not discourage design.  So why would one test at a time discourage it?
 
 * The literature on TDD strongly discourages delaying refactoring.  While thinking about design is strongly encouraged.  Both are integral parts of the discipline..
 
@@ -1706,21 +1873,6 @@ designs with TDD; it's just harder and requires a lot more discipline.
 * It's not clear to me why the act of writing tests late is a better design choice.  There's nothing in TDD that prevents me from thinking through a design long before I write the very first tested code.
 
 **JOHN:**
-
->The comments below are my based on what I think your revised comments
-above will say; I'll revise them based on what you actually say. Please
-collect all of your responses to my comments at the end, so they don't
-interrupt the flow of my thoughts.
-
-First, a couple of your arguments are so silly that I don't feel the need
-to rebut them:
-* Since everyone starts out by writing imperfect code, it's OK that TDD
-  forces people write a *lot* of bad code.
-* Since I can only be typing one line of code at a time, all development
-  must fundamentally be tactical.
->Do you really want to keep these arguments? I think you have better
-arguments than these.
->Read them again. I think you misinterpreted them.
 
 You say there is nothing about TDD that stops developers from thinking ahead
 about design. This is only partly true. Under TDD I can think ahead, but I
@@ -1741,7 +1893,7 @@ design never occurs (perhaps you don't even view this as a serious risk?).
 
 **UB:**
 
-I usually use an abbeviated form of UML to capture my early design decisions.  I have no objection to capturing them in pseudo-code, or even real code.  However, I would not commit any such pre-written code.  I would likely hold it in a text file, and consult it while following the TDD cycle.  I might feel safe enough to copy and paste from the text file into my IDE in order to make a failing test pass. 
+I usually use an abbeviated form of UML to capture my early design decisions.  I have no objection to capturing them in pseudo-code, or even real code.  However, I would not commit any such pre-written code.  I would likely hold it in a text file, and consult it while following the TDD cycle.  I might feel safe enough to copy and paste from the text file into my IDE in order to make a failing test pass.
 
 The Bowling game is an example of how wildly our initial design decisions can  deviate from our eventual solutions.  It's true that introductory videos often do not expose the depth of a discipline.
 
@@ -1764,16 +1916,16 @@ that's why it needs to be the center of attention.
 
 **UB:**
 
-TDD is a coding discipline.  Of course Design comes before coding -- I don't know anyone who thinks otherwise.  Even the Bowling Game video made that point. But, as we saw in the Bowling Game video, sometimes the code will take you in a very different direction.  
+TDD is a coding discipline.  Of course Design comes before coding -- I don't know anyone who thinks otherwise.  Even the Bowling Game video made that point. But, as we saw in the Bowling Game video, sometimes the code will take you in a very different direction.
 
 That difference does't imply that the design shouldn't have been done.  It just implies that designs are speculative and may not aways survive reality.
 
-As Eisenhower once said:  
+As Eisenhower once said:
 >“In preparing for battle I have always found that plans are useless, but planning is indispensable.”
 
 **JOHN:**
 
-You ask why writing tests late is a better design choice.
+You ask why writing tests late is a better design choice. It isn't.
 The benefit of the bundled approach doesn't come from writing tests later;
 it comes from doing design sooner. Writing tests (a bit) later is a
 consequence of this choice. The tests are still written pretty early-on
@@ -1782,7 +1934,11 @@ problems.
 
 **UB:**
 
-I think we simply disagree that TDD precludes design.  It does not.  
+I think we simply disagree that TDD precludes design.  It does not.
+
+>>> I have never seaid that TDD precludes design; I said that it "discourages"
+it. Could you change your comment above to reflect this? You can then delete
+this comment.
 
 **JOHN:**
 
@@ -1799,7 +1955,7 @@ expect to happen, given the tactical nature of TDD.
 **UB:**
 
 My experience differs. I've worked on many projects where TDD has been used
-effectively and profitably.  I'm sure the senior developers that you trust are telling you the truth about their experience.  Having never seen TDD lead to such bad outcomes myself, I sincerely doubt that the blame can be traced to TDD.   
+effectively and profitably.  I'm sure the senior developers that you trust are telling you the truth about their experience.  Having never seen TDD lead to such bad outcomes myself, I sincerely doubt that the blame can be traced to TDD.
 
 **JOHN:**
 
@@ -1855,8 +2011,57 @@ that a good design will magically emerge. I think it's really hard to argue
 that the best way to achieve one thing is to focus your attention on
 something else. And the bundling approach will
 make progress faster because the early thinking about design will reduce the
-amount of bad code you end up having to throw away under TDD.<p>
+amount of bad code you end up having to throw away under TDD. Overall, I'd
+argue that the best-case outcomes for the two approaches will
+be about the same, but average and (especially) worst-case outcomes will
+be far worse for TDD.
 
->Overall, I'd argue that the best-case outcomes for the two approaches will
-  be about the same, but average and (especially) worst-case outcomes will
-  be far worse for TDD.
+**JOHN:**
+
+I don't think we're going to resolve our disagreements on TDD.
+To do that, we'd need empirical data about the frequency of good and bad
+outcomes from TDD. Unfortunately I'm not aware of any such data.
+Thus, readers will have to decide for themselves whether the potential
+benefits of TDD outweigh the risks.
+
+For anyone who chooses to use TDD, I urge you to do so with extreme
+caution. Your primary goal must not be just working code, but rather a
+clean design that will allow you to develop quickly in the future.
+TDD will not lead you naturally to the best design, so you will need
+to do significant and continuous refactoring to avoid spaghetti code.
+Ask yourself repeatedly "suppose that I knew everything I know now when
+I first started on this project; would I have chosen the current
+structure for the code?" When the answer is no (which will happen
+frequently) stop and refactor. Recognize that TDD will cause you to
+write more bad code than you may be used to, so
+you must be prepared to throw out and rewrite more than you are used to.
+Take time to plan ahead and think about the overall design, rather than
+just making the next test work.
+If you do all of these things diligently, I think it is possible to
+mitigate the risks of TDD and produce well-designed code.
+
+### TDD Summary
+
+**JOHN:**
+
+Here is my attempt to summarize our thoughts on Test-Driven Development:
+
+* We agree that unit tests are an essential element in software development.
+They allow developers to make significant changes to a system without fear
+of breaking something.
+
+* We agree that it is possible use TDD to produce systems with good designs.
+
+* I believe that TDD discourages good design and can easily lead to very bad
+code. You do not believe that TDD discourages good
+design, don't see much of a risk of bad code, and believe that bad code
+rarely if ever happens in practice when using TDD.
+
+* I believe that there are better approaches than TDD for producing good
+unit test suites, such as the "bundling" approach discussed above. You agree
+that bundling can produce outcomes just as good as TDD.
+
+* I believe that TDD and bundling have similar best-case outcomes, but that
+the average and worst-case outcomes will be much worse for TDD. You disagree
+and believe that, if anything, TDD will generally produce better outcomes
+than bundling.
