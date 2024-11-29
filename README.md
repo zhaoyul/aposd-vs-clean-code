@@ -5,7 +5,7 @@
 Hi (Uncle) Bob! You and I have each written books on software design.
 We agree on some things, but there are some pretty big differences of
 opinion between my recent book *A Philosophy of Software Design*
-(herafter "APOSD") and your classic book *Clean Code*. Thanks for
+(hereafter "APOSD") and your classic book *Clean Code*. Thanks for
 agreeing to discuss those differences here.
 
 **UB:**
@@ -152,6 +152,10 @@ inlining"; inlining has nothing to do with shallowness.
 
 >>> Let's discuss via Zoom to see if we can clear this up.
 
+>>>UB:Your definition (p. 25) "a shallow module is one whose interface is relatively complex in comparison to the functionality that it provides."  You used the term "relatively" in that definition which implies that shallowness is a function of the ratio of the complexity of the interface to the implementaiton.  I would argue that `abs(x)` is relatively simpler than `x<0 ? -x : x`  Thus the  abs function is relatively deep i.e. the implementation is more complex than the interface.  
+
+>>>UB: As for inlining, every line of code in a method has an implicit interface, potentially composed of every variable in scope.  Method invocations have an explicit, and more restricted interface.  Thus a method invocation has a simpler interface than a line of code which, by your definition, makes the line of code shallower than the method invocation.
+
 **UB:**
 
 Now consider a large and deep method that contains three sections.  If I extract those three sections into separate methods the original still has a powerful functionality and a narrow interface.  It is still deep.  It's aspect ratio is unchanged even though it's line count has decreased dramatically.
@@ -217,6 +221,8 @@ create an insane cognitive load.
 Bottom line: there are no interfaces internal to a method, and when
 you split a method you are introducing interfaces that did not
 exist previously.
+
+>>>UB: More for the zoom call.  On p. 21 you describe "abstraction" (correctly in my view).  And you make the point that "abstractions make it easier to think about and manipulate complex things."  You go on to describe abstraction from the point of view of modules that have interfaces that hide unimportant details.  The interface of a module is composed of a set of methods.  From the outside looking in there are relatively few methods (if the module is deep).  From the inside, however, the interface of the module is composed of the union of the public and private methods.  This implies that a module has an external and an internal interface.  This is good because the internal interfaces make it "eaiser to think about and manipulate" the complexities within our module. If we have a method that can be split apart into N parts, then those N parts can become part of the internal interface of the module, thus reducing the method to use N internal abstractions that "make it easier to think about and manipulate" the internal complexities of the module.  
 
 **UB:**
 
@@ -1124,7 +1130,9 @@ result in misunderstanding and more bugs.
 
 **UB:**
 
-My trust in comments is not a binary thing.  I read them if they are there; but
+Well, I guess I've just been burned more than you have.  I've gone down too many false comment induced rabbit holes, and wasted too much time on worthless word salads.
+
+Of course my trust in comments is not a binary thing.  I read them if they are there; but
 I don't implicitly trust then.  The more gratuitous I feel the author was, or the less adept at english the author is, the less I trust the comments.
 
 As I said above, our IDEs tend to paint comments in an ignorable color.  I have my IDE paint comments in bright fire engine red because when I write a comment I intend for it to be read.
@@ -1279,6 +1287,10 @@ tend to write a lot of implementation comments, but I think that
 they can be helpful in cases where the code isn't obvious.
 
 Overall, there is almost nothing that we agree on for this topic.
+
+**UB:**
+
+I concurr.  
 
 ## John's Rewrite of PrimeGenerator
 
@@ -1482,12 +1494,7 @@ But my names didn't help me 18 years later.  They didn't help you, or your stude
 
 We were inside the box trying to communicate to those who stood outside and could not see what we saw.
 
-> **JOHN:** I'm now getting ready to respond to this, but I'm not sure what
-your overall points are; this has a stream-of-consciousness feel to it. Can
-you summarize your overall points? For example, do you believe that
-this code would have been just as easy to understand with no comments (or worse,
-it took longer with the comments that it would have taken without)? You can
-delete this comment after reading.
+The bottom line is that it is very difficult to explain something to someone who is not intimate with the details you are trying to explain. Often our explanations make sense only after the reader has worked out the details for themself.
 
 ## Bob's Rewrite of PrimeGenerator2
 
@@ -1627,6 +1634,7 @@ this, given your opposition to extraneous comments.
 
 Clearly you and I live in different universes when it comes to comments.
 
+
 > Bob, I think the problem here is that you have such a negative
 attitude about comments that you have never actually learned how to
 write useful comments. I'm not going to say that
@@ -1634,12 +1642,43 @@ publicly in this conversation, but you might give it some thought. It's
 really not hard to learn, and I'd be happy to work through some examples
 with you in a Zoom call if you are interested.
 
+>>John, This made me laugh -- a lot.  After more than half a century of writing code I have lived through and used virtually every possible commenting style.  My current view is the result of those many long years of experience.  
+
 Finally, I don't understand why you are offended by the labeled `continue`
 statement in my code. This is a clean and elegant solution to the problem
 of escaping from nested loops. I wish more languages
 had this feature; the alternative is awkward code where you set a variable,
 then exit one level of loop, then check the variable and exit the next
 level.
+
+**UB:** 
+
+Good catch!  I would have caught that too had I thought to profile the solution.  You are right that separating the two loops added some unecessary iteration.  I found a nice way to solve that problem without using the horrible `continue`.  My updated version is now faster than yours!  A million primes in 440ms as opposed to yours which takes 561ms.  ;-) Below are just the changes.
+	
+	  public static int[] generateFirstNPrimes(int n) {
+	    initializeTheGenerator(n);
+
+	    for (candidate = 5; primesFound < n; candidate += 2)
+	      if (candidateIsPrime())
+	        registerTheCandiateAsPrime();
+
+	    return primes;
+	  }
+
+	  private static boolean candidateIsPrime() {
+	    if (candidate >= primeMultiples[lastRelevantMultiple])
+	      lastRelevantMultiple++;
+
+	    for (int i = 1; i <= lastRelevantMultiple; i++) {
+	      while (primeMultiples[i] < candidate)
+	        primeMultiples[i] += 2 * primes[i];
+	      if (primeMultiples[i] == candidate)
+	        return false;
+	    }
+	    return true;
+	  }
+
+
 
 ## Test-Driven Development
 
@@ -1934,11 +1973,7 @@ problems.
 
 **UB:**
 
-I think we simply disagree that TDD precludes design.  It does not.
-
->>> I have never seaid that TDD precludes design; I said that it "discourages"
-it. Could you change your comment above to reflect this? You can then delete
-this comment.
+I think we simply disagree that TDD discourages design.  The practice of TDD does not discourage me from design; because I value design.  I would suggest that those who do not value design will not design, no matter what discipline they practice.
 
 **JOHN:**
 
@@ -2040,6 +2075,10 @@ just making the next test work.
 If you do all of these things diligently, I think it is possible to
 mitigate the risks of TDD and produce well-designed code.
 
+**UB:**
+
+Let's just say that I agree with all that advice, but disagree with your assertion that TDD might be the cause of bad code.  
+
 ### TDD Summary
 
 **JOHN:**
@@ -2054,14 +2093,19 @@ of breaking something.
 
 * I believe that TDD discourages good design and can easily lead to very bad
 code. You do not believe that TDD discourages good
-design, don't see much of a risk of bad code, and believe that bad code
-rarely if ever happens in practice when using TDD.
+design, don't see much of a risk of bad code.
+>UB: I deleted the last clause.
+
 
 * I believe that there are better approaches than TDD for producing good
 unit test suites, such as the "bundling" approach discussed above. You agree
-that bundling can produce outcomes just as good as TDD.
+that bundling can produce outcomes just as good as TDD; but may lead to somewhat less test coverage.
+>UB: I added a clause.
 
 * I believe that TDD and bundling have similar best-case outcomes, but that
 the average and worst-case outcomes will be much worse for TDD. You disagree
-and believe that, if anything, TDD will generally produce better outcomes
-than bundling.
+and believe that, if anything, TDD may produce marginally better outcomes
+than bundling; but that preference and personality is a larger factor in making the choice between the two.
+>UB: Slight rewording and addition.
+
+>UB: Overall I think we are close.  I look forward to the zoom call in early December.  Just shoot me a line to schedule it.  I'm thinking I'll include this entire discussion as an appendix in the second edition.  
