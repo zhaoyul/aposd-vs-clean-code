@@ -47,9 +47,6 @@ which ideas to endorse?
 
 I agree with your approach. A discipline or technique should make the job of programmers easier. I would add that the programmer we want to help most is not the author.  The programmer whose job we want to make easier is the programmer who must read and understand the code written by others (or by themself a week later).  Programmers spend far more hours reading code than writing code, so the activity we want to ease is that of reading.
 
-**JOHN:**
-I agree: ease of reading is much more important for code than ease of writing.
-
 ## Method Length
 
 **JOHN:**
@@ -69,7 +66,7 @@ I agree that dividing up code into relatively small units ("modular design")
 is one of the most important ways to reduce the amount of information a
 programmer has to keep in their mind at once. The idea, of course, is to take a
 complex chunk of functionality and encapsulate it in a separate method
-with a simple interface. Developers can then harness the methodality
+with a simple interface. Developers can then harness the functionality
 of the method (or read code that invokes the method) without learning
 the details of how the method is implemented; they only need to learn its
 interface. The best methods are those that provide a lot of functionality
@@ -152,7 +149,7 @@ inlining"; inlining has nothing to do with shallowness.
 
 >>> Let's discuss via Zoom to see if we can clear this up.
 
->>>UB:Your definition (p. 25) "a shallow module is one whose interface is relatively complex in comparison to the functionality that it provides."  You used the term "relatively" in that definition which implies that shallowness is a function of the ratio of the complexity of the interface to the implementaiton.  I would argue that `abs(x)` is relatively simpler than `x<0 ? -x : x`  Thus the  abs function is relatively deep i.e. the implementation is more complex than the interface.  
+>>>UB:Your definition (p. 25) "a shallow module is one whose interface is relatively complex in comparison to the functionality that it provides."  You used the term "relatively" in that definition which implies that shallowness is a function of the ratio of the complexity of the interface to the implementaiton.  I would argue that `abs(x)` is relatively simpler than `x<0 ? -x : x`  Thus the  abs function is relatively deep i.e. the implementation is more complex than the interface.
 
 >>>UB: As for inlining, every line of code in a method has an implicit interface, potentially composed of every variable in scope.  Method invocations have an explicit, and more restricted interface.  Thus a method invocation has a simpler interface than a line of code which, by your definition, makes the line of code shallower than the method invocation.
 
@@ -181,7 +178,7 @@ Therefore, decomposing larger methods into smaller methods does not ipso-facto l
 
 **JOHN:**
 
-Let me see if I understand what you are saying. First, it sounds like you agree
+Let me see if I understand what you are saying. It sounds like you agree
 that when a method gets split into smaller and smaller child methods, the
 children get shallower and shallower. But you are also saying that there were
 implicit interfaces inside
@@ -222,7 +219,7 @@ Bottom line: there are no interfaces internal to a method, and when
 you split a method you are introducing interfaces that did not
 exist previously.
 
->>>UB: More for the zoom call.  On p. 21 you describe "abstraction" (correctly in my view).  And you make the point that "abstractions make it easier to think about and manipulate complex things."  You go on to describe abstraction from the point of view of modules that have interfaces that hide unimportant details.  The interface of a module is composed of a set of methods.  From the outside looking in there are relatively few methods (if the module is deep).  From the inside, however, the interface of the module is composed of the union of the public and private methods.  This implies that a module has an external and an internal interface.  This is good because the internal interfaces make it "eaiser to think about and manipulate" the complexities within our module. If we have a method that can be split apart into N parts, then those N parts can become part of the internal interface of the module, thus reducing the method to use N internal abstractions that "make it easier to think about and manipulate" the internal complexities of the module.  
+>>>UB: More for the zoom call.  On p. 21 you describe "abstraction" (correctly in my view).  And you make the point that "abstractions make it easier to think about and manipulate complex things."  You go on to describe abstraction from the point of view of modules that have interfaces that hide unimportant details.  The interface of a module is composed of a set of methods.  From the outside looking in there are relatively few methods (if the module is deep).  From the inside, however, the interface of the module is composed of the union of the public and private methods.  This implies that a module has an external and an internal interface.  This is good because the internal interfaces make it "eaiser to think about and manipulate" the complexities within our module. If we have a method that can be split apart into N parts, then those N parts can become part of the internal interface of the module, thus reducing the method to use N internal abstractions that "make it easier to think about and manipulate" the internal complexities of the module.
 
 **UB:**
 
@@ -475,7 +472,7 @@ It was _not_ my intent, in that chapter, to teach my readers how to write the mo
 Agreed; for this discussion I assume we will take the algorithm as a given,
 and focus on the cleanest possible way to implement that algorithm.
 
-I think there are many design problems with `PrimeGenerator`, but for now I'll
+There are many design problems with `PrimeGenerator`, but for now I'll
 focus on method length. The code is chopped up so much (8 teeny-tiny methods)
 that it's difficult to read. For starters, consider the
 `isNotMultipleOfAnyPreviousPrimeFactor` method. This method invokes
@@ -499,13 +496,23 @@ So, a good critique of those names is that they depend, to some extent, upon gai
 Those names are problematic even for someone who understands the algorithm;
 we'll talk about them a bit later, when discussing comments. And, if code
 no longer makes sense to the writer when the writer returns to the code later,
-that means the code is problematic.
+that means the code is problematic. The fact that code can eventually
+be understood (with great pain and suffering) does not excuse its entanglement.
 
 **UB:**
 
 Would that we had such a crystal ball that we could see how our future selves would react to our current creations.  ;-)
 
 **JOHN:**
+
+There is no need for a crystal ball. The problems with `PrimeGenerator` are
+pretty obvious, such as the entanglement and interface complexity; maybe you
+were surprised that it is hard to understand, but I am not. Said another
+way, if you are unable to predict whether your code will be easy to
+understand, there are serious problems with your design methodology.
+
+>If you'd like to remove your "crystal ball" comment, I'm happy to remove
+the paragraph above as well.
 
 Going back to my introductory remarks about complexity, splitting up
 `isNot...` into three methods doesn't reduce the amount of information
@@ -601,7 +608,7 @@ I sincerely doubt anyone is going to forget that `candidate` is being increased 
 In my opening remarks I talked about how it's important to reduce the
 amount of information people have to keep in their minds at once.
 In this situation, readers have to remember that loop while they read
-four intervening methods that are mostly unrelated. You apparently think
+four intervening methods that are mostly unrelated to the loop. You apparently think
 this will be easy and natural (I disagree). But it's even worse than
 that. There is no indication which parts of `checkOdd...` will be important
 later on, so the only safe approach is to remember *everything*, from *every*
@@ -919,7 +926,7 @@ those that require less.
 If it's going to take a lot of work to get comfortable with the long names
 then there had better be some compensating benefit; so far I'm not seeing any.
 And I don't see any reason to believe that practice will make those names
-easier to digest (readers can decide for themselves).
+easier to digest.
 
 In addition, your comment above violates one of my fundamental rules, which
 is "complexity is in the eye of the reader". If you write code that someone
@@ -1126,8 +1133,6 @@ implementation are expected to remain the same and which parts may
 change (there is no way to specify this "contract" in code). This will
 result in misunderstanding and more bugs.
 
-> I removed some material here, so you may wish to revise what follows below.
-
 **UB:**
 
 Well, I guess I've just been burned more than you have.  I've gone down too many false comment induced rabbit holes, and wasted too much time on worthless word salads.
@@ -1232,7 +1237,7 @@ That's the goal.  As we are about to see, that can be a tough goal to achieve.
 **JOHN:**
 
 In that case, do you still stand by the "picture" you painted above? It doesn't
-seem consistent with your comments above. And if you really wanted to give
+seem consistent with what you just said. And if you really wanted to give
 your readers as many clues as possible, you'd include a lot more comments.
 
 **UB:**
@@ -1290,14 +1295,17 @@ Overall, there is almost nothing that we agree on for this topic.
 
 **UB:**
 
-I concurr.  
+I concur.
 
 ## John's Rewrite of PrimeGenerator
 
 **JOHN:**
 
 I mentioned that I ask the students in my software design class to rewrite
-`PrimeGenerator` to fix all of its design problems. Here is my rewrite:
+`PrimeGenerator` to fix all of its design problems. Here is my rewrite
+(note: this was written before we began our discussion; given what I
+have learned during the discussion, I would now change several of the
+comments, but I have left this in its original form):
 
 	package literatePrimes;
 
@@ -1410,10 +1418,10 @@ I'm not opposed to Javadocs as a rule; but I write them only when absolutely nec
 
 The next comment cost me a good 20 minutes of puzzling things out.
 
-	        // Used to test efficiently (without division) whether a candidate
-	        // is a multiple of a previously-encountered prime number. Each entry
-	        // here contains an odd multiple of the corresponding entry in
-	        // primes. Entries increase monotonically.
+	// Used to test efficiently (without division) whether a candidate
+	// is a multiple of a previously-encountered prime number. Each entry
+	// here contains an odd multiple of the corresponding entry in
+	// primes. Entries increase monotonically.
 
 First of all I'm not sure why the "division" statement is necessary.  I'm old school so I expect that everyone knows to avoid division in inner loops if it can be avoided.  But maybe I'm wrong about that...
 
@@ -1441,14 +1449,14 @@ Or perhaps we should change the name of the array to something like `primeMultip
 
 Moving on to the next comment:
 
-	            // Each iteration of this loop tests the candidate against one
-	            // potential prime factor. Skip the first factor (2) since we
-	            // only consider odd candidates.
+	// Each iteration of this loop tests the candidate against one
+	// potential prime factor. Skip the first factor (2) since we
+	// only consider odd candidates.
 
 That doesn't make a lot of sense.  The code it's talking about is:
 
-	            for (int i = 1; i <= lastMultiple; i++) {
-	                while (multiples[i] < candidate) {
+	for (int i = 1; i <= lastMultiple; i++) {
+	    while (multiples[i] < candidate) {
 
 The `multiples` array, as we have now learned, is an array of *multiples* of prime numbers.  This loop is not testing the candidate against prime *factors*, it's testing it against the current prime _multiples_.
 
@@ -1466,17 +1474,20 @@ And it worked just fine.  So this must be an optimization of some kind.
 
 Your comment to explain this is:
 
-	            // Start with the prime's square here, rather than 3x the prime.
-	            // This saves time and is safe because all of the intervening
-	            // multiples will be detected by smaller prime numbers. As an
-	            // example, consider the prime 7: the value in multiples will
-	            // start at 49; 21 will be ruled out as a multiple of 3, and
-	            // 35 will be ruled out as a multiple of 5, so 49 is the first
-	            // multiple that won't be ruled out by a smaller prime.
+	// Start with the prime's square here, rather than 3x the prime.
+	// This saves time and is safe because all of the intervening
+	// multiples will be detected by smaller prime numbers. As an
+	// example, consider the prime 7: the value in multiples will
+	// start at 49; 21 will be ruled out as a multiple of 3, and
+	// 35 will be ruled out as a multiple of 5, so 49 is the first
+	// multiple that won't be ruled out by a smaller prime.
 
 The first few times I read this it made no sense to me at all.  It was just a jumble of numbers.
 
-I stared at the ceiling, and closed my eyes to visualize. I couldn't see it.  So I went on a long contemplative bike ride during which I realized that the prime multiples of 2 will at one point contain 2*3 and then 2*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  _And it clicked!_
+I stared at the ceiling, and closed my eyes to visualize. I couldn't see it.  So I went on a long contemplative bike ride during which I realized that the prime multiples of 2 will at one point contain 2\*3 and then 2\*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  _And it clicked!_
+
+>I'd suggest changing the example above to use 3 as the prime instead of 2, since
+multiples of 2 aren't actually considered by the algorithm.
 
 Suddenly it all made sense. I realized that the `multiples` array was the equivalent of the array of booleans we use in the *Sieve of Eratosthenes* -- but with a really interesting twist.  If you were to do the sieve on a whiteboard, you _could_ erase every number less than the candidate, and only cross out the numbers that were the next multiples of all the previous primes.
 
@@ -1495,6 +1506,99 @@ But my names didn't help me 18 years later.  They didn't help you, or your stude
 We were inside the box trying to communicate to those who stood outside and could not see what we saw.
 
 The bottom line is that it is very difficult to explain something to someone who is not intimate with the details you are trying to explain. Often our explanations make sense only after the reader has worked out the details for themself.
+
+**JOHN:**
+
+There's a lot of stuff in your discussion above, but I think it all boils down
+to one thing: you don't like the comments that I wrote. As I mentioned earlier,
+complexity is in the eye of the reader: if you say that my comments were
+confusing or didn't help you to understand the code, then I have to take that
+seriously.
+
+At the same time, you have made it clear that you don't see much value in
+comments in general. Your preference is to have essentially no
+comments for this code (or any code). You argue above that there is simply nothing that
+comments can do to make the code easier to understand; the only way to
+understand the code is to read the code. That is a cop-out. In order to
+write our various versions of the code, you and I had to accumulate a lot of
+knowledge about the algorithm, such as why it's OK for the first multiple
+of a prime to be its square. Unfortunately, not all of that knowledge can
+be represented in the code. It is our professional responsibility to do
+the best we can to convey
+that knowledge in comments, so that readers do not
+have to reconstruct it over and over. Even if the resulting comments are
+imperfect, they will make the code easier to understand.
+
+If a situation like this occurred in real life I would work with
+you and others to improve my comments. For example, I would ask you
+questions to get a better sense of
+why the "squared prime" comment didn't seem to help you:
+* Are there things in the comment that are misleading or confusing?
+* Is there some important piece of information you acquired on your
+  bike ride that suddenly made things clear?
+
+I would also show the comment to a few other people to get their takes
+on it. Then I would rework the comment to improve it.
+
+Given your fundamental disbelief in comments, I think it's likely that
+you would still see no value in the comment, even after my reworking.
+In this case I would show the comment to other people, particularly those
+who have a more positive view of comments in general, and get
+their input. As long as the comment is not misleading and at least a few
+people found it helpful, I would retain it.
+
+Now let me me discuss two few specific comments that you objected to. The
+first comment was the one for the `multiples` variable:
+
+	// Used to test efficiently (without division) whether a candidate
+	// is a multiple of a previously-encountered prime number. Each entry
+	// here contains an odd multiple of the corresponding entry in
+	// primes. Entries increase monotonically.
+
+There is a bug in this comment that you exposed (the first entry is not odd);
+good catch! You then argued that most of the information in the comment
+is unnecessary and proposed this as an alternative:
+
+	 // multiples of corresponding prime.
+
+You have left out too much useful information here. For example, I don't think
+it is safe to assume that readers will figure out that the motivation is
+avoiding divisions. It's always better to state these assumptions and
+motivations clearly so that there will be no confusion. And I think it's
+helpful for readers to know that these entries never decrease.
+I would simply fix the bug, leaving all of the information intact:
+
+	// Used to test efficiently (without division) whether a candidate
+	// is a multiple of a previously-encountered prime number. Each entry
+	// (except the first, which is never used) contains an odd multiple of
+	// the corresponding entry in primes. Entries increase monotonically.
+
+The second comment was this one, for the `for` loop:
+
+	// Each iteration of this loop tests the candidate against one
+	// potential prime factor. Skip the first factor (2) since we
+	// only consider odd candidates.
+
+You objected to this comment because the code of the loop doesn't actually
+test the candidate against the prime factor; it tests it against a multiple.
+When I write implementation comments like this, my goal is not to restate
+the code; comments like that don't usually provide much value. The goal here was
+to say *what* the code is doing in a logical sense, not *how* it does it.
+In that sense, the comment is correct.
+
+However, if a comment causes confusion in the reader, then it is not a
+good comment. Thus I would rewrite this comment to make it clear that
+it is describing the abstract function of the code, not its
+precise behavior:
+
+	// Each iteration of this loop considers one existing prime, ruling
+	// out the candidate if it is a multiple of that prime. Skip the
+	// first prime (2) since we only consider odd candidates.
+
+To conclude, I agree with your assertion "it is very difficult to explain
+something to someone who is not intimate with the details you are trying
+to explain." And yet, it is our responsibility as programmers to do exactly
+that.
 
 ## Bob's Rewrite of PrimeGenerator2
 
@@ -1596,9 +1700,9 @@ Given that the whole reason for the current algorithm (and its complexity)
 is to maximize performance, this slowdown is unacceptable. The two
 methods must be combined.
 
-I think what's happening here is that you are so focused on something
+I think what happened here is that you were so focused on something
 that isn't actually all that important (creating the tiniest possible methods)
-that you are dropping the ball on other issues that really are important.
+that you dropped the ball on other issues that really are important.
 We have now seen this twice. In the original version of `PrimeGenerator`
 you were so determined to make tiny methods that you didn't notice that the
 code was becoming incomprehensible. In this version you were so eager to
@@ -1621,7 +1725,7 @@ must make some attempt to help readers understand why the first multiple
 for a prime is the square of the prime. You have taken a lot of time to
 develop your understanding of this; surely there must be some way to convey
 that understanding to others? If you had included that information in
-your original version of the code you could have saved yourself a multi-hour
+your original version of the code you could have saved yourself that long
 bike ride.
 Giving up on this is an abdication of professional responsibility.
 
@@ -1634,16 +1738,6 @@ this, given your opposition to extraneous comments.
 
 Clearly you and I live in different universes when it comes to comments.
 
-
-> Bob, I think the problem here is that you have such a negative
-attitude about comments that you have never actually learned how to
-write useful comments. I'm not going to say that
-publicly in this conversation, but you might give it some thought. It's
-really not hard to learn, and I'd be happy to work through some examples
-with you in a Zoom call if you are interested.
-
->>John, This made me laugh -- a lot.  After more than half a century of writing code I have lived through and used virtually every possible commenting style.  My current view is the result of those many long years of experience.  
-
 Finally, I don't understand why you are offended by the labeled `continue`
 statement in my code. This is a clean and elegant solution to the problem
 of escaping from nested loops. I wish more languages
@@ -1651,10 +1745,13 @@ had this feature; the alternative is awkward code where you set a variable,
 then exit one level of loop, then check the variable and exit the next
 level.
 
-**UB:** 
+>Let's discuss this on Zoom; you seem to keep repeating your slurs without
+providing a reasonable explanation.
+
+**UB:**
 
 Good catch!  I would have caught that too had I thought to profile the solution.  You are right that separating the two loops added some unecessary iteration.  I found a nice way to solve that problem without using the horrible `continue`.  My updated version is now faster than yours!  A million primes in 440ms as opposed to yours which takes 561ms.  ;-) Below are just the changes.
-	
+
 	  public static int[] generateFirstNPrimes(int n) {
 	    initializeTheGenerator(n);
 
@@ -1678,7 +1775,10 @@ Good catch!  I would have caught that too had I thought to profile the solution.
 	    return true;
 	  }
 
+**JOHN:**
 
+Yep, that fixes the problem. I note that you are now down to 4 methods,
+from 8 in the *Clean Code* version.
 
 ## Test-Driven Development
 
@@ -1698,7 +1798,7 @@ without any compensating advantages that I have been able to identify.
 
 As I said at the start I have carefully read _A Philosophy of Software Design_. I found it to be full of worthwhile insights, and I strongly agree with most of the points you make.
 
-So I was surprised to find, on page 157, that you wrote a very short, dismissive, pejorative, and inaccurate section on _Test Driven Development_.  Sorry for all the adjectives, but I that's a fair characterization.  So my goal, here, is to correct the misconception you have that led you to write that section.
+So I was surprised to find, on page 157, that you wrote a very short, dismissive, pejorative, and inaccurate section on _Test Driven Development_.  Sorry for all the adjectives, but I think that's a fair characterization.  So my goal, here, is to correct the misconception you have that led you to write that section.
 
 >"Test-driven development is an approach to software development where programmers write unit tests before they write code.  When creating a new class, the develper first writes unit tests for the class, based on its expected behavior.  None of these tests pass, since there is no code for the class.  Then the developer works through the tests one at a time, writing enough code for that test to pass.  When all of the tests pass, the class is finished."
 
@@ -1771,7 +1871,7 @@ The advantages I usually describe when describing TDD are:
 
 * A suite of tests that you trust with your life, and therefore supports fearless refactoring.
 
-However, you asked me which of these advantages TDD might have over _your_ preferred method.  That depends on how big you make those larger units you described.  The important thing to me is to keep the cycle time short, and to prevents entanglements that block testability.
+However, you asked me which of these advantages TDD might have over _your_ preferred method.  That depends on how big you make those larger units you described.  The important thing to me is to keep the cycle time short, and to prevent entanglements that block testability.
 
 It seem to me that working in small units that you immediately write tests for after the fact can give you all the above advantages, so long as you are very careful to test every aspect of the code you just wrote.  I think a disciplined programmer could effectively work that way.  Indeed, I think such a programmer would produce code that I could not distiguish from code written by another programmer following TDD.
 
@@ -1804,7 +1904,7 @@ First, let me address the four advantages you listed for TDD:
 	with almost no limit to how small they can get. I think that there
 	is a point of diminishing returns, where making things even smaller
 	no longer helps and actually starts to hurt. We saw this disagreement
-	over method length, and I think we're seeing it again heer.
+	over method length, and I think we're seeing it again here.
 
 * Low level documentation? I disagree: unit tests are a very poor form
   of documentation. Comments are a much more
@@ -1812,7 +1912,7 @@ First, let me address the four advantages you listed for TDD:
   relevant code. Trying to learn a method's
   interface by reading a bunch of unit tests seems much more difficult
   than just reading a couple of sentences of English text.
-  > I revised the last sentence above, so the first part of your response
+  >> I revised the last sentence above, so the first part of your response
     below may no longer be relevant.
 
 	>**UB:** Will be?  Or is?  Nowadays it's very easy to find the tests for
@@ -1860,7 +1960,7 @@ TDD does not provide adequate guidance to encourage design. You mentioned
 the Red-Green-Refactor loop, which recommends refactoring after each step,
 but there's almost no guidance for refactoring. How should developers
 decide when and what to refactor? This seems to be left purely to their
-own "judgment". For example, if I am writing a method that requires
+own judgment. For example, if I am writing a method that requires
 multiple iterations of the TDD loop, should I refactor after every iteration
 (which sounds pretty tedious) or wait until after several iterations so that
 I can look at a bigger chunk of code when refactoring and hence be more
@@ -2077,7 +2177,7 @@ mitigate the risks of TDD and produce well-designed code.
 
 **UB:**
 
-Let's just say that I agree with all that advice, but disagree with your assertion that TDD might be the cause of bad code.  
+Let's just say that I agree with all that advice, but disagree with your assertion that TDD might be the cause of bad code.
 
 ### TDD Summary
 
@@ -2093,19 +2193,71 @@ of breaking something.
 
 * I believe that TDD discourages good design and can easily lead to very bad
 code. You do not believe that TDD discourages good
-design, don't see much of a risk of bad code.
->UB: I deleted the last clause.
-
+design and don't see much of a risk of bad code.
 
 * I believe that there are better approaches than TDD for producing good
 unit test suites, such as the "bundling" approach discussed above. You agree
-that bundling can produce outcomes just as good as TDD; but may lead to somewhat less test coverage.
->UB: I added a clause.
+that bundling can produce outcomes just as good as TDD but think it may lead to
+somewhat less test coverage.
 
 * I believe that TDD and bundling have similar best-case outcomes, but that
 the average and worst-case outcomes will be much worse for TDD. You disagree
 and believe that, if anything, TDD may produce marginally better outcomes
-than bundling; but that preference and personality is a larger factor in making the choice between the two.
->UB: Slight rewording and addition.
+than bundling. You also think that preference and personality are larger factors in
+making the choice between the two.
 
->UB: Overall I think we are close.  I look forward to the zoom call in early December.  Just shoot me a line to schedule it.  I'm thinking I'll include this entire discussion as an appendix in the second edition.  
+## Closing Remarks
+
+**JOHN:**
+
+We have covered a lot of topics and subtopics in this discussion, but
+I think that most of my concerns result from two general errors made
+by *Clean Code*: failure to focus on what is important, and failure to
+balance design tradeoffs.
+
+In software design (and probably in any design environment) it is essential
+to identify the things that really matter and focus on those. If you
+focus your attention on things that are unimportant you are
+unlikely to achieve the things that really are important.
+Unfortunately, *Clean Code* repeatedly focuses on things that don't really
+matter, such as:
+* Dividing ten-line methods into five-line methods and dividing five-line methods
+  into two- or three-line methods.
+* Eliminating the use of comments written in English.
+* Writing tests before code and making the basic unit of development a
+  test rather than an abstraction.
+
+None of these provides significant value, and we have seen how they
+distract from producing the best possible designs.
+
+Conversely, *Clean Code* fundamentally undervalues comments, which are
+essential and irreplaceable. This
+comes at a huge cost. Without interface comments the specifications for
+interfaces are incomplete. This is guaranteed to result in confusion and bugs.
+Without implementation comments, readers are forced to rederive knowledge
+and intentions that were in the mind of the original developer. This wastes
+time and leads to more bugs.
+
+In my opening remarks I said that systems become complex when important
+information is not accessible and obvious to developers. By refusing to
+write comments, you are hiding important information that you have and
+that others need.
+
+The second general error in *Clean Code* has to do with balance. Design
+represents a balance between competing concerns. Almost any design idea
+becomes a bad thing if taken to the extreme. However, *Clean Code*
+repeatedly gives very strong advice in one direction without correspondingly
+strong advice in the other direction or any meaningful guidance about how
+to recognize when you have gone too far. For example, making methods
+shorter is often a good thing, but the *Clean Code* position is so one-sided
+and extreme that readers are likely to chop things up too much. We saw
+in the `PrimeGenerator` example how this resulted in code that was
+nearly incomprehensible. Similarly, the *Clean Code* position on TDD is
+one-sided, failing to
+recognize any possible weakness and encouraging readers to take this to
+a tactical extreme where design is completely squeezed out of the development
+process.
+
+**UB:**
+
+*Your closing comments go here*
