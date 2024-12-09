@@ -501,7 +501,7 @@ be understood (with great pain and suffering) does not excuse its entanglement.
 
 **UB:**
 
-Would that we had such a crystal ball that we could see how our future selves would react to our current creations.  ;-)
+Would that we had such a crystal ball that we could help our future selves avoid such "_great pain and suffering_".  ;-)
 
 **JOHN:**
 
@@ -511,8 +511,11 @@ were surprised that it is hard to understand, but I am not. Said another
 way, if you are unable to predict whether your code will be easy to
 understand, there are serious problems with your design methodology.
 
->If you'd like to remove your "crystal ball" comment, I'm happy to remove
-the paragraph above as well.
+**UB:**
+
+Fair enough.  I will say, however, that I had equal "_pain and suffering_" interpreting your rewrite (below).  So, apparently, neither of our methodologies are sufficient to rescue our readers from such struggles.
+
+**JOHN:**
 
 Going back to my introductory remarks about complexity, splitting up
 `isNot...` into three methods doesn't reduce the amount of information
@@ -1486,9 +1489,6 @@ The first few times I read this it made no sense to me at all.  It was just a ju
 
 I stared at the ceiling, and closed my eyes to visualize. I couldn't see it.  So I went on a long contemplative bike ride during which I realized that the prime multiples of 2 will at one point contain 2\*3 and then 2\*5.  So the `multiples` array will at some point contain multiples of primes *larger* than the prime they represent.  _And it clicked!_
 
->I'd suggest changing the example above to use 3 as the prime instead of 2, since
-multiples of 2 aren't actually considered by the algorithm.
-
 Suddenly it all made sense. I realized that the `multiples` array was the equivalent of the array of booleans we use in the *Sieve of Eratosthenes* -- but with a really interesting twist.  If you were to do the sieve on a whiteboard, you _could_ erase every number less than the candidate, and only cross out the numbers that were the next multiples of all the previous primes.
 
 That explanation makes perfect sense to me -- now, but I'd be willing to bet that those who are reading it are puzzling over it.  The idea is just hard to explain.
@@ -1519,7 +1519,15 @@ At the same time, you have made it clear that you don't see much value in
 comments in general. Your preference is to have essentially no
 comments for this code (or any code). You argue above that there is simply nothing that
 comments can do to make the code easier to understand; the only way to
-understand the code is to read the code. That is a cop-out. In order to
+understand the code is to read the code. That is a cop-out. 
+
+**UB:**
+
+Sorry to interrupt you; but I think you are overstating my position.  I certainly never said that comments can never be helpful.  Sometimes, of course, they are.  What I said was that I only trust them if the code validates them.  Sometimes a comment will make that validation a lot easier.    
+
+**JOHN:**
+
+In order to
 write our various versions of the code, you and I had to accumulate a lot of
 knowledge about the algorithm, such as why it's OK for the first multiple
 of a prime to be its square. Unfortunately, not all of that knowledge can
@@ -1599,6 +1607,10 @@ To conclude, I agree with your assertion "it is very difficult to explain
 something to someone who is not intimate with the details you are trying
 to explain." And yet, it is our responsibility as programmers to do exactly
 that.
+
+**UB:**
+
+I'm glad we agree.  We also agree about getting others to review the code and make recommendations on the code _and_ the comments.
 
 ## Bob's Rewrite of PrimeGenerator2
 
@@ -2260,4 +2272,4 @@ process.
 
 **UB:**
 
-*Your closing comments go here*
+John, I'd like to thank you for participating in this project.  We agree on many things and disagree on a few others.  For my part I'll just say that I have given due consideration to the points you've made, and have integrated several of them into the second edition of _Clean Code_.
