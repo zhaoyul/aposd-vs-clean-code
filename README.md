@@ -509,7 +509,7 @@ There is no need for a crystal ball. The problems with `PrimeGenerator` are
 pretty obvious, such as the entanglement and interface complexity; maybe you
 were surprised that it is hard to understand, but I am not. Said another
 way, if you are unable to predict whether your code will be easy to
-understand, there are serious problems with your design methodology.
+understand, there are problems with your design methodology.
 
 **UB:**
 
@@ -1519,15 +1519,19 @@ At the same time, you have made it clear that you don't see much value in
 comments in general. Your preference is to have essentially no
 comments for this code (or any code). You argue above that there is simply nothing that
 comments can do to make the code easier to understand; the only way to
-understand the code is to read the code. That is a cop-out. 
+understand the code is to read the code. That is a cop-out.
 
 **UB:**
 
-Sorry to interrupt you; but I think you are overstating my position.  I certainly never said that comments can never be helpful.  Sometimes, of course, they are.  What I said was that I only trust them if the code validates them.  Sometimes a comment will make that validation a lot easier.    
+Sorry to interrupt you; but I think you are overstating my position.  I certainly never said that comments can never be helpful.  Sometimes, of course, they are.  What I said was that I only trust them if the code validates them.  Sometimes a comment will make that validation a lot easier.
 
 **JOHN:**
 
-In order to
+You keep saying that you sometimes find use for comments, but the reality
+is that "sometimes" almost never occurs in your code. We'll see this when
+we look at your revision of my code.
+
+Now back to my point. In order to
 write our various versions of the code, you and I had to accumulate a lot of
 knowledge about the algorithm, such as why it's OK for the first multiple
 of a prime to be its square. Unfortunately, not all of that knowledge can
@@ -1596,7 +1600,7 @@ In that sense, the comment is correct.
 
 However, if a comment causes confusion in the reader, then it is not a
 good comment. Thus I would rewrite this comment to make it clear that
-it is describing the abstract function of the code, not its
+it describes the abstract function of the code, not its
 precise behavior:
 
 	// Each iteration of this loop considers one existing prime, ruling
@@ -1918,7 +1922,7 @@ First, let me address the four advantages you listed for TDD:
 	no longer helps and actually starts to hurt. We saw this disagreement
 	over method length, and I think we're seeing it again here.
 
-* Low level documentation? I disagree: unit tests are a very poor form
+* Low level documentation? I disagree: unit tests are a poor form
   of documentation. Comments are a much more
   effective form of documentation, and you can put them right next to the
   relevant code. Trying to learn a method's
@@ -2056,7 +2060,7 @@ that jumped out at me:
    come at the end to be less important and somehow optional; that's
    why they are at the end, so we can leave them out if we have to.
 
-This captures perfectly my concern about TDD. It insists that tests must
+This captures perfectly my concern about TDD. TDD insists that tests must
 come first, and design, if it happens at all, comes at the end, after
 code is working. I believe that good design is the most important
 thing, so it must be the top priority. I don't consider tests optional,
@@ -2076,7 +2080,7 @@ As Eisenhower once said:
 
 **JOHN:**
 
-You ask why writing tests late is a better design choice. It isn't.
+You ask why writing tests later is a better design choice. It isn't.
 The benefit of the bundled approach doesn't come from writing tests later;
 it comes from doing design sooner. Writing tests (a bit) later is a
 consequence of this choice. The tests are still written pretty early-on
@@ -2221,6 +2225,9 @@ making the choice between the two.
 ## Closing Remarks
 
 **JOHN:**
+
+First, I'd like to thank you for tolerating (and responding to) the arguments
+I have made about some of the key ideas in *Clean Code*.
 
 We have covered a lot of topics and subtopics in this discussion, but
 I think that most of my concerns result from two general errors made
