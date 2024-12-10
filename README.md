@@ -1931,7 +1931,7 @@ First, let me address the four advantages you listed for TDD:
   >> I revised the last sentence above, so the first part of your response
     below may no longer be relevant.
 
-	>**UB:** Will be?  Or is?  Nowadays it's very easy to find the tests for
+	>**UB:** Nowadays it's very easy to find the tests for
 	a function by using the "where-used" feature of the IDE.  As for comments
 	being better, if that were true then no one would publish example code.
 
