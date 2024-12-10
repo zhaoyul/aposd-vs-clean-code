@@ -1382,7 +1382,7 @@ it is easier to understand than the original. I'd like to mention a
 couple of overall things:
 
 * There is only one method. I didn't subdivide it because I felt the method already divides naturally into pieces that are distinct and understandable. It didn't seem to me that pulling out methods would improve readability significantly. When students rewrite the code, they typically have 2 or 3 methods, and those are usually OK too.
-* There are a *lot* of comments. It's extremely rare for me to write code with this density of comments. Most methods I write have no comments in the body, just a header comment describing the interface. But this code is subtle and tricky, so it needs a lot of comments to make the subtleties clear to readers. Even with all this additional explanatory material my version is a bit shorter than the original (65 lines vs. 70).
+* There are a *lot* of comments. It's extremely rare for me to write code with this density of comments. Most methods I write have no comments in the body, just a header comment describing the interface. But this code is subtle and tricky, so it needs a lot of comments to make the subtleties clear to readers. The long length of some of the comments is a red flag indicating that I struggled to find a clear and simple explanation for the code. Even with all the additional explanatory material this version is a bit shorter than the original (65 lines vs. 70).
 
 **UB:**
 
@@ -1928,8 +1928,6 @@ First, let me address the four advantages you listed for TDD:
   relevant code. Trying to learn a method's
   interface by reading a bunch of unit tests seems much more difficult
   than just reading a couple of sentences of English text.
-  >> I revised the last sentence above, so the first part of your response
-    below may no longer be relevant.
 
 	>**UB:** Nowadays it's very easy to find the tests for
 	a function by using the "where-used" feature of the IDE.  As for comments
@@ -2227,7 +2225,8 @@ making the choice between the two.
 **JOHN:**
 
 First, I'd like to thank you for tolerating (and responding to) the arguments
-I have made about some of the key ideas in *Clean Code*.
+I have made about some of the key ideas in *Clean Code*. I hope this
+discussion will provide food for thought for readers.
 
 We have covered a lot of topics and subtopics in this discussion, but
 I think that most of my concerns result from two general errors made
