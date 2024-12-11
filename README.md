@@ -122,106 +122,9 @@ It is certainly possible to over-decompose code.  Here's an example:
 
 	void doSomething() {doTheThing()} // over-decomposed.
 
-In general I like your narrow/deep, wide/shallow dichotomy.  However, I don't think extracting small methods inevitably drives a module towards the wide/shallow end.  In fact, I think the opposite.
-
-In your book you define a module as "deep" if it has a powerful functionality and a narrow interface. To say this differently, you want the aspect ratio (Interface/Functionality) to be small.
-
-This implies that deepness is relative.  A module that does very little, but that has a trivial interface, still has a small aspect ratio, and is therefore still deep.
-
-**JOHN:**
-
-No: if a method does almost nothing, it's going to be shallow. There's no
-way to shrink an interface to zero. If a method is tiny, almost all of its
-functionality will be visible in its interface.
-
-**UB:**
-
-Consider `int abs(int i) {return i<0 ? -1 : i}`  This function does very little and has a trivial interface.  And yet I can shrink that interface to zero by inlining every call to `abs`.  Thus `abs` is deep relative to inlining.
-
-**JOHN:**
-
-Perhaps you're not using the same definition of
-"shallow" that I use. For the `abs` method, the interface equals the implementation
-(every detail of the implementation must be known to someone invoking the
-method; nothing is hidden). This, by definition, is as shallow as a method
-can possibly get. And I don't know what you mean by "deep relative to
-inlining"; inlining has nothing to do with shallowness.
-
->>> Let's discuss via Zoom to see if we can clear this up.
-
->>>UB:Your definition (p. 25) "a shallow module is one whose interface is relatively complex in comparison to the functionality that it provides."  You used the term "relatively" in that definition which implies that shallowness is a function of the ratio of the complexity of the interface to the implementaiton.  I would argue that `abs(x)` is relatively simpler than `x<0 ? -x : x`  Thus the  abs function is relatively deep i.e. the implementation is more complex than the interface.
-
->>>UB: As for inlining, every line of code in a method has an implicit interface, potentially composed of every variable in scope.  Method invocations have an explicit, and more restricted interface.  Thus a method invocation has a simpler interface than a line of code which, by your definition, makes the line of code shallower than the method invocation.
-
-**UB:**
-
-Now consider a large and deep method that contains three sections.  If I extract those three sections into separate methods the original still has a powerful functionality and a narrow interface.  It is still deep.  It's aspect ratio is unchanged even though it's line count has decreased dramatically.
-
-**JOHN:**
-
-Agreed. Splitting a method's implementation does not change whether it is
-deep or shallow.
-
-**UB:**
-
-Now let's consider the three sections prior to their extraction.  Section 1 sets up some local variables for section 2, and some for section 3, and some for both.  Those local variables become an undeclared and implicit interface to sections 2 and 3.
-
-At first the reader must consider all the local variables when reading sections 2 and 3.  Thus the implicit interface to those sections is wider than necessary.  It is only when the reader had understood a section that he can exclude the superfluous local variables for that section and narrow the interfaces in his mind.
-
-Extracting those sections causes the interfaces to be explicit and declared.  The reader does not have to understand the functions to understand the interfaces.
-
-The extracted sections are shallower than the original function; because they do less.  They may also have wider interfaces because section 1 split some data elements from its input. But those interfaces are no wider than the implicit and undeclared interfaces within the unextracted module; and are likely quite a bit narrower.  Thus the aspect ratio of the extracted functions will be no larger than the unextracted sections, but could well be considerably smaller.
-
-If we repeat this process by breaking up each extracted method we create a hiearchy of extracted functions.  Those functions will become shallower and shallower as we descend; but their interfaces will become narrower too as we break the data of the problem up into smaller and smaller parts.
-
-Therefore, decomposing larger methods into smaller methods does not ipso-facto lead to increasing aspect ratios and a loss of depth.  So long as the programmer is careful to manage the functionality and interface of each extracted method, he can keep the aspect ratios very small.
-
-**JOHN:**
-
-Let me see if I understand what you are saying. It sounds like you agree
-that when a method gets split into smaller and smaller child methods, the
-children get shallower and shallower. But you are also saying that there were
-implicit interfaces inside
-the original method before it was split, and that anyone reading the method
-would need to understand those interfaces. The decomposed child methods
-don't introduce new interfaces; they are simply exposing interfaces that
-already existed. Thus they don't add to complexity. Do I have this right?
-
-**UB:**
-
-Almost.  I'd say that they do not _add_ to complexity, but may also _reduce_ complexity by converting an implicit interface into an explicit interface.
-
-**JOHN:**
-
-Now that I understand your position I'm going to disagree. Perhaps we have
-different views on what interfaces are for. For me, the reason for interfaces
-is to allow independent development. If I define an interface between A and
-B, then A and B can be developed independently as long as they conform to the
-interface. Said another way, the interface tells us what changes can be
-made to A without also considering changes to B, and vice versa. The most
-common form of interface is for a method: it allows the method's implementaton
-to be modified without worrying about the impact on callers. A network
-protocol is another form of interface:
-it allows the sender side to be developed independently of the receiver
-side, or for multiple implementations of each side to be developed separately.
-
-Within the implementation of a method there is no need for independent
-development. The code is all in one place, and when working on any part
-of the method it's easy
-to consider and modify other parts of the method as needed. Thus
-interfaces make no sense within a method; the only
-interface that matters is the method's interface. If you were
-to actually impute internal interfaces, you'd need to think about an
-interface at every boundary between adjacent lines of code; this would
-create an insane cognitive load.
-
-Bottom line: there are no interfaces internal to a method, and when
-you split a method you are introducing interfaces that did not
-exist previously.
-
->>>UB: More for the zoom call.  On p. 21 you describe "abstraction" (correctly in my view).  And you make the point that "abstractions make it easier to think about and manipulate complex things."  You go on to describe abstraction from the point of view of modules that have interfaces that hide unimportant details.  The interface of a module is composed of a set of methods.  From the outside looking in there are relatively few methods (if the module is deep).  From the inside, however, the interface of the module is composed of the union of the public and private methods.  This implies that a module has an external and an internal interface.  This is good because the internal interfaces make it "eaiser to think about and manipulate" the complexities within our module. If we have a method that can be split apart into N parts, then those N parts can become part of the internal interface of the module, thus reducing the method to use N internal abstractions that "make it easier to think about and manipulate" the internal complexities of the module.
-
-**UB:**
+> I deleted all of the intervening text as we discussed. I think the text
+below follows naturally from what's above, but feel free to modify it
+if you wish.
 
 The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
@@ -674,39 +577,31 @@ summary of where we agree and disagree?
   lead to appropriate decompositions. I believe it lacks guardrails
   and will lead to over-decomposition.
 
-* You believe that `PrimeGenerator` provides a good example of how to
-  decompose code and that it is easy to read.
-  I believe that `PrimeGenerator` is a really bad decomposition
-  (sorry to be blunt) and that the problems stem from following the
-  advice of *Clean Code*: it is way over-decomposed and as a result is
-  difficult to read.
->`PrimeGenerator` is part of a good example of how to break a large function into classes -- which was the point of that chapter.  `PrimeGenerator` itself was not meant to be an exemplar of function decomposition.
+* We agree that the internal decomposition of `PrimeGenerator` into
+  methods is problematic. You point out that your main goal in writing
+  `PrimeGenerator` was to show how to decompose into classes, not
+  so much how to decompose a class internally into methods.
+
+> I have reworded the text above based on our Zoom call; OK now?
 
 * You believe that `PrimeGenerator` separates concerns. I believe that
   the code appears separated on the surface, but in fact it is entangled.
 
-* You believe that when someone reads a class, it's reasonable for them
-  to load all of the code of the class into their head as they go, so
-  that in each method they remember what they've read in previous methods.
-  I believe that this creates an unreasonable cognitive load: it should
-  be possible to read each method relatively independently, without having
-  to remember the implementations of other methods.
->No. I believe that is true of a method, but not of a class.  As you read a method, whether the elements are extracted or not, you have to keep the state of the execution in mind.  When you read a class, you should not have to keep the state of the execution of each method in mind.
+* Entanglement between methods in a class doesn't bother you
+  as much as it bothers me. You generally prefer to decompose a
+  class into smaller methods even if that results in some entangelement
+  between the methods. I have very low tolerance for entanglement: if
+  one method in a class cannot be understood without reading the code
+  of some other method, then I would usually advocate combining
+  the methods.
+
+> The item above is new (it's a combination of two items from the previous version).
 
 * You believe that ordering the methods in a class is an effective way
   to manage dependencies between them. I believe that ordering can
   sometimes improve readability a bit, but if methods are entangled then
   ordering won't fix the problem.
 >I agree with both.  Ordering can be effective; but it is not a cure-all.
-
-* You believe that it's OK for (private?) methods in class to be entangled,
-  where one method cannot be fully understood without considering code
-  in other methods. I believe that entanglement is a red flag for bad
-  design; if two pieces of code are dependent, the code will be more
-  readable if the pieces are right next to each other in a single method.
-> Yes, the extent to which classes have fields suggests that the methods within them are somewhat entangled.
-
-> **JOHN:** let's resolve the remaining issues in the summary above in person in a Zoom call.
 
 ## Comments
 
@@ -764,6 +659,7 @@ the tone of Chapter 13 of APOSD with Chapter 4 of *Clean Code*, the hostility
 of *Clean Code* towards comments becomes pretty clear.
 
 **UB:**
+
 I'll leave you to balance that last comment with the initial statement, and the final example, in the _Comments_ chapter. They do not communicate "hostility".
 
 I'm not hostile to comments in general.  I _am_ very hostile to gratuitous comments.
