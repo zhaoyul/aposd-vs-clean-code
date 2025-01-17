@@ -246,7 +246,7 @@ Fascinating.
 **JOHN:**
 
 I think it will be easier to clarify our differences if we consider
-a specific code example. Let's look at the `PrimeGenerator` class from
+a nontrivial code example. Let's look at the `PrimeGenerator` class from
 *Clean Code*, which is Listing 10-8 on pages 145-146. This Java class
 generates the first N prime numbers:
 
@@ -613,12 +613,22 @@ summary of where we agree and disagree?
 
 >Agreed, and we should probably combine two or three of the above points.
 
+* New wording: Entanglement between methods in a class doesn't bother you
+  as much as it bothers me. You believe that the benefits of decomposing
+  methods are so great that they can compensate for problems caused
+  by entanglement. I believe that when decomposed methods are entangled,
+  they are harder to read than if they were not decomposed, and this
+  defeats the whole purpose of decomposition.
+
 * You believe that ordering the methods in a class is an effective way
   to manage dependencies between them. I believe that ordering can
   sometimes improve readability a bit, but if methods are entangled then
   ordering won't fix the problem.
 
 >I agree with both.  Ordering can be effective; but it is not a cure-all.
+
+* New wording: You believe that ordering the methods in a class can help to compensate
+  for entanglement between methods; I don't.
 
 ## Comments
 
