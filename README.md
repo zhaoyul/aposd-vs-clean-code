@@ -570,12 +570,8 @@ summary of where we agree and disagree?
 
 * We agree that modular design is a good thing.
 
->Yes!
-
 * We agree that it is possible to over-decompose, and that *Clean Code*
   doesn't provide much guidance on how to recognize over-decomposition.
-
->Yes, addressed in 2d. ed.
 
 * We disagree on how far to decompose: you recommend decomposing
   code into much smaller units than I do. You believe that
@@ -583,52 +579,28 @@ summary of where we agree and disagree?
   understand; I believe that it goes too far and actually makes code
   more difficult to understand.
 
-> Yes.  You fear entanglement a bit more than I do.
-
 * You believe that the One Thing Rule, applied with judgment, will
   lead to appropriate decompositions. I believe it lacks guardrails
   and will lead to over-decomposition.
-
->Fair enough.
 
 * We agree that the internal decomposition of `PrimeGenerator` into
   methods is problematic. You point out that your main goal in writing
   `PrimeGenerator` was to show how to decompose into classes, not
   so much how to decompose a class internally into methods.
 
->Yes -- though as we will see, that problem is not trivial to solve.
-
-* You believe that `PrimeGenerator` separates concerns. I believe that
-  the code appears separated on the surface, but in fact it is entangled.
-
->Better to say that I believe the separation of concerns can survive more entanglement than you do.
-
 * Entanglement between methods in a class doesn't bother you
-  as much as it bothers me. You generally prefer to decompose a
-  class into smaller methods even if that results in some entangelement
-  between the methods. I have very low tolerance for entanglement: if
-  one method in a class cannot be understood without reading the code
-  of some other method, then I would usually advocate combining
-  the methods.
-
->Agreed, and we should probably combine two or three of the above points.
-
-* New wording: Entanglement between methods in a class doesn't bother you
   as much as it bothers me. You believe that the benefits of decomposing
-  methods are so great that they can compensate for problems caused
-  by entanglement. I believe that when decomposed methods are entangled,
+  methods can compensate for problems caused by entanglement.
+  I believe they can't: when decomposed methods are entangled,
   they are harder to read than if they were not decomposed, and this
   defeats the whole purpose of decomposition.
 
-* You believe that ordering the methods in a class is an effective way
-  to manage dependencies between them. I believe that ordering can
-  sometimes improve readability a bit, but if methods are entangled then
-  ordering won't fix the problem.
+* New wording: You believe that ordering the methods in a class can help to
+  compensate for entanglement between methods; I don't.
 
->I agree with both.  Ordering can be effective; but it is not a cure-all.
+**UB:**
 
-* New wording: You believe that ordering the methods in a class can help to compensate
-  for entanglement between methods; I don't.
+*Your brief agreement goes here.*
 
 ## Comments
 
@@ -953,6 +925,9 @@ to use a method with only its signature?
 
 Yes, there are times when the signature of a method is an incomplete abstraction and a comment is required.  There are other times when the signature tells you everything you want to know.  It seems to me that we should try to create more of the latter kind and avoid the former where possible.
 
+> Introduce the notion that production teams can keep everything in their
+heads, so no need to write down the documentation.
+
 **JOHN:**
 
 Let's consider an example from `PrimeGenerator`: the `isMultipleOfNthPrimeFactor`
@@ -1172,26 +1147,22 @@ where we agree and disgree.
 
 * Our overall views of comments are fundamentally different. I see more
 value in comments than you do, and I believe that they play a fundamental
-and irreplaceable role in system design. You see more problems with
-comments than I do and see their role as relatively minor.
-
->Better to say that I see their role as an absolute but unfortunate necessity that we should strive to minimize by working hard to express ourselves in code.
+and irreplaceable role in system design. You agree that there are places
+where comments are necessary, but that comments don't always make it
+easier to understand code, so you see far fewer places where comments are
+needed.
 
 * I would probably write 5-10x more lines of comments for a given piece of
 code than you would.
 
-> Probably.
-
 * I believe that missing comments are a much greater cause of lost
-productivity than erroneous or unhelpful comments; you believe the opposite.
+productivity than erroneous or unhelpful comments;
+you believe that comments are a net negative, as generally practiced:
+bad comments cost more time than good comments save.
 
-> I believe productivity is lost when a necessary comment is missing.  I also believe that productivity is lost to comments that are incorrect or unecessary. Finally I believe that it is more efficient, when possible, to express our intent in code rather than in a comment
-
-* You view it as highly problematic that comments are written in English
+* You view it as problematic that comments are written in English
 rather than a programming language. I don't see this as particularly
 problematic and think that in many cases English works better.
-
->Better to say that I believe that it is problematic if comments are written in English, when the code could have been written to say the same thing.
 
 * You recommend that developers should take information that I would
 represent as comments and recast it into code if at all possible. One
@@ -1199,31 +1170,27 @@ example of this is super-long method names. I believe that super-long names
 are awkward and hard to understand, and that it would be better to use
 shorter names supplemented with comments.
 
->Better to say that I prefer long method names to comments when those methods are contained in small scopes and are called from one place.
-
 * I believe that it is not possible to define interfaces and create
 abstractions without a lot of comments. You see little need for
 interface comments.
 
 >Better to say that I prefer to eliminate interface comments that the code expresses adequately.
 
+>> This may need revision after we complete the discussion above.
+
 * You are unwilling to trust comments until you have read code to
 verify them. I generally trust comments; by doing so, I don't need to read
-as much code as you do.
+as much code as you do. You think this exposes me to too much risk.
 
->My guess is that you win more often than you lose, but when you lose you lose big.  I've worked on too many projects, over too many years. to put unqualified trust in comments.
+* We agree that implementation code only needs comments when the code is
+  nonobvious. Although neither of us argues for a large number of implementation
+  comments, I'm more likely to see value in them than you do.
 
-* You don't see much value in comments that explain implementation code;
-you think that developers can only figure out how code works by reading
-the code and thinking about it, and that comments don't help much. I don't
-tend to write a lot of implementation comments, but I think that
-they can be helpful in cases where the code isn't obvious.
+Overall, we struggled to find areas of agreement on this topic.
 
->I think implementation comments can be very helpful; but only if the code is inobvious.
+**UB:**
 
-Overall, there is almost nothing that we agree on for this topic.
-
->I recommend deleting that line.
+*Note here that this summary reflects your views.*
 
 ## John's Rewrite of PrimeGenerator
 
@@ -2130,24 +2097,16 @@ Here is my attempt to summarize our thoughts on Test-Driven Development:
 They allow developers to make significant changes to a system without fear
 of breaking something.
 
->Yes.
-
 * We agree that it is possible use TDD to produce systems with good designs.
-
->Yes.
 
 * I believe that TDD discourages good design and can easily lead to very bad
 code. You do not believe that TDD discourages good
 design and don't see much of a risk of bad code.
 
->Yes.
-
 * I believe that there are better approaches than TDD for producing good
 unit test suites, such as the "bundling" approach discussed above. You agree
 that bundling can produce outcomes just as good as TDD but think it may lead to
 somewhat less test coverage.
-
->I also worry (ironically) that large bundles can lead to suboptimal designs through the _sunk cost_ fallacy.
 
 * I believe that TDD and bundling have similar best-case outcomes, but that
 the average and worst-case outcomes will be much worse for TDD. You disagree
@@ -2155,7 +2114,9 @@ and believe that, if anything, TDD may produce marginally better outcomes
 than bundling. You also think that preference and personality are larger factors in
 making the choice between the two.
 
->Fair enough.
+**UB:**
+
+*Your brief agreement here.*
 
 ## Closing Remarks
 
