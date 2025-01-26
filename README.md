@@ -595,12 +595,13 @@ summary of where we agree and disagree?
   they are harder to read than if they were not decomposed, and this
   defeats the whole purpose of decomposition.
 
-* New wording: You believe that ordering the methods in a class can help to
+* You believe that ordering the methods in a class can help to
   compensate for entanglement between methods; I don't.
 
 **UB:**
 
-*Your brief agreement goes here.*
+I think this is a fair assessment of our agreements and disagreements.  We both value decomposition,
+and we both avoid entanglement; but we disagree on the relative weighting of those two values.
 
 ## Comments
 
@@ -923,10 +924,12 @@ to use a method with only its signature?
 
 **UB:**
 
-Yes, there are times when the signature of a method is an incomplete abstraction and a comment is required.  There are other times when the signature tells you everything you want to know.  It seems to me that we should try to create more of the latter kind and avoid the former where possible.
-
-> Introduce the notion that production teams can keep everything in their
-heads, so no need to write down the documentation.
+Yes, there are times when the signature of a method is an incomplete abstraction and a comment 
+is required.  This is especially true when the interface is part of a public API, or an API intended
+for use by a separate team of developers.  Within a single development team, however, long descriptive
+comments on interfaces are often more of an impediment than a help.  The team has intimate knowledge of the
+internals of the system, and will generally be able to understand an interface simply from its
+signature. 
 
 **JOHN:**
 
@@ -1171,12 +1174,8 @@ are awkward and hard to understand, and that it would be better to use
 shorter names supplemented with comments.
 
 * I believe that it is not possible to define interfaces and create
-abstractions without a lot of comments. You see little need for
-interface comments.
-
->Better to say that I prefer to eliminate interface comments that the code expresses adequately.
-
->> This may need revision after we complete the discussion above.
+abstractions without a lot of comments. You agree for public APIs, but see little need to comment
+interfaces that are internal to the team.
 
 * You are unwilling to trust comments until you have read code to
 verify them. I generally trust comments; by doing so, I don't need to read
@@ -1190,7 +1189,10 @@ Overall, we struggled to find areas of agreement on this topic.
 
 **UB:**
 
-*Note here that this summary reflects your views.*
+This is a fair assessment of our individual positions; which I assume are based on our
+different individual experiences.  Over the years I have found the vast majority
+of comments, as generally practiced in the industry, to be unhelpful. You seem to have found more
+help in the comments you have encountered.
 
 ## John's Rewrite of PrimeGenerator
 
@@ -2116,7 +2118,11 @@ making the choice between the two.
 
 **UB:**
 
-*Your brief agreement here.*
+This is a fair summary of our discussion.  We seem to disagree over the best application
+of discipline.  I prefer a disciplined approach to keep the code covered by tests
+written first in very short cycles.  You prefer a disciplined approach of writing relatively longer
+bundles of code and then writing tests for those bundles.  We disagree on the risks and rewards of
+these two disciplines.
 
 ## Closing Remarks
 
