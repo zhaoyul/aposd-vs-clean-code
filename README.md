@@ -1,3 +1,9 @@
+*(This document is the result of a series of discussions, some online and
+some in person, held between Robert "Uncle Bob" Martin and John Ousterhout between
+September, 2024 and January, 2025. If you would like to comment on anything
+in this discussion, we recommend that you do so on the [Google group
+associated with APOSD](https://groups.google.com/g/software-design-book))*
+
 ## Introductions
 
 **JOHN:**
@@ -924,16 +930,30 @@ to use a method with only its signature?
 
 **UB:**
 
-Yes, there are times when the signature of a method is an incomplete abstraction and a comment 
+Yes, there are times when the signature of a method is an incomplete abstraction and a comment
 is required.  This is especially true when the interface is part of a public API, or an API intended
 for use by a separate team of developers.  Within a single development team, however, long descriptive
 comments on interfaces are often more of an impediment than a help.  The team has intimate knowledge of the
 internals of the system, and will generally be able to understand an interface simply from its
-signature. 
+signature.
 
 **JOHN:**
 
-Let's consider an example from `PrimeGenerator`: the `isMultipleOfNthPrimeFactor`
+In one of our in-person discussions you argued that interface comments
+are unnecessary because when a group of developers is working on a body
+of code they can collectively keep the entire code "loaded" in their
+minds, so comments are unnecessary: if you have a question, just ask the
+person who is familiar with that code. This creates a huge cognitive load
+to keep all that code mentally loaded, and it's hard for me to imagine
+that it would actually work. Maybe your memory is better than mine, but I
+find that I quickly forget code that I wrote just a few weeks ago. In
+a project of any size, I think your approach would result in developers
+spending large amounts of time reading code to re-derive the interfaces,
+and probably making mistakes along the way. Spending a few minutes to
+document the interfaces would save time, reduce cognitive load, and
+reduce bugs.
+
+Let's consider a specific example from `PrimeGenerator`: the `isMultipleOfNthPrimeFactor`
 method. When someone reading the code encounters the call to `isMultiple...`
 in `isNot...` they need to understand enough about how `isMultiple...` works
 in order to see how it fits into the code of `isNot...`.
