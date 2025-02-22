@@ -1,6 +1,6 @@
 *(This document is the result of a series of discussions, some online and
 some in person, held between Robert "Uncle Bob" Martin and John Ousterhout between
-September, 2024 and January, 2025. If you would like to comment on anything
+September, 2024 and February, 2025. If you would like to comment on anything
 in this discussion, we recommend that you do so on the [Google group
 associated with APOSD](https://groups.google.com/g/software-design-book))*
 
@@ -128,7 +128,7 @@ It is certainly possible to over-decompose code.  Here's an example:
 
 	void doSomething() {doTheThing()} // over-decomposed.
 
-The strategy that I use for deciding how far to take extraction is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
+The strategy that I use for deciding how far to take decomposition is the old rule that a method should do "*One Thing*".  If I can *meaningfully* extract one method from another, then the original method did more than one thing.  "Meaningfully" means that the extracted functionality can be given a descriptive name; and that it does less than the original method.
 
 **JOHN:**
 
@@ -576,7 +576,7 @@ summary of where we agree and disagree?
 
 * We agree that modular design is a good thing.
 
-* We agree that it is possible to over-decompose, and that *Clean Code*
+* We agree that it is possible to over-decompose, and that *Clean Code 1st ed.*
   doesn't provide much guidance on how to recognize over-decomposition.
 
 * We disagree on how far to decompose: you recommend decomposing
@@ -674,7 +674,7 @@ You and I likely both survived through a time when comments were absolutely nece
 
 As a result it became conventional wisdom to write comments by default.  And, indeed, computer science students were taught to write comments uncritically.  Comments became _pure good_.
 
-In the book I decided to fight that mindset.  Comments can be _really bad_ as well as good.
+In _Clean Code_ I decided to fight that mindset.  Comments can be _really bad_ as well as good.
 
 **JOHN:**
 
@@ -809,7 +809,7 @@ I like my method names to be sentence fragments that fit nicely with keywords an
 	if (isTooHot)
 	  cooler.turnOn();
 
-I also follow a simple rule about the length of names.  The larger the scope of a method, the shorter its name should be.  The private methods I extracted in this case live in very small scopes, and so have longish names.  Methods like this are typically called from only one place, so there is no burden on the programmer to remember a long name for another call.
+I also follow a simple rule about the length of names.  The larger the scope of a method, the shorter its name should be and vice-versa -- the shorter the scope the longer the  name.  The private methods I extracted in this case live in very small scopes, and so have longish names.  Methods like this are typically called from only one place, so there is no burden on the programmer to remember a long name for another call.
 
 **JOHN:**
 
@@ -953,6 +953,12 @@ and probably making mistakes along the way. Spending a few minutes to
 document the interfaces would save time, reduce cognitive load, and
 reduce bugs.
 
+**UB:**
+
+I think that certain interfaces need comments, even if they are private to the team.  But I think it is more often the case that the team is familiar enough with the system that well named methods and arguments are sufficient.
+
+**JOHN:**
+
 Let's consider a specific example from `PrimeGenerator`: the `isMultipleOfNthPrimeFactor`
 method. When someone reading the code encounters the call to `isMultiple...`
 in `isNot...` they need to understand enough about how `isMultiple...` works
@@ -1002,7 +1008,7 @@ name can't include text like `primes[n]`).
 
 Fair enough.  There are times when precision is better expressed in a comment.
 
-Continuing with my critique of your comment above: The name 'candidate' is synonymous with "Number being tested for primality".
+Continuing with my critique of your comment above: The name `candidate` is synonymous with "Number being tested for primality".
 
 In the end, however, all the words in a comment are just going to have to sit in my brain
 until I understand why they are there.  I'm also going to have to worry if
@@ -1342,7 +1348,7 @@ The next comment cost me a good 20 minutes of puzzling things out.
 
 First of all I'm not sure why the "division" statement is necessary.  I'm old school so I expect that everyone knows to avoid division in inner loops if it can be avoided.  But maybe I'm wrong about that...
 
-Also, the *Sieve of Eratosthenes* does not do division, and is a lot easier to understand *and explain* than this algorithm.  So why this particular algorithm?  I think Knuth was trying to save memory -- and in 1982 saving memory was important.  This algorithm uses a lot less memory than the sieve.
+Also, the *Sieve of Eratosthenes* does not do division, and is a lot easier to understand *and explain* than this algorithm.  So why this particular algorithm?  I think Knuth was trying to save _memory_ -- and in 1982 saving memory was important.  This algorithm uses a lot less memory than the sieve.
 
 Then came the phrase: `Each entry here contains an odd multiple...`.  I looked at that, and then at the code, and I saw: `multiples[0] = 4;`.
 
@@ -1675,6 +1681,7 @@ had this feature; the alternative is awkward code where you set a variable,
 then exit one level of loop, then check the variable and exit the next
 level.
 
+**DO YOU WANT TO LEAVE THIS IN?**
 >Let's discuss this on Zoom; you seem to keep repeating your slurs without
 providing a reasonable explanation.
 
@@ -1773,7 +1780,7 @@ tests.
 **UB:**
 
 How about if we call this technique "bundling" for purposes of this
-document?
+document?  This is the term I use in _Clean Code 2d ed._
 
 **JOHN:**
 
@@ -1803,7 +1810,7 @@ The advantages I usually attribute to TDD are:
 
 However, you asked me which of these advantages TDD might have over _your_ preferred method.  That depends on how big you make those larger units you described.  The important thing to me is to keep the cycle time short, and to prevent entanglements that block testability.
 
-It seem to me that working in small units that you immediately write tests for after the fact can give you all the above advantages, so long as you are very careful to test every aspect of the code you just wrote.  I think a disciplined programmer could effectively work that way.  Indeed, I think such a programmer would produce code that I could not distiguish from code written by another programmer following TDD.
+It seems to me that working in small units, and then immediately writing after the fact tests, can give you all the above advantages, so long as you are very careful to test every aspect of the code you just wrote.  I think a disciplined programmer could effectively work that way.  Indeed, I think such a programmer would produce code that I could not distiguish from code written by another programmer following TDD.
 
 Above you suggested that bundling is to encourage design.  I think encouraging design is a very good thing.  My question for you is: Why do you think that TDD does not encourage design?  My own experience is that design comes from strategic thought, which is independent of the tactical behavior of either TDD or Bundling.  Design is taking one step back from the code and envisioning structures that address a larger set of constraints and needs.
 
@@ -2205,6 +2212,6 @@ process.
 
 John, I'd like to thank you for participating in this project.  This was a lot of fun for me.  I love disagreement and debate with smart people.  I also think that we share far more values than separate us.
 
-For my part I'll just say that I have given due consideration to the points you've made, and have integrated several of them into the second edition of _Clean Code_.
+For my part I'll just say that I have given due consideration to the points you've made, and while I disagree with your conclusions above, I have integrated several of your better ideas, as well as this entire document, into the second edition of _Clean Code_.
 
 Thanks again, and give my best to your students.
