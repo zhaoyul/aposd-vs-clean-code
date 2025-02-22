@@ -1681,10 +1681,6 @@ had this feature; the alternative is awkward code where you set a variable,
 then exit one level of loop, then check the variable and exit the next
 level.
 
-**DO YOU WANT TO LEAVE THIS IN?**
->Let's discuss this on Zoom; you seem to keep repeating your slurs without
-providing a reasonable explanation.
-
 **UB:**
 
 Good catch!  I would have caught that too had I thought to profile the solution.  You are right that separating the two loops added some unecessary iteration.  I found a nice way to solve that problem without using the horrible `continue`.  My updated version is now faster than yours!  A million primes in 440ms as opposed to yours which takes 561ms.  ;-) Below are just the changes.
@@ -1810,7 +1806,7 @@ The advantages I usually attribute to TDD are:
 
 However, you asked me which of these advantages TDD might have over _your_ preferred method.  That depends on how big you make those larger units you described.  The important thing to me is to keep the cycle time short, and to prevent entanglements that block testability.
 
-It seems to me that working in small units, and then immediately writing after the fact tests, can give you all the above advantages, so long as you are very careful to test every aspect of the code you just wrote.  I think a disciplined programmer could effectively work that way.  Indeed, I think such a programmer would produce code that I could not distiguish from code written by another programmer following TDD.
+It seems to me that working in small units, and then immediately writing after the fact tests, can give you all the above advantages, so long as you are very careful to test every aspect of the code you just wrote.  I think a disciplined programmer could effectively work that way.  Indeed, I think such a programmer would produce code that I could not distinguish from code written by another programmer following TDD.
 
 Above you suggested that bundling is to encourage design.  I think encouraging design is a very good thing.  My question for you is: Why do you think that TDD does not encourage design?  My own experience is that design comes from strategic thought, which is independent of the tactical behavior of either TDD or Bundling.  Design is taking one step back from the code and envisioning structures that address a larger set of constraints and needs.
 
