@@ -1568,7 +1568,7 @@ I think it is just the reality of this algorithm that the effort required to pro
 	        for (candidate = 5; primesFound < n; candidate += 2) {
 	            increaseEachPrimeMultipleToOrBeyondCandidate();
 	            if (candidateIsNotOneOfThePrimeMultiples()) {
-	                registerTheCandiateAsPrime();
+	                registerTheCandidateAsPrime();
 	            }
 	        }
 	        return primes;
@@ -1604,7 +1604,7 @@ I think it is just the reality of this algorithm that the effort required to pro
 	        return true;
 	    }
 
-	    private static void registerTheCandiateAsPrime() {
+	    private static void registerTheCandidateAsPrime() {
 	        primes[primesFound] = candidate;
 	        primeMultiples[primesFound] = candidate * candidate;
 	        primesFound++;
@@ -1690,7 +1690,7 @@ Good catch!  I would have caught that too had I thought to profile the solution.
 
 	    for (candidate = 5; primesFound < n; candidate += 2)
 	      if (candidateIsPrime())
-	        registerTheCandiateAsPrime();
+	        registerTheCandidateAsPrime();
 
 	    return primes;
 	  }
